@@ -112,11 +112,25 @@ function setupStatic(){
 function renderAll(){fillPeopleSelect('evPerson');fillPeopleSelect('taskPerson');fillPeopleSelect('eventEmployeeFilter','Все сотрудники');fillPeopleSelect('taskEmployeeFilter','Все исполнители');renderToday();renderEvents();renderTasks();renderCategoryViews();renderPeople();renderStats();renderCalendar()}
 function table(headers,rows){if(!rows.length)return'<div class="empty">Пока нет данных</div>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
 function renderToday(){
- const ev=db.events.filter(e=>activeEvent(e));const od=db.tasks.filter(overdue);const due=db.tasks.filter(t=>!['Выполнена','Отменена'].includes(t.status));
+ const today=todayISO(),ev=db.events.filter(e=>activeEvent(e,today));const od=db.tasks.filter(overdue);const due=db.tasks.filter(t=>!['Выполнена','Отменена'].includes(t.status));
  document.getElementById('todayMetrics').innerHTML=[
   ['Сотрудников',db.people.length],['Событий сегодня',ev.length],['Активных задач',due.length],['Просрочено',od.length]
  ].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
- document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Событие','Период','Статус'],ev.map(e=>'<tr><td>'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+(e.end?' — '+fmt(e.end):'')+'</td><td><span class="pill">'+esc(e.status)+'</span></td></tr>'));
+
+ const priority=['Выход во время больничного','Наряд','Командировка','Больничный','Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
+ const rows=db.people.map(p=>{
+   const pe=ev.filter(e=>e.personId===p.id).sort((a,b)=>{
+     const ai=priority.indexOf(a.type),bi=priority.indexOf(b.type);
+     return (ai<0?999:ai)-(bi<0?999:bi);
+   });
+   if(!pe.length)return '<tr><td>'+esc(p.short||p.full||'—')+'</td><td><b>На месте</b></td><td>'+fmt(today)+'</td><td><span class="pill green">На службе</span></td></tr>';
+   const top=pe[0];
+   const isWork=['Выход во время больничного','Наряд','Выход в выходной/праздничный день','Зачёт по ФП'].includes(top.type);
+   const label=isWork&&top.type==='Выход во время больничного'?'На месте — выход во время больничного':top.type;
+   const status=isWork?'На службе':top.status;
+   return '<tr><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+fmt(top.start)+(top.end?' — '+fmt(top.end):'')+'</td><td><span class="pill '+(isWork?'green':'')+'">'+esc(status)+'</span></td></tr>';
+ });
+ document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Где / статус','Период','Статус'],rows);
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
  document.getElementById('todayTasks').innerHTML=taskTable(list);
 }
