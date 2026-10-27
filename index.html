@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#18324a">
+<link rel="manifest" href="manifest.json">
+<title>Календарь отдела</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#17202a;--muted:#6b7785;--accent:#18324a;--accent2:#2f6fed;--red:#c0392b;--green:#1f8b4c;--amber:#b7791f;--line:#dfe5ec}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:20;background:var(--accent);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px #0002}
+header h1{font-size:18px;margin:0}.badge{background:#ffffff20;padding:6px 10px;border-radius:999px;font-size:12px}
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px)}
+nav{background:#102538;color:#dce7f0;padding:12px;position:sticky;top:52px;height:calc(100vh - 52px);overflow:auto}
+nav button{width:100%;border:0;background:transparent;color:inherit;text-align:left;padding:10px 12px;border-radius:10px;margin:2px 0;cursor:pointer;font-size:14px}
+nav button.active,nav button:hover{background:#ffffff18;color:#fff}
+main{padding:18px;max-width:1500px;width:100%;margin:auto}.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 4px 18px #17202a0a}
+.card h3{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:600}.metric{font-size:28px;font-weight:800}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.toolbar input,.toolbar select,.toolbar button,.form-grid input,.form-grid select,.form-grid textarea{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 10px;font:inherit}
+.toolbar button,.primary{background:var(--accent2)!important;color:#fff;border-color:var(--accent2)!important;cursor:pointer}.danger{background:#fff!important;color:var(--red)!important;border-color:#efc6c1!important}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#eef3f8;color:#44515e;position:sticky;top:52px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#e8eef6}.pill.red{background:#fde7e4;color:#a1271d}.pill.green{background:#e2f4e8;color:#196d3c}.pill.amber{background:#fff2d8;color:#8a5a00}.overdue{background:#fff3f2}.completed{background:#f1fbf4}.muted{color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.form-grid .full{grid-column:1/-1}.form-grid textarea{min-height:80px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.open{display:flex}.modal-box{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head button{border:0;background:transparent;font-size:24px;cursor:pointer}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day .n{font-weight:800;margin-bottom:5px}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{padding:30px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
+@media(max-width:900px){.layout{display:block}nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}nav button{min-width:max-content;width:auto;padding:8px 10px}main{padding:12px 12px 72px}.grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}th{top:52px}.calendar{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.metric{font-size:24px}table{display:block;overflow:auto}.calendar{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • без публикации персональных сведений</span></header>
+<div class="layout">
+<nav id="nav">
+<button data-page="today" class="active">Сегодня / Кто где</button>
+<button data-page="calendar">Календарь</button>
+<button data-page="events">События</button>
+<button data-page="leave">Отпуска</button>
+<button data-page="duty">Наряды</button>
+<button data-page="trips">Командировки</button>
+<button data-page="sick">Больничные</button>
+<button data-page="tasks">Задачи</button>
+<button data-page="stats">Статистика</button>
+<button data-page="people">Сотрудники</button>
+<button data-page="data">Импорт / экспорт</button>
+</nav>
+<main>
+<section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
+<section id="calendar" class="section"><div class="toolbar"><button id="prevMonth">←</button><strong id="monthTitle"></strong><button id="nextMonth">→</button></div><div id="calendarGrid" class="calendar"></div></section>
+<section id="events" class="section"><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Событие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
+<section id="leave" class="section"><h2>Отпуска</h2><div id="leaveTable"></div></section>
+<section id="duty" class="section"><h2>Наряды</h2><div id="dutyTable"></div></section>
+<section id="trips" class="section"><h2>Командировки</h2><div id="tripsTable"></div></section>
+<section id="sick" class="section"><h2>Больничные</h2><div id="sickTable"></div></section>
+<section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
+<section id="stats" class="section"><h2>Статистика</h2><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
+<section id="people" class="section"><div class="toolbar"><button class="primary" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleTable"></div></section>
+<section id="data" class="section"><h2>Импорт / экспорт</h2><div class="card"><p>Персональные данные не хранятся в GitHub. Они находятся только в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div><p class="muted">Следующий этап — защищённая синхронизация с Google Sheets без публикации таблицы.</p></div></section>
+</main>
+</div>
+
+<div id="eventModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Событие</h3><button onclick="closeModal('eventModal')">×</button></div><form id="eventForm" class="form-grid">
+<select id="evPerson" required></select><select id="evType" required></select><input id="evStart" type="date" required><input id="evEnd" type="date"><input id="evDays" type="number" step="0.5" placeholder="Количество дней"><select id="evStatus"></select><textarea id="evComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
+<div id="taskModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Задача</h3><button onclick="closeModal('taskModal')">×</button></div><form id="taskForm" class="form-grid">
+<select id="taskPerson" required></select><input id="taskTitle" required placeholder="Задача"><textarea id="taskDesc" class="full" placeholder="Описание"></textarea><input id="taskCreated" type="date" required><input id="taskDeadline" type="date"><select id="taskPriority"></select><select id="taskStatus"></select><input id="taskAuthor" placeholder="Постановщик"><textarea id="taskComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
+<div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
+
+<script>
+const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Командировка','Больничный','Отгул','Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
+const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
+const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
+const PRIORITIES=['Низкий','Обычный','Высокий','Срочный'];
+const KEY='kalendarOtdelaDataV1';
+let db=load();
+let calDate=new Date(); calDate.setDate(1);
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{people:[],events:[],tasks:[]}}catch(e){return{people:[],events:[],tasks:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function uid(p='ID'){return p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(d){if(!d)return'';const x=new Date(d+'T00:00:00');return x.toLocaleDateString('ru-RU')}
+function todayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function person(id){return db.people.find(x=>x.id===id)}
+function activeEvent(e,date=todayISO()){const end=e.end||((e.status==='Продолжается')?date:e.start);return e.start<=date && end>=date && e.status!=='Замена'}
+function overdue(t){return t.deadline && t.deadline<todayISO()&&!['Выполнена','Отменена'].includes(t.status)}
+function fillSelect(id,arr,placeholder){const el=document.getElementById(id);el.innerHTML=(placeholder?'<option value="">'+placeholder+'</option>':'')+arr.map(x=>'<option>'+esc(x)+'</option>').join('')}
+function fillPeopleSelect(id,placeholder='Выберите сотрудника'){const el=document.getElementById(id);el.innerHTML='<option value="">'+placeholder+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+esc(p.short||p.full)+'</option>').join('')}
+function setupStatic(){
+ fillSelect('evType',EVENT_TYPES);fillSelect('evStatus',EVENT_STATUSES);fillSelect('taskPriority',PRIORITIES);fillSelect('taskStatus',TASK_STATUSES);
+ fillSelect('eventTypeFilter',EVENT_TYPES,'Все типы');fillSelect('eventStatusFilter',EVENT_STATUSES,'Все статусы');fillSelect('taskStatusFilter',TASK_STATUSES,'Все статусы');fillSelect('taskPriorityFilter',PRIORITIES,'Все приоритеты');
+}
+function renderAll(){fillPeopleSelect('evPerson');fillPeopleSelect('taskPerson');fillPeopleSelect('eventEmployeeFilter','Все сотрудники');fillPeopleSelect('taskEmployeeFilter','Все исполнители');renderToday();renderEvents();renderTasks();renderCategoryViews();renderPeople();renderStats();renderCalendar()}
+function table(headers,rows){if(!rows.length)return'<div class="empty">Пока нет данных</div>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
+function renderToday(){
+ const ev=db.events.filter(e=>activeEvent(e));const od=db.tasks.filter(overdue);const due=db.tasks.filter(t=>!['Выполнена','Отменена'].includes(t.status));
+ document.getElementById('todayMetrics').innerHTML=[
+  ['Сотрудников',db.people.length],['Событий сегодня',ev.length],['Активных задач',due.length],['Просрочено',od.length]
+ ].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
+ document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Событие','Период','Статус'],ev.map(e=>'<tr><td>'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+(e.end?' — '+fmt(e.end):'')+'</td><td><span class="pill">'+esc(e.status)+'</span></td></tr>'));
+ const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
+ document.getElementById('todayTasks').innerHTML=taskTable(list);
+}
+function eventRows(list){return list.map(e=>'<tr><td>'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+fmt(e.end)+'</td><td>'+esc(e.days??'')+'</td><td><span class="pill">'+esc(e.status)+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>')}
+function renderEvents(){
+ const pf=document.getElementById('eventEmployeeFilter').value,tf=document.getElementById('eventTypeFilter').value,sf=document.getElementById('eventStatusFilter').value,q=document.getElementById('eventSearch').value.toLowerCase();
+ const list=db.events.filter(e=>(!pf||e.personId===pf)&&(!tf||e.type===tf)&&(!sf||e.status===sf)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
+ document.getElementById('eventsTable').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
+}
+function renderCategoryViews(){
+ const cats={leave:['Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Больничный']};
+ for(const [id,types] of Object.entries(cats)){const list=db.events.filter(e=>types.includes(e.type));document.getElementById(id+'Table').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list))}
+}
+function taskTable(list){return table(['Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
+function renderTasks(){
+ const pf=document.getElementById('taskEmployeeFilter').value,sf=document.getElementById('taskStatusFilter').value,pr=document.getElementById('taskPriorityFilter').value,q=document.getElementById('taskSearch').value.toLowerCase();
+ const list=db.tasks.filter(t=>(!pf||t.personId===pf)&&(!sf||t.status===sf)&&(!pr||t.priority===pr)&&(!q||JSON.stringify(t).toLowerCase().includes(q)));
+ document.getElementById('tasksTable').innerHTML=taskTable(list);
+}
+function renderPeople(){document.getElementById('peopleTable').innerHTML=table(['Краткое имя','ФИО','Должность','Категория',''],db.people.map(p=>'<tr><td>'+esc(p.short)+'</td><td>'+esc(p.full)+'</td><td>'+esc(p.role||'')+'</td><td>'+esc(p.category||'')+'</td><td><button onclick="delPerson(\''+p.id+'\')">Удалить</button></td></tr>'))}
+function renderStats(){
+ const counts={};EVENT_TYPES.forEach(x=>counts[x]=0);db.events.forEach(e=>counts[e.type]=(counts[e.type]||0)+1);
+ document.getElementById('statsGrid').innerHTML=[['Всего событий',db.events.length],['Всего задач',db.tasks.length],['Выполнено задач',db.tasks.filter(t=>t.status==='Выполнена').length],['Просрочено',db.tasks.filter(overdue).length]].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
+ document.getElementById('statsTable').innerHTML=table(['Тип события','Количество'],Object.entries(counts).filter(x=>x[1]).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+v+'</td></tr>'));
+}
+function renderCalendar(){
+ const y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById('monthTitle').textContent=calDate.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+ const first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();let html='';
+ for(let i=0;i<first;i++)html+='<div></div>';
+ for(let d=1;d<=days;d++){const date=[y,String(m+1).padStart(2,'0'),String(d).padStart(2,'0')].join('-');const ev=db.events.filter(e=>activeEvent(e,date));html+='<div class="day"><div class="n">'+d+'</div>'+ev.map(e=>'<span class="event-chip">'+esc(person(e.personId)?.short||'')+' • '+esc(e.type)+'</span>').join('')+'</div>'}
+ document.getElementById('calendarGrid').innerHTML=html;
+}
+function openEventModal(){document.getElementById('evStart').value=todayISO();document.getElementById('eventModal').classList.add('open')}
+function openTaskModal(){document.getElementById('taskCreated').value=todayISO();document.getElementById('taskModal').classList.add('open')}
+function openPersonModal(){document.getElementById('personModal').classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function delEvent(id){if(confirm('Удалить событие?')){db.events=db.events.filter(x=>x.id!==id);save()}}
+function delTask(id){if(confirm('Удалить задачу?')){db.tasks=db.tasks.filter(x=>x.id!==id);save()}}
+function delPerson(id){if(db.events.some(e=>e.personId===id)||db.tasks.some(t=>t.personId===id))return alert('Сначала удалите связанные события и задачи.');if(confirm('Удалить сотрудника?')){db.people=db.people.filter(x=>x.id!==id);save()}}
+function setTaskStatus(id,status){const t=db.tasks.find(x=>x.id===id);if(t){t.status=status;t.completed=status==='Выполнена'?todayISO():'';save()}}
+document.getElementById('eventForm').onsubmit=e=>{e.preventDefault();const s=evStart.value,en=evEnd.value;db.events.push({id:uid('EV'),personId:evPerson.value,type:evType.value,start:s,end:en,days:evDays.value?Number(evDays.value):'',status:evStatus.value,comment:evComment.value});e.target.reset();closeModal('eventModal');save()}
+document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();db.tasks.push({id:uid('TASK'),personId:taskPerson.value,title:taskTitle.value,description:taskDesc.value,created:taskCreated.value,deadline:taskDeadline.value,priority:taskPriority.value,status:taskStatus.value,author:taskAuthor.value,comment:taskComment.value});e.target.reset();closeModal('taskModal');save()}
+document.getElementById('personForm').onsubmit=e=>{e.preventDefault();db.people.push({id:uid('P'),short:personShort.value,full:personFull.value,role:personRole.value,category:personCategory.value});e.target.reset();closeModal('personModal');save()}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active')})
+;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
+document.getElementById('prevMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar()};
+document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-backup.json';a.click();URL.revokeObjectURL(a.href)}
+document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=x;save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
+document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
+document.getElementById('sampleBtn').onclick=()=>{db={people:[{id:'p1',short:'Сотрудник 1',full:'Демонстрационный сотрудник',role:'Сотрудник',category:'Другое'}],events:[{id:'e1',personId:'p1',type:'Командировка',start:todayISO(),end:'',days:'',status:'Продолжается',comment:'Демо-событие'}],tasks:[{id:'t1',personId:'p1',title:'Проверить работу приложения',description:'Демонстрационная задача',created:todayISO(),deadline:todayISO(),priority:'Высокий',status:'В работе',author:'Администратор',comment:''}]};save()}
+setupStatic();renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
