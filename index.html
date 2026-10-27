@@ -222,7 +222,9 @@ async function syncEncrypted(){
   const env=await r.json();
   const keyBytes=b64ToBytes(rawKey);
   const key=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
-  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},key,b64ToBytes(env.data));
+  const ivBytes=Array.isArray(env.iv)?new Uint8Array(env.iv):b64ToBytes(env.iv);
+  const dataBytes=Array.isArray(env.data)?new Uint8Array(env.data):b64ToBytes(env.data);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:ivBytes},key,dataBytes);
   const x=JSON.parse(new TextDecoder().decode(plain));
   if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
   db=normalizeDisplayData(x);save();
