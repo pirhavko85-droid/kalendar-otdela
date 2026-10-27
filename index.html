@@ -168,8 +168,13 @@ async function syncEncrypted(){
   const r=await fetch('./data.enc.json?ts='+Date.now(),{cache:'no-store'});
   if(!r.ok){status.textContent='Зашифрованный снимок ещё не опубликован.';return}
   const env=await r.json();
-  const priv=await crypto.subtle.importKey('jwk',JSON.parse(privRaw),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
-  const aesRaw=await crypto.subtle.decrypt({name:'RSA-OAEP'},priv,b64ToBytes(env.key));
+  const privJwk=JSON.parse(privRaw);
+  const priv=await crypto.subtle.importKey('jwk',privJwk,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+  const wrappedKey=Array.isArray(env.recipients)
+    ? (env.recipients.find(x=>x.n===privJwk.n)?.key)
+    : env.key;
+  if(!wrappedKey) throw new Error('device key not authorized');
+  const aesRaw=await crypto.subtle.decrypt({name:'RSA-OAEP'},priv,b64ToBytes(wrappedKey));
   const aes=await crypto.subtle.importKey('raw',aesRaw,{name:'AES-GCM'},false,['decrypt']);
   const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},aes,b64ToBytes(env.data));
   const x=JSON.parse(new TextDecoder().decode(plain));
