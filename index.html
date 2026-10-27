@@ -58,7 +58,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="people" class="section"><div class="toolbar"><button class="primary" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
 <div class="card"><h3>Локальные данные</h3><p>Персональные данные не хранятся в открытом виде в GitHub. Рабочая копия находится в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div></div>
-<div class="card" style="margin-top:12px"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><button id="setupSyncBtn">Включить безопасную синхронизацию</button><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Синхронизация ещё не настроена.</p></div>
+<div class="card" style="margin-top:12px"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
 </section>
 </main>
 </div>
@@ -147,45 +147,38 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.quer
 ;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
 document.getElementById('prevMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar()};
 document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-backup.json';a.click();URL.revokeObjectURL(a.href)}
-const SYNC_PRIV='kalendarOtdelaSyncPrivateJwkV1';
-function b64ToBytes(s){const b=atob(s.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))}
-async function setupSecureSync(){
- if(!window.crypto?.subtle)return alert('Этот браузер не поддерживает защищённую синхронизацию.');
- const kp=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
- const priv=await crypto.subtle.exportKey('jwk',kp.privateKey);
- const pub=await crypto.subtle.exportKey('jwk',kp.publicKey);
- localStorage.setItem(SYNC_PRIV,JSON.stringify(priv));
- const blob=new Blob([JSON.stringify(pub,null,2)],{type:'application/json'}),a=document.createElement('a');
- a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-public-key.json';a.click();URL.revokeObjectURL(a.href);
- document.getElementById('syncStatus').textContent='Ключ создан. Передайте скачанный файл публичного ключа в ChatGPT; приватный ключ остался только на этом устройстве.';
-}
+const SYNC_KEY='kalendarOtdelaSharedKeyV1';
+function b64ToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function syncEncrypted(){
  const status=document.getElementById('syncStatus');
- const privRaw=localStorage.getItem(SYNC_PRIV);
- if(!privRaw){status.textContent='Сначала включите безопасную синхронизацию.';return}
+ const rawKey=localStorage.getItem(SYNC_KEY);
+ if(!rawKey){status.textContent='Подключите общий ключ отдела.';return}
  try{
   status.textContent='Проверяю обновление…';
   const r=await fetch('./data.enc.json?ts='+Date.now(),{cache:'no-store'});
   if(!r.ok){status.textContent='Зашифрованный снимок ещё не опубликован.';return}
   const env=await r.json();
-  const privJwk=JSON.parse(privRaw);
-  const priv=await crypto.subtle.importKey('jwk',privJwk,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
-  const wrappedKey=Array.isArray(env.recipients)
-    ? (env.recipients.find(x=>x.n===privJwk.n)?.key)
-    : env.key;
-  if(!wrappedKey) throw new Error('device key not authorized');
-  const aesRaw=await crypto.subtle.decrypt({name:'RSA-OAEP'},priv,b64ToBytes(wrappedKey));
-  const aes=await crypto.subtle.importKey('raw',aesRaw,{name:'AES-GCM'},false,['decrypt']);
-  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},aes,b64ToBytes(env.data));
+  const keyBytes=b64ToBytes(rawKey);
+  const key=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},key,b64ToBytes(env.data));
   const x=JSON.parse(new TextDecoder().decode(plain));
   if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
   db=x;save();
   status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU');
- }catch(e){status.textContent='Не удалось обновить данные. Проверьте ключ или опубликованный снимок.'}
+ }catch(e){status.textContent='Не удалось обновить данные. Проверьте общий ключ отдела.'}
 }
-document.getElementById('setupSyncBtn').onclick=setupSecureSync;
+document.getElementById('sharedKeyFile').onchange=async e=>{
+ try{
+  const file=e.target.files?.[0]; if(!file)return;
+  const x=JSON.parse(await file.text());
+  if(x.alg!=='A256GCM'||!x.key)throw new Error('bad key');
+  localStorage.setItem(SYNC_KEY,x.key);
+  document.getElementById('syncStatus').textContent='Общий ключ отдела подключён. Обновляю данные…';
+  await syncEncrypted();
+ }catch(_){alert('Неверный файл общего ключа отдела')}
+};
 document.getElementById('syncNowBtn').onclick=syncEncrypted;
-if(localStorage.getItem(SYNC_PRIV)){document.getElementById('syncStatus').textContent='Безопасная синхронизация настроена на этом устройстве.';setTimeout(syncEncrypted,600)}
+if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(syncEncrypted,600)}
 
 document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=x;save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
 document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
