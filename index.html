@@ -290,7 +290,12 @@ async function syncEncrypted(){
   const ivBytes=Array.isArray(env.iv)?new Uint8Array(env.iv):b64ToBytes(env.iv);
   const dataBytes=Array.isArray(env.data)?new Uint8Array(env.data):b64ToBytes(env.data);
   const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:ivBytes},key,dataBytes);
-  const x=JSON.parse(new TextDecoder().decode(plain));
+  let payload=new Uint8Array(plain);
+  if(env.compressed==='gzip'){
+    const ds=new DecompressionStream('gzip');
+    payload=new Uint8Array(await new Response(new Blob([payload]).stream().pipeThrough(ds)).arrayBuffer());
+  }
+  const x=JSON.parse(new TextDecoder().decode(payload));
   if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
   db=normalizeDisplayData(x);save();
   status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU');
