@@ -92,7 +92,30 @@ function productionDayInfo(date){
  return {dow:DOW_SHORT[x.getDay()],nonwork:weekend||!!special,label:special||(weekend?'Выходной':'')};
 }
 const KEY='kalendarOtdelaDataV1';
-let db=load();
+function normalizeDisplayData(x){
+ const order=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
+ const roleMap={
+  'Заместитель начальника отдела':'ЗНО','Начальник группы':'НГ','Руководитель отдела':'ГЭ',
+  'Владелец/идеолог дашборда':'ГЭ','Старший офицер':'СО','Оператор доски':'Ст. советник','Сотрудник':'Советник',
+  'ЗНО':'ЗНО','НГ':'НГ','ГЭ':'ГЭ','СО':'СО','Ст. советник':'Ст. советник','Советник':'Советник'
+ };
+ x.people=(x.people||[]).map(p=>{
+   const source=(p.full||p.short||'').trim();
+   const parts=source.split(/\s+/);
+   const looksFull=parts.length>=2 && !source.includes('.');
+   const short=looksFull?(parts[1]+' '+(parts[0]?.[0]||'')+'.'):(p.short||source);
+   return {...p,short,full:short,role:roleMap[p.role]||p.role};
+ }).sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+ x.events=(x.events||[]).map(e=>{
+   const y={...e};
+   if(y.type==='Больничный')y.type=(y.personId==='ГЮК'||y.personId==='СЕВ')?'Больна':'Болен';
+   if(['Боевой отпуск','Ветеранский отпуск','Отпуск VBD'].includes(y.type))y.type='Отпуск ВБД';
+   if(y.type==='Выход во время больничного')y.type='Выход на больничном';
+   return y;
+ });
+ return x;
+}
+let db=normalizeDisplayData(load());
 let calDate=new Date(); calDate.setDate(1);
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{people:[],events:[],tasks:[]}}catch(e){return{people:[],events:[],tasks:[]}}}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
@@ -199,7 +222,7 @@ async function syncEncrypted(){
   const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},key,b64ToBytes(env.data));
   const x=JSON.parse(new TextDecoder().decode(plain));
   if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
-  db=x;save();
+  db=normalizeDisplayData(x);save();
   status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU');
  }catch(e){status.textContent='Не удалось обновить данные. Проверьте общий ключ отдела.'}
 }
