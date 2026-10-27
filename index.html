@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.0</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -40,7 +40,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <button data-page="leave">Отпуска</button>
 <button data-page="duty">Наряды</button>
 <button data-page="trips">Командировки</button>
-<button data-page="sick">Болеют</button>
+<button data-page="sick">Больничные</button>
 <button data-page="tasks">Задачи</button>
 <button data-page="stats">Статистика</button>
 <button data-page="people">Сотрудники</button>
@@ -54,7 +54,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="leave" class="section"><h2>Отпуска</h2><div id="leaveTable"></div></section>
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyTable"></div></section>
 <section id="trips" class="section"><h2>Командировки</h2><div id="tripsTable"></div></section>
-<section id="sick" class="section"><h2>Болеют</h2><div id="sickTable"></div></section>
+<section id="sick" class="section"><h2>Больничные</h2><div id="sickTable"></div></section>
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
 <section id="stats" class="section"><h2>Статистика</h2><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
 <section id="people" class="section"><div class="toolbar"><button class="primary" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleTable"></div></section>
@@ -72,8 +72,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.4.0';
-const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Отгул','Основной отпуск','Отпуск VBD','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
+const APP_VERSION='1.4.1';
+const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Отгул','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
 const PRIORITIES=['Низкий','Обычный','Высокий','Срочный'];
@@ -118,7 +118,7 @@ function renderToday(){
   ['Сотрудников',db.people.length],['Событий сегодня',ev.length],['Активных задач',due.length],['Просрочено',od.length]
  ].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
 
- const priority=['Выход на больничном','Выход в отпуске','Наряд','Командировка','Болен','Больна','Основной отпуск','Отпуск VBD','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
+ const priority=['Выход на больничном','Выход в отпуске','Наряд','Командировка','Болен','Больна','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
  const rows=db.people.map(p=>{
    const pe=ev.filter(e=>e.personId===p.id).sort((a,b)=>{
      const ai=priority.indexOf(a.type),bi=priority.indexOf(b.type);
@@ -142,7 +142,7 @@ function renderEvents(){
  document.getElementById('eventsTable').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
 }
 function renderCategoryViews(){
- const cats={exits:['Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске'],leave:['Основной отпуск','Отпуск VBD','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Болен','Больна']};
+ const cats={exits:['Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске'],leave:['Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Болен','Больна']};
  for(const [id,types] of Object.entries(cats)){const list=db.events.filter(e=>types.includes(e.type));document.getElementById(id+'Table').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list))}
 }
 function taskTable(list){return table(['Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
