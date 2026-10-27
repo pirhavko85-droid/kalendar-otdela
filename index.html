@@ -97,13 +97,17 @@ function normalizeDisplayData(x){
  const roleMap={
   'Заместитель начальника отдела':'ЗНО','Начальник группы':'НГ','Руководитель отдела':'ГЭ',
   'Владелец/идеолог дашборда':'ГЭ','Старший офицер':'СО','Оператор доски':'Ст. советник','Сотрудник':'Советник',
+  'NG':'НГ','GE':'ГЭ','SO':'СО','ST. советник':'Ст. советник','советник':'Советник',
   'ЗНО':'ЗНО','НГ':'НГ','ГЭ':'ГЭ','СО':'СО','Ст. советник':'Ст. советник','Советник':'Советник'
  };
+ const initials={'КДВ':'К','АВВ':'А','ХПН':'Х','ПРВ':'П','САЕ':'С','ГЮК':'Г','СЕВ':'С'};
  x.people=(x.people||[]).map(p=>{
    const source=(p.full||p.short||'').trim();
    const parts=source.split(/\s+/);
    const looksFull=parts.length>=2 && !source.includes('.');
-   const short=looksFull?(parts[1]+' '+(parts[0]?.[0]||'')+'.'):(p.short||source);
+   const first=looksFull?parts[1]:(parts[0]||'');
+   const initial=initials[p.id]||(looksFull?(parts[0]?.[0]||''):'');
+   const short=(first&&initial)?(first+' '+initial+'.'):(p.short||source);
    return {...p,short,full:short,role:roleMap[p.role]||p.role};
  }).sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
  x.events=(x.events||[]).map(e=>{
