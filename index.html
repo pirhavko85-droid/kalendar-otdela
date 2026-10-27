@@ -56,7 +56,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
 <section id="stats" class="section"><h2>Статистика</h2><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
 <section id="people" class="section"><div class="toolbar"><button class="primary" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleTable"></div></section>
-<section id="data" class="section"><h2>Импорт / экспорт</h2><div class="card"><p>Персональные данные не хранятся в GitHub. Они находятся только в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div><p class="muted">Следующий этап — защищённая синхронизация с Google Sheets без публикации таблицы.</p></div></section>
+<section id="data" class="section"><h2>Импорт / экспорт</h2>
+<div class="card"><h3>Локальные данные</h3><p>Персональные данные не хранятся в открытом виде в GitHub. Рабочая копия находится в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div></div>
+<div class="card" style="margin-top:12px"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><button id="setupSyncBtn">Включить безопасную синхронизацию</button><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Синхронизация ещё не настроена.</p></div>
+</section>
 </main>
 </div>
 
@@ -144,6 +147,41 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.quer
 ;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
 document.getElementById('prevMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar()};
 document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-backup.json';a.click();URL.revokeObjectURL(a.href)}
+const SYNC_PRIV='kalendarOtdelaSyncPrivateJwkV1';
+function b64ToBytes(s){const b=atob(s.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+async function setupSecureSync(){
+ if(!window.crypto?.subtle)return alert('Этот браузер не поддерживает защищённую синхронизацию.');
+ const kp=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
+ const priv=await crypto.subtle.exportKey('jwk',kp.privateKey);
+ const pub=await crypto.subtle.exportKey('jwk',kp.publicKey);
+ localStorage.setItem(SYNC_PRIV,JSON.stringify(priv));
+ const blob=new Blob([JSON.stringify(pub,null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-public-key.json';a.click();URL.revokeObjectURL(a.href);
+ document.getElementById('syncStatus').textContent='Ключ создан. Передайте скачанный файл публичного ключа в ChatGPT; приватный ключ остался только на этом устройстве.';
+}
+async function syncEncrypted(){
+ const status=document.getElementById('syncStatus');
+ const privRaw=localStorage.getItem(SYNC_PRIV);
+ if(!privRaw){status.textContent='Сначала включите безопасную синхронизацию.';return}
+ try{
+  status.textContent='Проверяю обновление…';
+  const r=await fetch('./data.enc.json?ts='+Date.now(),{cache:'no-store'});
+  if(!r.ok){status.textContent='Зашифрованный снимок ещё не опубликован.';return}
+  const env=await r.json();
+  const priv=await crypto.subtle.importKey('jwk',JSON.parse(privRaw),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+  const aesRaw=await crypto.subtle.decrypt({name:'RSA-OAEP'},priv,b64ToBytes(env.key));
+  const aes=await crypto.subtle.importKey('raw',aesRaw,{name:'AES-GCM'},false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBytes(env.iv)},aes,b64ToBytes(env.data));
+  const x=JSON.parse(new TextDecoder().decode(plain));
+  if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
+  db=x;save();
+  status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU');
+ }catch(e){status.textContent='Не удалось обновить данные. Проверьте ключ или опубликованный снимок.'}
+}
+document.getElementById('setupSyncBtn').onclick=setupSecureSync;
+document.getElementById('syncNowBtn').onclick=syncEncrypted;
+if(localStorage.getItem(SYNC_PRIV)){document.getElementById('syncStatus').textContent='Безопасная синхронизация настроена на этом устройстве.';setTimeout(syncEncrypted,600)}
+
 document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=x;save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
 document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
 document.getElementById('sampleBtn').onclick=()=>{db={people:[{id:'p1',short:'Сотрудник 1',full:'Демонстрационный сотрудник',role:'Сотрудник',category:'Другое'}],events:[{id:'e1',personId:'p1',type:'Командировка',start:todayISO(),end:'',days:'',status:'Продолжается',comment:'Демо-событие'}],tasks:[{id:'t1',personId:'p1',title:'Проверить работу приложения',description:'Демонстрационная задача',created:todayISO(),deadline:todayISO(),priority:'Высокий',status:'В работе',author:'Администратор',comment:''}]};save()}
