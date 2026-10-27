@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.2</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.3</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -72,7 +72,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.4.2';
+const APP_VERSION='1.4.3';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Отгул','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -114,7 +114,7 @@ function normalizeDisplayData(x){
  });
  return x;
 }
-let db=normalizeDisplayData(load());
+let db=normalizeDisplayData(load());localStorage.setItem(KEY,JSON.stringify(db));
 let calDate=new Date(); calDate.setDate(1);
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{people:[],events:[],tasks:[]}}catch(e){return{people:[],events:[],tasks:[]}}}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
@@ -124,7 +124,7 @@ function fmt(d){if(!d)return'';const x=new Date(d+'T00:00:00');return x.toLocale
 function todayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function person(id){return db.people.find(x=>x.id===id)}
 function effectiveEventStatus(e,date=todayISO()){return e.status==='План'&&e.start&&e.start<=date?'Факт':e.status}
-function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=e.end||((st==='Продолжается')?date:e.start);return e.start<=date && end>=date && st!=='Замена'}
+function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?date:(e.end||e.start));return e.start<=date && end>=date && st!=='Замена'}
 function overdue(t){return t.deadline && t.deadline<todayISO()&&!['Выполнена','Отменена'].includes(t.status)}
 function fillSelect(id,arr,placeholder){const el=document.getElementById(id);el.innerHTML=(placeholder?'<option value="">'+placeholder+'</option>':'')+arr.map(x=>'<option>'+esc(x)+'</option>').join('')}
 function fillPeopleSelect(id,placeholder='Выберите сотрудника'){const el=document.getElementById(id);el.innerHTML='<option value="">'+placeholder+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+esc(p.short||p.full)+'</option>').join('')}
