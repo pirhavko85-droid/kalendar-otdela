@@ -23,10 +23,10 @@ main{padding:18px;max-width:1500px;width:100%;margin:auto}.section{display:none}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#eef3f8;color:#44515e;position:sticky;top:52px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#e8eef6}.pill.red{background:#fde7e4;color:#a1271d}.pill.green{background:#e2f4e8;color:#196d3c}.pill.amber{background:#fff2d8;color:#8a5a00}.overdue{background:#fff3f2}.completed{background:#f1fbf4}.muted{color:var(--muted)}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.form-grid .full{grid-column:1/-1}.form-grid textarea{min-height:80px}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.open{display:flex}.modal-box{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head button{border:0;background:transparent;font-size:24px;cursor:pointer}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day .n{font-weight:800;margin-bottom:5px}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day.nonwork{background:#fff0f0;border-color:#f1caca}.day .n{font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.day .dow{font-size:11px;color:var(--muted);font-weight:700}.day .holiday{font-size:10px;color:#a33b3b;margin:0 0 5px;line-height:1.2}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty{padding:30px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
-@media(max-width:900px){.layout{display:block}nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}nav button{min-width:max-content;width:auto;padding:8px 10px}main{padding:12px 12px 72px}.grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}th{top:52px}.calendar{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.metric{font-size:24px}table{display:block;overflow:auto}.calendar{grid-template-columns:1fr}}
+@media(max-width:900px){.layout{display:block}nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}nav button{min-width:max-content;width:auto;padding:8px 10px}main{padding:12px 12px 86px}.grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}th{position:static;top:auto}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.section>div[id$="Table"],#todayEvents,#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}.section table,#todayEvents table,#todayTasks table{min-width:640px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.day{min-height:92px;padding:8px}.day .n{font-size:14px}.section table,#todayEvents table,#todayTasks table{min-width:600px}}
 </style>
 </head>
 <body>
@@ -76,6 +76,20 @@ const EVENT_TYPES=['Наряд','Выход в выходной/празднич
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
 const PRIORITIES=['Низкий','Обычный','Высокий','Срочный'];
+const PROD_NONWORK_2026={
+ '2026-01-01':'Новогодние каникулы','2026-01-02':'Новогодние каникулы','2026-01-03':'Новогодние каникулы','2026-01-04':'Новогодние каникулы','2026-01-05':'Новогодние каникулы','2026-01-06':'Новогодние каникулы','2026-01-07':'Рождество Христово','2026-01-08':'Новогодние каникулы','2026-01-09':'Перенесённый выходной',
+ '2026-02-23':'День защитника Отечества',
+ '2026-03-08':'Международный женский день','2026-03-09':'Перенесённый выходной',
+ '2026-05-01':'Праздник Весны и Труда','2026-05-09':'День Победы','2026-05-11':'Перенесённый выходной',
+ '2026-06-12':'День России',
+ '2026-11-04':'День народного единства',
+ '2026-12-31':'Перенесённый выходной'
+};
+const DOW_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+function productionDayInfo(date){
+ const x=new Date(date+'T00:00:00'), weekend=x.getDay()===0||x.getDay()===6, special=PROD_NONWORK_2026[date]||'';
+ return {dow:DOW_SHORT[x.getDay()],nonwork:weekend||!!special,label:special||(weekend?'Выходной':'')};
+}
 const KEY='kalendarOtdelaDataV1';
 let db=load();
 let calDate=new Date(); calDate.setDate(1);
@@ -131,7 +145,11 @@ function renderCalendar(){
  const y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById('monthTitle').textContent=calDate.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
  const first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();let html='';
  for(let i=0;i<first;i++)html+='<div></div>';
- for(let d=1;d<=days;d++){const date=[y,String(m+1).padStart(2,'0'),String(d).padStart(2,'0')].join('-');const ev=db.events.filter(e=>activeEvent(e,date));html+='<div class="day"><div class="n">'+d+'</div>'+ev.map(e=>'<span class="event-chip">'+esc(person(e.personId)?.short||'')+' • '+esc(e.type)+'</span>').join('')+'</div>'}
+ for(let d=1;d<=days;d++){
+  const date=[y,String(m+1).padStart(2,'0'),String(d).padStart(2,'0')].join('-');
+  const info=productionDayInfo(date),ev=db.events.filter(e=>activeEvent(e,date));
+  html+='<div class="day '+(info.nonwork?'nonwork':'')+'"><div class="n"><span>'+d+'</span><span class="dow">'+info.dow+'</span></div>'+(info.label?'<div class="holiday">'+esc(info.label)+'</div>':'')+ev.map(e=>'<span class="event-chip">'+esc(person(e.personId)?.short||'')+' • '+esc(e.type)+'</span>').join('')+'</div>'
+ }
  document.getElementById('calendarGrid').innerHTML=html;
 }
 function openEventModal(){document.getElementById('evStart').value=todayISO();document.getElementById('eventModal').classList.add('open')}
