@@ -23,14 +23,14 @@ main{padding:18px;max-width:1500px;width:100%;margin:auto}.section{display:none}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#eef3f8;color:#44515e;position:sticky;top:52px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#e8eef6}.pill.red{background:#fde7e4;color:#a1271d}.pill.green{background:#e2f4e8;color:#196d3c}.pill.amber{background:#fff2d8;color:#8a5a00}.overdue{background:#fff3f2}.completed{background:#f1fbf4}.muted{color:var(--muted)}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.form-grid .full{grid-column:1/-1}.form-grid textarea{min-height:80px}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.open{display:flex}.modal-box{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head button{border:0;background:transparent;font-size:24px;cursor:pointer}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day.nonwork{background:#fff0f0;border-color:#f1caca}.day .n{font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.day .dow{font-size:11px;color:var(--muted);font-weight:700}.day .holiday{font-size:10px;color:#a33b3b;margin:0 0 5px;line-height:1.2}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day.nonwork{background:#ffdede!important;border-color:#e7aaaa!important}.day .n{font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.day .dow{font-size:11px;color:var(--muted);font-weight:700}.day .holiday{font-size:10px;color:#a33b3b;margin:0 0 5px;line-height:1.2}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty{padding:30px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
 @media(max-width:900px){.layout{display:block}nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}nav button{min-width:max-content;width:auto;padding:8px 10px}main{padding:12px 12px 86px}.grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}th{position:static;top:auto}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.section>div[id$="Table"],#todayEvents,#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}.section table,#todayEvents table,#todayTasks table{min-width:640px}}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.day{min-height:92px;padding:8px}.day .n{font-size:14px}.section table,#todayEvents table,#todayTasks table{min-width:600px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • без публикации персональных сведений</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.3.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -72,6 +72,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
+const APP_VERSION='1.3.1';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход во время больничного','Командировка','Больничный','Отгул','Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
