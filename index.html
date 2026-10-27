@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.1</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.4.2</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -72,7 +72,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.4.2';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Отгул','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -94,26 +94,21 @@ function productionDayInfo(date){
 const KEY='kalendarOtdelaDataV1';
 function normalizeDisplayData(x){
  const order=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
- const roleMap={
-  'Заместитель начальника отдела':'ЗНО','Начальник группы':'НГ','Руководитель отдела':'ГЭ',
-  'Владелец/идеолог дашборда':'ГЭ','Старший офицер':'СО','Оператор доски':'Ст. советник','Сотрудник':'Советник',
-  'NG':'НГ','GE':'ГЭ','SO':'СО','ST. советник':'Ст. советник','советник':'Советник',
-  'ЗНО':'ЗНО','НГ':'НГ','ГЭ':'ГЭ','СО':'СО','Ст. советник':'Ст. советник','Советник':'Советник'
+ const meta={
+  'КДВ':{short:'Денис К.',full:'Денис К.',role:'ЗНО'},
+  'АВВ':{short:'Василий А.',full:'Василий А.',role:'НГ'},
+  'ХПН':{short:'Павел Х.',full:'Павел Х.',role:'ГЭ'},
+  'ПРВ':{short:'Роман П.',full:'Роман П.',role:'ГЭ'},
+  'САЕ':{short:'Александр С.',full:'Александр С.',role:'СО'},
+  'ГЮК':{short:'Юлия Г.',full:'Юлия Г.',role:'Ст. советник'},
+  'СЕВ':{short:'Екатерина С.',full:'Екатерина С.',role:'Советник'}
  };
- const initials={'КДВ':'К','АВВ':'А','ХПН':'Х','ПРВ':'П','САЕ':'С','ГЮК':'Г','СЕВ':'С'};
- x.people=(x.people||[]).map(p=>{
-   const source=(p.full||p.short||'').trim();
-   const parts=source.split(/\s+/);
-   const looksFull=parts.length>=2 && !source.includes('.');
-   const first=looksFull?parts[1]:(parts[0]||'');
-   const initial=initials[p.id]||(looksFull?(parts[0]?.[0]||''):'');
-   const short=(first&&initial)?(first+' '+initial+'.'):(p.short||source);
-   return {...p,short,full:short,role:roleMap[p.role]||p.role};
- }).sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+ x.people=(x.people||[]).map(p=>Object.assign({},p,meta[p.id]||{}))
+   .sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
  x.events=(x.events||[]).map(e=>{
-   const y={...e};
+   const y=Object.assign({},e);
    if(y.type==='Больничный')y.type=(y.personId==='ГЮК'||y.personId==='СЕВ')?'Больна':'Болен';
-   if(['Боевой отпуск','Ветеранский отпуск','Отпуск VBD'].includes(y.type))y.type='Отпуск ВБД';
+   if(['Боевой отпуск','Ветеранский отпуск','Отпуск VBD','Отпуск ВБД'].includes(y.type))y.type='Отпуск ВБД';
    if(y.type==='Выход во время больничного')y.type='Выход на больничном';
    return y;
  });
@@ -180,7 +175,11 @@ function renderTasks(){
 }
 function renderPeople(){document.getElementById('peopleTable').innerHTML=table(['Имя','Должность','Категория',''],db.people.map(p=>'<tr><td><b>'+esc(p.short||p.full)+'</b></td><td>'+esc(p.role||'')+'</td><td>'+esc(p.category||'')+'</td><td><button onclick="delPerson(\''+p.id+'\')">Удалить</button></td></tr>'))}
 function renderStats(){
- const counts={};EVENT_TYPES.forEach(x=>counts[x]=0);db.events.forEach(e=>counts[e.type]=(counts[e.type]||0)+1);
+ const counts={};
+ db.events.forEach(e=>{
+  const k=(e.type==='Болен'||e.type==='Больна'||e.type==='Больничный')?'Болеет':(e.type==='Боевой отпуск'||e.type==='Ветеранский отпуск'||e.type==='Отпуск VBD'?'Отпуск ВБД':e.type);
+  counts[k]=(counts[k]||0)+1;
+ });
  document.getElementById('statsGrid').innerHTML=[['Всего событий',db.events.length],['Всего задач',db.tasks.length],['Выполнено задач',db.tasks.filter(t=>t.status==='Выполнена').length],['Просрочено',db.tasks.filter(overdue).length]].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
  document.getElementById('statsTable').innerHTML=table(['Тип события','Количество'],Object.entries(counts).filter(x=>x[1]).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+v+'</td></tr>'));
 }
@@ -243,7 +242,7 @@ document.getElementById('sharedKeyFile').onchange=async e=>{
 document.getElementById('syncNowBtn').onclick=syncEncrypted;
 if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(syncEncrypted,600)}
 
-document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=x;save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
+document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=normalizeDisplayData(x);save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
 document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
 document.getElementById('sampleBtn').onclick=()=>{db={people:[{id:'p1',short:'Сотрудник 1',full:'Демонстрационный сотрудник',role:'Сотрудник',category:'Другое'}],events:[{id:'e1',personId:'p1',type:'Командировка',start:todayISO(),end:'',days:'',status:'Продолжается',comment:'Демо-событие'}],tasks:[{id:'t1',personId:'p1',title:'Проверить работу приложения',description:'Демонстрационная задача',created:todayISO(),deadline:todayISO(),priority:'Высокий',status:'В работе',author:'Администратор',comment:''}]};save()}
 setupStatic();renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
