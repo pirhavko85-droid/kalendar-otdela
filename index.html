@@ -36,6 +36,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <button data-page="today" class="active">Сегодня / Кто где</button>
 <button data-page="calendar">Календарь</button>
 <button data-page="events">События</button>
+<button data-page="exits">Выходы</button>
 <button data-page="leave">Отпуска</button>
 <button data-page="duty">Наряды</button>
 <button data-page="trips">Командировки</button>
@@ -49,6 +50,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar"><button id="prevMonth">←</button><strong id="monthTitle"></strong><button id="nextMonth">→</button></div><div id="calendarGrid" class="calendar"></div></section>
 <section id="events" class="section"><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Событие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
+<section id="exits" class="section"><h2>Выходы</h2><p class="muted">Выходы в выходные/праздничные дни и выходы на службу во время больничного.</p><div id="exitsTable"></div></section>
 <section id="leave" class="section"><h2>Отпуска</h2><div id="leaveTable"></div></section>
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyTable"></div></section>
 <section id="trips" class="section"><h2>Командировки</h2><div id="tripsTable"></div></section>
@@ -70,7 +72,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Командировка','Больничный','Отгул','Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
+const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход во время больничного','Командировка','Больничный','Отгул','Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
 const PRIORITIES=['Низкий','Обычный','Высокий','Срочный'];
@@ -110,7 +112,7 @@ function renderEvents(){
  document.getElementById('eventsTable').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
 }
 function renderCategoryViews(){
- const cats={leave:['Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Больничный']};
+ const cats={exits:['Выход в выходной/праздничный день','Выход во время больничного'],leave:['Основной отпуск','Боевой отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Больничный']};
  for(const [id,types] of Object.entries(cats)){const list=db.events.filter(e=>types.includes(e.type));document.getElementById(id+'Table').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list))}
 }
 function taskTable(list){return table(['Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
