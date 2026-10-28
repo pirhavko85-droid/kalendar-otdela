@@ -35,7 +35,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .today-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric-label-mobile{display:none}.mobile-meeting-card{display:none}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .year-chart{display:grid;gap:8px}.year-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}.year-label{font-weight:700;font-size:12px;color:#44515e}.year-track{position:relative;min-height:38px;background:linear-gradient(90deg,#f6f8fb 0,#fff 100%);border:1px solid var(--line);border-radius:9px;overflow:hidden}.year-block{position:absolute;top:4px;bottom:4px;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 4px #0002}.leave-vbd{background:#f5a3a3;color:#681313}.leave-summer{background:#a9ddb9;color:#174b27}.leave-main{background:#ffe49a;color:#644b00}.leave-family{background:#a9c9f5;color:#173d70}.leave-other{background:#d9c8f0;color:#4f3570}
-.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.events-head h2{margin:0}.events-search{margin-bottom:8px}.events-search input{width:100%}
+.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trip-chip{background:#eef5ff;color:#244e7a;border:1px solid #d5e4f7}.trip-chips{background:#fff}.desktop-exits{display:block}.mobile-exits{display:none}.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.events-head h2{margin:0}.events-search{margin-bottom:8px}.events-search input{width:100%}
 .event-section{margin-top:10px}.event-section-title{font-size:13px;font-weight:800;margin:0 0 5px;color:#25364a}.event-today .event-section-title{color:#185f38}
 .event-day-group{background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:6px;overflow:hidden}.event-day-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#f7f9fc;border-bottom:1px solid var(--line);font-size:10.5px}.event-day-head span{color:var(--muted);font-weight:700}
 .event-day-items{display:grid}.event-compact-card{display:grid;grid-template-columns:48px 1fr;gap:7px;align-items:center;padding:6px 8px;border-top:1px solid #edf0f3}.event-compact-card:first-child{border-top:0}.event-time{font-size:11px;font-weight:800;color:#173d70}.event-main{display:grid;gap:1px;min-width:0}.event-main b{font-size:11px;line-height:1.15}.event-main span{font-size:9.5px;color:var(--muted)}
@@ -143,11 +143,6 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #tripsChart .mobile-month-card{background:#f7f9fc;border-color:#e1e6ed;color:#243447}
 #tripsChart .mobile-month-card span{color:#4f5d6b}
 @media(max-width:900px){
- #tripsChart .trip-empty-month{display:none}
- #tripsChart .year-chart{gap:4px}
- #tripsChart .year-row{grid-template-columns:64px 1fr}
- #tripsChart .year-label{padding-top:6px}
- #tripsChart .mobile-month-card{padding:4px 6px;margin:1px 0}
  .trip-list-toggle{margin-top:8px}
 }
 #sickChart .mobile-month-card{background:#fff;border-color:#e1e6ed;color:#243447}
@@ -259,7 +254,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.8</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.9</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -311,7 +306,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.8';
+const APP_VERSION='1.9.9';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -599,7 +594,7 @@ function renderExitsView(list){
 function renderCategoryViews(){
  const cats={exits:['Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске'],leave:['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],duty:['Наряд'],trips:['Командировка'],sick:['Болен','Больна','Болезнь по уходу за ребёнком']};
  for(const [id,types] of Object.entries(cats)){const list=db.events.filter(e=>types.includes(e.type));document.getElementById(id+'Table').innerHTML=id==='exits'?renderExitsView(list):table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list))}
- renderLeaveChart();renderDutyChart();renderTimelineChart('tripsChart',['Командировка'],'trip');renderTimelineChart('sickChart',['Болен','Больна','Болезнь по уходу за ребёнком'],'sick');
+ renderLeaveChart();renderDutyChart();renderTripChart();renderTimelineChart('sickChart',['Болен','Больна','Болезнь по уходу за ребёнком'],'sick');
 }
 function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
 function eventVisualEnd(e){
@@ -699,6 +694,23 @@ function renderTripCompactList(){
   const d=eventDisplayDays(e),days=(d!==''&&d!=null)?d+' '+dayWord(Number(d)):'—';
   return '<div class="trip-compact-card" title="'+esc((e.comment||'')+' '+st)+'"><span class="trip-compact-name">'+esc(who)+'</span><span class="trip-compact-dates">'+esc(dates)+'</span><span class="trip-compact-days">'+esc(days)+'</span></div>';
  }).join('');
+}
+function renderTripChart(){
+ const months=Array.from({length:12},(_,m)=>({m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
+ const trips=db.events.filter(e=>e.type==='Командировка');
+ document.getElementById('tripsChart').innerHTML=months.map(mm=>{
+  const list=trips.filter(e=>new Date(e.start+'T00:00:00').getFullYear()===2026&&new Date(e.start+'T00:00:00').getMonth()===mm.m)
+   .sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+  return '<div class="duty-row trip-row"><div class="duty-month">'+esc(mm.label)+'</div><div class="duty-chips trip-chips">'+(list.length?list.map(e=>{
+   const st=effectiveEventStatus(e);
+   const start=fmtShort(e.start);
+   const end=st==='Продолжается'?'по наст. вр.':fmtShort(e.end||e.start);
+   const period=(e.end||st==='Продолжается')?(start+'–'+end):start;
+   const label=period+' • '+(person(e.personId)?.short||'');
+   return '<span class="duty-chip trip-chip" title="'+esc((e.comment||'')+' '+st)+'">'+esc(label)+'</span>';
+  }).join(''):'<span class="muted">—</span>')+'</div></div>';
+ }).join('');
+ renderTripCompactList();
 }
 function renderSickCompactList(){
  const types=['Болен','Больна','Болезнь по уходу за ребёнком'];
