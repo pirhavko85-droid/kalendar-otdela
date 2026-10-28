@@ -99,7 +99,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .duty-list-toggle summary{padding:7px 9px;font-size:11px}
  #dutyCompactList{grid-template-columns:1fr;gap:3px;padding:5px}
  .duty-compact-card{min-height:31px;padding:4px 6px}
-}.stats-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.stats-tabs button{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:9px;cursor:pointer}.stats-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}.rank-row{display:grid;grid-template-columns:34px minmax(130px,1fr) 100px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--line)}.rank-row:last-child{border-bottom:0}.person-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.person-buttons button{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:9px;cursor:pointer}.person-buttons button.active{background:#e7eef8;border-color:#9eb9df}.splitbar{height:16px;border-radius:999px;overflow:hidden;background:#eef2f6;display:flex;margin:8px 0}.splitbar span{height:100%}.split-self{background:#f4b7b7}.split-child{background:#b9d7ff}.leave-meter{display:grid;grid-template-columns:1fr 1fr;gap:10px}.leave-meter .card{padding:12px}
+}.stats-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.stats-head h2{margin:0}.stats-period{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 9px;font:inherit}
+.stats-tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin:8px 0 7px;padding-bottom:1px}.stats-tabs::-webkit-scrollbar{display:none}.stats-tabs button{border:1px solid var(--line);background:#fff;padding:7px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;font-size:11px}.stats-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.stats-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.stats-kpi{padding:9px 10px}.stats-kpi h3{font-size:10px;margin-bottom:3px}.stats-kpi .metric{font-size:20px}.stats-detail{margin-top:7px}.stats-more{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.stats-more summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;list-style:none;padding:8px 9px;font-size:10.5px;font-weight:800}.stats-more summary::-webkit-details-marker{display:none}.stats-more[open] summary{background:#eef3f8}.stats-more[open] summary .muted{font-size:0}.stats-more[open] summary .muted:after{content:'Скрыть';font-size:9px}.stats-more-body{padding:5px}
+.stats-rank-list{display:grid;gap:3px}.stats-rank-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe;font-size:10px}.stats-rank-num{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#e8eef6;font-size:8px;font-weight:800}.stats-rank-row strong{font-size:9.5px;white-space:nowrap}.stats-person-select{margin:0 0 6px}.stats-person-select select{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 8px;font:inherit}.stats-person-summary{display:grid;gap:5px}.stats-inline{display:flex;justify-content:space-between;gap:8px;padding:6px 7px;border:1px solid var(--line);border-radius:8px;background:#fbfcfe;font-size:9.5px}
 .year-mobile-list{display:none}
 .mobile-month-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 8px;margin:3px 0;font-size:11px;line-height:1.2;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
 .mobile-month-card b{display:inline;margin:0;font-size:11px}
@@ -251,10 +254,30 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #todayEvents .pill{font-size:8.5px;padding:1px 5px}
 #todayTasks .empty-compact{min-height:32px;display:flex;align-items:center;padding:5px 7px;font-size:9.8px}
 .grid.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
+
+@media(max-width:520px){
+ #stats{overflow:hidden}
+ .stats-head h2{font-size:25px;line-height:1.05}
+ .stats-period{font-size:10px;padding:5px 7px}
+ .stats-tabs{gap:3px;margin:6px 0 5px}
+ .stats-tabs button{font-size:9px;padding:5px 6px}
+ .stats-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ .stats-kpi{min-height:52px;padding:6px 7px;border-radius:10px}
+ .stats-kpi h3{font-size:8.5px;line-height:1.05}
+ .stats-kpi .metric{font-size:17px}
+ .stats-detail{margin-top:5px}
+ .stats-more summary{padding:6px 7px;font-size:9.5px}
+ .stats-more-body{padding:4px}
+ .stats-rank-row{padding:4px 5px;font-size:9px}
+ .stats-rank-row strong{font-size:9px}
+ .stats-person-select{margin-bottom:4px}
+ .stats-person-select select{font-size:9.5px;padding:5px 6px}
+ .stats-inline{padding:5px 6px;font-size:8.8px}
+}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.9</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.10.0</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -290,7 +313,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><details class="sick-list-toggle"><summary><span>История больничных</span><span class="muted">Показать</span></summary><div id="sickCompactList"></div></details><div id="sickTable" style="display:none"></div></section>
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
-<section id="stats" class="section"><h2>Статистика</h2><div class="toolbar"><select id="statsPeriod"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
+<section id="stats" class="section"><div class="stats-head"><h2>Статистика</h2><select id="statsPeriod" class="stats-period"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid stats-kpi-grid"></div><div id="statsTable" class="stats-detail"></div></section>
 <section id="people" class="section"><div class="people-head"><h2>Сотрудники отдела по старшинству</h2><button class="primary people-add" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleSeniorNow"></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
 <div class="card"><h3>Локальные данные</h3><p>Персональные данные не хранятся в открытом виде в GitHub. Рабочая копия находится в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div></div>
@@ -306,7 +329,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.9';
+const APP_VERSION='1.10.0';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -871,44 +894,89 @@ function eventDaysForStats(e,bounds){
 }
 function sumType(personId,types,bounds){return db.events.filter(e=>e.personId===personId&&types.includes(e.type)).reduce((a,e)=>a+eventDaysForStats(e,bounds),0)}
 function statRank(types,bounds){return db.people.map(p=>({p,days:sumType(p.id,types,bounds)})).sort((a,b)=>b.days-a.days)}
-function rankHtml(types,bounds,suffix='дн.'){return '<div class="card">'+statRank(types,bounds).map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.days+' '+suffix+'</b></div>').join('')+'</div>'}
+function rankRowsHtml(rows,suffix='дн.'){return '<div class="stats-rank-list">'+rows.map((x,i)=>'<div class="stats-rank-row"><span class="stats-rank-num">'+(i+1)+'</span><b>'+esc(x.p.short)+'</b><strong>'+x.days+' '+suffix+'</strong></div>').join('')+'</div>'}
+function rankHtml(types,bounds,suffix='дн.'){return rankRowsHtml(statRank(types,bounds),suffix)}
+function statsKpis(items){return items.map(([a,b])=>'<div class="card stats-kpi"><h3>'+esc(a)+'</h3><div class="metric">'+esc(b)+'</div></div>').join('')}
+function statsDetails(title,html){return '<details class="stats-more"><summary><span>'+esc(title)+'</span><span class="muted">Показать</span></summary><div class="stats-more-body">'+html+'</div></details>'}
 function renderStats(){
  const tabs=[['employees','Сотрудники'],['sick','Болезни'],['overtime','Переработка'],['trips','Командировки'],['leave','Отпуска'],['duty','Наряды']];
  document.getElementById('statsTabs').innerHTML=tabs.map(([id,name])=>'<button class="'+(statsTab===id?'active':'')+'" onclick="statsTab=\''+id+'\';renderStats()">'+name+'</button>').join('');
  const bounds=statsBounds(),grid=document.getElementById('statsGrid'),out=document.getElementById('statsTable');
- grid.innerHTML='';
- const sick=['Болен','Больна','Болезнь по уходу за ребёнком'],overtime=['Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске'];
+ grid.innerHTML='';out.innerHTML='';
+ const sick=['Болен','Больна','Болезнь по уходу за ребёнком'];
+ const overtime=['Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске'];
+
  if(statsTab==='employees'){
-  document.getElementById('statsTabs').insertAdjacentHTML('afterend','');
-  const buttons='<div class="person-buttons">'+db.people.map(p=>'<button class="'+(statsPersonId===p.id?'active':'')+'" onclick="statsPersonId=\''+p.id+'\';renderStats()">'+esc(p.short)+'</button>').join('')+'</div>';
   const p=person(statsPersonId)||db.people[0];statsPersonId=p?.id||'';
+  if(!p){out.innerHTML='<div class="empty">Нет сотрудников</div>';return}
   const s=sumType(p.id,sick,bounds),ot=sumType(p.id,overtime,bounds),tr=sumType(p.id,['Командировка'],bounds),to=sumType(p.id,['Отгул'],bounds);
   const duties=db.events.filter(e=>e.personId===p.id&&e.type==='Наряд'&&effectiveEventStatus(e)!=='Замена'&&effectiveEventStatus(e)!=='План'&&eventDaysForStats(e,bounds)>0).length;
-  grid.innerHTML=[['Болезнь',s+' дн.'],['Переработка',ot+' дн.'],['Командировки',tr+' дн.'],['Отгулы',to+' дн.'],['Наряды',duties]].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');
+  grid.innerHTML=statsKpis([['Болезнь',s+' дн.'],['Переработка',ot+' дн.'],['Командировки',tr+' дн.'],['Отгулы',to+' дн.'],['Наряды',String(duties)]]);
+  const selector='<div class="stats-person-select"><select onchange="statsPersonId=this.value;renderStats()">'+db.people.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===p.id?'selected':'')+'>'+esc(x.short)+'</option>').join('')+'</select></div>';
   const self=sumType(p.id,['Болен','Больна'],bounds),child=sumType(p.id,['Болезнь по уходу за ребёнком'],bounds),total=self+child;
-  let detail=buttons+'<div class="card"><h3>'+esc(p.short)+' — детализация</h3>';
-  if((p.id==='ГЮК'||p.id==='СЕВ')&&total){detail+='<div>Болела сама: <b>'+self+' дн.</b> · По уходу за ребёнком: <b>'+child+' дн.</b></div><div class="splitbar"><span class="split-self" style="width:'+(self/total*100)+'%"></span><span class="split-child" style="width:'+(child/total*100)+'%"></span></div>'}
   const isMil=p.category==='Военнослужащий',mainLimit=isMil?45:fgssLeaveLimit(p.id),vbdLimit=isMil?15:0;
   const annualTypes=['Основной отпуск','Летний отпуск'];
   const usedMain=db.events.filter(e=>e.personId===p.id&&annualTypes.includes(e.type)).reduce((a,e)=>a+leaveDaysForBalance(e,bounds),0);
   const usedVbd=sumType(p.id,['Отпуск ВБД'],bounds),used=usedMain+usedVbd,totalLimit=mainLimit+vbdLimit;
-  detail+='<div class="leave-meter"><div class="card"><h3>Основной отпуск</h3><b>'+usedMain+' / '+mainLimit+' дн.</b><div class="muted">Осталось '+Math.max(0,mainLimit-usedMain)+' дн.</div></div>';
-  if(isMil)detail+='<div class="card"><h3>Отпуск ВБД</h3><b>'+usedVbd+' / '+vbdLimit+' дн.</b><div class="muted">Осталось '+Math.max(0,vbdLimit-usedVbd)+' дн.</div></div>';
-  detail+='</div><p><b>Всего отпусков:</b> использовано '+used+' из '+totalLimit+' дн.; осталось '+Math.max(0,totalLimit-used)+' дн.</p>';
-  if(!isMil)detail+='<p class="muted">Для ФГГС официальный праздничный день внутри отпуска даёт максимум +1 календарный день сверх нормы за один период отпуска; этот день остаток не уменьшает.</p>';
-  detail+='</div>';
-  out.innerHTML=detail;return;
+  let detail='<div class="stats-person-summary">';
+  if((p.id==='ГЮК'||p.id==='СЕВ')&&total)detail+='<div class="stats-inline"><span>Сама: <b>'+self+' дн.</b></span><span>Уход: <b>'+child+' дн.</b></span></div>';
+  detail+='<div class="stats-inline"><span>Основной: <b>'+usedMain+' / '+mainLimit+'</b></span>'+(isMil?'<span>ВБД: <b>'+usedVbd+' / '+vbdLimit+'</b></span>':'')+'</div>';
+  detail+='<div class="stats-inline"><span>Всего отпуска: <b>'+used+' / '+totalLimit+'</b></span><span>Осталось: <b>'+Math.max(0,totalLimit-used)+' дн.</b></span></div></div>';
+  out.innerHTML=selector+statsDetails('Подробнее по сотруднику',detail);
+  return;
  }
- if(statsTab==='sick'){grid.innerHTML=[['Всего дней болезни',statRank(sick,bounds).reduce((a,x)=>a+x.days,0)]].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');out.innerHTML=rankHtml(sick,bounds);return}
- if(statsTab==='overtime'){out.innerHTML=rankHtml(overtime,bounds);return}
- if(statsTab==='trips'){out.innerHTML=rankHtml(['Командировка'],bounds);return}
+
+ if(statsTab==='sick'){
+  const rows=statRank(sick,bounds),total=rows.reduce((a,x)=>a+x.days,0);
+  const self=db.people.reduce((a,p)=>a+sumType(p.id,['Болен','Больна'],bounds),0);
+  const child=db.people.reduce((a,p)=>a+sumType(p.id,['Болезнь по уходу за ребёнком'],bounds),0);
+  const now=db.people.filter(p=>{const x=peoplePresenceInfo(p);return x.label==='Болеет'||x.label==='По уходу за ребёнком'}).length;
+  grid.innerHTML=statsKpis([['Всего',total+' дн.'],['Обычный',self+' дн.'],['По уходу',child+' дн.'],['Сейчас',String(now)]]);
+  out.innerHTML=statsDetails('Рейтинг по сотрудникам',rankRowsHtml(rows));
+  return;
+ }
+
+ if(statsTab==='overtime'){
+  const rows=statRank(overtime,bounds),total=rows.reduce((a,x)=>a+x.days,0);
+  const wk=db.people.reduce((a,p)=>a+sumType(p.id,['Выход в выходной/праздничный день'],bounds),0);
+  const special=db.people.reduce((a,p)=>a+sumType(p.id,['Выход на больничном','Выход в отпуске'],bounds),0);
+  const d=new Date(),mb={start:new Date(d.getFullYear(),d.getMonth(),1),end:new Date(d.getFullYear(),d.getMonth()+1,0),mode:'month'};
+  const month=db.people.reduce((a,p)=>a+sumType(p.id,overtime,mb),0);
+  grid.innerHTML=statsKpis([['Всего',total+' дн.'],['Выходные',wk+' дн.'],['Больнич./отпуск',special+' дн.'],['Этот месяц',month+' дн.']]);
+  out.innerHTML=statsDetails('Рейтинг по сотрудникам',rankRowsHtml(rows));
+  return;
+ }
+
+ if(statsTab==='trips'){
+  const rows=statRank(['Командировка'],bounds),total=rows.reduce((a,x)=>a+x.days,0);
+  const events=db.events.filter(e=>e.type==='Командировка'&&eventDaysForStats(e,bounds)>0&&effectiveEventStatus(e)!=='План');
+  const active=db.events.filter(e=>e.type==='Командировка'&&activeEvent(e,todayISO())).length;
+  const avg=events.length?Math.round((total/events.length)*10)/10:0;
+  grid.innerHTML=statsKpis([['Всего дней',String(total)],['Командировок',String(events.length)],['Сейчас',String(active)],['Средняя',avg+' дн.']]);
+  out.innerHTML=statsDetails('Рейтинг по сотрудникам',rankRowsHtml(rows));
+  return;
+ }
+
  if(statsTab==='leave'){
   const leaveTypes=['Основной отпуск','Летний отпуск','Отпуск ВБД'];
   const rows=db.people.map(p=>({p,days:db.events.filter(e=>e.personId===p.id&&leaveTypes.includes(e.type)).reduce((a,e)=>a+(p.category==='ФГГС'?leaveDaysForBalance(e,bounds):eventDaysForStats(e,bounds)),0)})).sort((a,b)=>b.days-a.days);
-  out.innerHTML='<div class="card">'+rows.map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.days+' дн.</b></div>').join('')+'</div>';return}
+  const total=rows.reduce((a,x)=>a+x.days,0);
+  const main=db.people.reduce((a,p)=>a+sumType(p.id,['Основной отпуск','Летний отпуск'],bounds),0);
+  const vbd=db.people.reduce((a,p)=>a+sumType(p.id,['Отпуск ВБД'],bounds),0);
+  const now=db.events.filter(e=>leaveTypes.includes(e.type)&&activeEvent(e,todayISO())).length;
+  grid.innerHTML=statsKpis([['Всего',total+' дн.'],['Основной',main+' дн.'],['ВБД',vbd+' дн.'],['Сейчас',String(now)]]);
+  out.innerHTML=statsDetails('Рейтинг по сотрудникам',rankRowsHtml(rows));
+  return;
+ }
+
  if(statsTab==='duty'){
   const rows=db.people.map(p=>({p,n:db.events.filter(e=>e.personId===p.id&&e.type==='Наряд'&&effectiveEventStatus(e)!=='Замена'&&effectiveEventStatus(e)!=='План'&&eventDaysForStats(e,bounds)>0).length})).sort((a,b)=>b.n-a.n);
-  out.innerHTML='<div class="card">'+rows.map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.n+' нар.</b></div>').join('')+'</div>';return;
+  const total=rows.reduce((a,x)=>a+x.n,0);
+  const repl=db.events.filter(e=>e.type==='Наряд'&&e.status==='Замена').length;
+  const upcoming=db.events.filter(e=>e.type==='Наряд'&&e.start>=todayISO()&&effectiveEventStatus(e)==='План').sort((a,b)=>a.start.localeCompare(b.start))[0];
+  grid.innerHTML=statsKpis([['Всего',String(total)],['Замены',String(repl)],['Ближайший',upcoming?fmtShortYear(upcoming.start):'—'],['У кого',upcoming?person(upcoming.personId)?.short||'—':'—']]);
+  out.innerHTML=statsDetails('Рейтинг по сотрудникам','<div class="stats-rank-list">'+rows.map((x,i)=>'<div class="stats-rank-row"><span class="stats-rank-num">'+(i+1)+'</span><b>'+esc(x.p.short)+'</b><strong>'+x.n+' нар.</strong></div>').join('')+'</div>');
+  return;
  }
 }
 function calendarDayHtml(dateStr,adjacent=false){
