@@ -40,6 +40,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .event-day-group{background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:6px;overflow:hidden}.event-day-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#f7f9fc;border-bottom:1px solid var(--line);font-size:10.5px}.event-day-head span{color:var(--muted);font-weight:700}
 .event-day-items{display:grid}.event-compact-card{display:grid;grid-template-columns:48px 1fr;gap:7px;align-items:center;padding:6px 8px;border-top:1px solid #edf0f3}.event-compact-card:first-child{border-top:0}.event-time{font-size:11px;font-weight:800;color:#173d70}.event-main{display:grid;gap:1px;min-width:0}.event-main b{font-size:11px;line-height:1.15}.event-main span{font-size:9.5px;color:var(--muted)}
 .event-empty{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:10px;color:var(--muted)}.event-history{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.event-history summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 9px;font-size:11px;font-weight:800}.event-history-body{padding:0 6px 6px}
+.people-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.people-head h2{margin:0}.people-add{padding:7px 9px}
+.senior-now{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eef9f1;border:1px solid #b8dfc2;border-radius:11px;padding:8px 10px;margin-bottom:6px}.senior-now span{font-size:10px;color:#557063;font-weight:700}.senior-now b{font-size:13px;color:#215f36}.senior-none{background:#f7f9fc;border-color:var(--line)}.senior-none b{color:#536273}
+.people-list{display:grid;gap:4px}.people-card{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:7px;align-items:center;min-height:45px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:#fff}.people-card.people-present{background:#f3faf5;border-color:#c8e3cf}.people-card.people-absent{background:#fafbfc;color:#667382}.people-card.people-current-senior{border-color:#82bf91;box-shadow:inset 3px 0 0 #82bf91}.people-rank{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e8eef6;font-size:10px;font-weight:800}.people-main{display:grid;gap:1px;min-width:0}.people-main b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.people-main span{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.people-state{display:flex;align-items:center;gap:5px;justify-content:flex-end;min-width:0}.people-state strong{font-size:9px;white-space:nowrap}.people-state em{font-style:normal;font-size:8px;font-weight:800;padding:2px 5px;border-radius:999px;background:#dff1e4;color:#215f36;white-space:nowrap}
+.people-manage{margin-top:7px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.people-manage summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 9px;font-size:10px;font-weight:800;list-style:none}.people-manage summary::-webkit-details-marker{display:none}.people-manage-list{display:grid;padding:5px;gap:3px}.people-manage-list>div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 5px;border-top:1px solid #edf0f3;font-size:9px}.people-manage-list button{font-size:8px;padding:3px 5px}
 .birthday-grid{display:grid;grid-template-columns:1fr;gap:5px}
 .birthday-line{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;white-space:nowrap;min-width:0;font-size:11px}
 .birthday-line.nearest{background:#fff9df;border-color:#ead58a}
@@ -200,7 +204,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.events-head{margin-bottom:5px}.events-head h2{font-size:25px;line-height:1.05}.events-head .primary{padding:6px 8px;font-size:10px}.events-search{margin-bottom:6px}.events-search input{padding:6px 8px;font-size:10px}.event-section{margin-top:7px}.event-section-title{font-size:11px;margin-bottom:3px}.event-day-group{margin-bottom:4px;border-radius:9px}.event-day-head{padding:4px 6px;font-size:9.5px}.event-compact-card{grid-template-columns:43px 1fr;padding:4px 6px;gap:5px}.event-time{font-size:10px}.event-main b{font-size:10px}.event-main span{font-size:8.5px}.event-history{margin-top:7px}.event-history summary{padding:6px 7px;font-size:10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
+@media(max-width:520px){.people-head{margin-bottom:5px}.people-head h2{font-size:20px;line-height:1.05}.people-add{font-size:9px;padding:5px 6px}.senior-now{padding:5px 7px;margin-bottom:4px;border-radius:9px}.senior-now span{font-size:8.5px}.senior-now b{font-size:10.5px}.people-list{gap:3px}.people-card{grid-template-columns:20px minmax(0,1fr) auto;gap:5px;min-height:36px;padding:4px 6px;border-radius:9px}.people-rank{width:18px;height:18px;font-size:8.5px}.people-main b{font-size:10px}.people-main span{font-size:7.8px}.people-state{gap:3px}.people-state strong{font-size:8px;max-width:108px;overflow:hidden;text-overflow:ellipsis}.people-state em{font-size:7px;padding:1px 4px}.people-manage{margin-top:5px}.people-manage summary{padding:5px 7px;font-size:9px}.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.events-head{margin-bottom:5px}.events-head h2{font-size:25px;line-height:1.05}.events-head .primary{padding:6px 8px;font-size:10px}.events-search{margin-bottom:6px}.events-search input{padding:6px 8px;font-size:10px}.event-section{margin-top:7px}.event-section-title{font-size:11px;margin-bottom:3px}.event-day-group{margin-bottom:4px;border-radius:9px}.event-day-head{padding:4px 6px;font-size:9.5px}.event-compact-card{grid-template-columns:43px 1fr;padding:4px 6px;gap:5px}.event-time{font-size:10px}.event-main b{font-size:10px}.event-main span{font-size:8.5px}.event-history{margin-top:7px}.event-history summary{padding:6px 7px;font-size:10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
 #todayEvents table{display:block;border:0;background:transparent}
 #todayEvents thead{display:none}
 #todayEvents tbody{display:grid;gap:5px}
@@ -249,7 +253,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.4</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.5</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -286,7 +290,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
 <section id="stats" class="section"><h2>Статистика</h2><div class="toolbar"><select id="statsPeriod"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
-<section id="people" class="section"><div class="toolbar"><button class="primary" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleTable"></div></section>
+<section id="people" class="section"><div class="people-head"><h2>Сотрудники отдела по старшинству</h2><button class="primary people-add" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleSeniorNow"></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
 <div class="card"><h3>Локальные данные</h3><p>Персональные данные не хранятся в открытом виде в GitHub. Рабочая копия находится в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div></div>
 <div class="card" style="margin-top:12px"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
@@ -301,7 +305,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.4';
+const APP_VERSION='1.9.5';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -770,7 +774,33 @@ function renderTasks(){
  const list=db.tasks.filter(t=>(!pf||t.personId===pf)&&(!sf||t.status===sf)&&(!pr||t.priority===pr)&&(!q||JSON.stringify(t).toLowerCase().includes(q)));
  document.getElementById('tasksTable').innerHTML=taskTable(list);
 }
-function renderPeople(){document.getElementById('peopleTable').innerHTML=table(['Имя','Должность','Категория',''],db.people.map(p=>'<tr><td class="nowrap"><b>'+esc(p.short||p.full)+'</b></td><td>'+esc(p.role||'')+'</td><td>'+esc(p.category||'')+'</td><td><button onclick="delPerson(\''+p.id+'\')">Удалить</button></td></tr>'))}
+function peoplePresenceInfo(p,date=todayISO()){
+ const ev=db.events.filter(e=>e.personId===p.id&&activeEvent(e,date));
+ if(ev.some(e=>['Выход на больничном','Выход в отпуске','Выход в выходной/праздничный день'].includes(e.type)))return {present:true,label:'На месте'};
+ const priority=['Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул'];
+ const top=ev.filter(e=>priority.includes(e.type)).sort((a,b)=>priority.indexOf(a.type)-priority.indexOf(b.type))[0];
+ if(!top)return {present:true,label:'На месте'};
+ if(top.type==='Командировка')return {present:false,label:'Командировка'};
+ if(['Болен','Больна'].includes(top.type))return {present:false,label:'Болеет'};
+ if(top.type==='Болезнь по уходу за ребёнком')return {present:false,label:'По уходу за ребёнком'};
+ if(/отпуск/i.test(top.type))return {present:false,label:top.type};
+ if(top.type==='Наряд')return {present:false,label:'Наряд'};
+ return {present:false,label:top.type};
+}
+function renderPeople(){
+ const order=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
+ const rank=new Map(order.map((id,i)=>[id,i+1]));
+ const list=(db.people||[]).slice().sort((a,b)=>(rank.get(a.id)||999)-(rank.get(b.id)||999));
+ const states=new Map(list.map(p=>[p.id,peoplePresenceInfo(p)]));
+ const senior=list.find(p=>states.get(p.id)?.present);
+ const seniorBox=document.getElementById('peopleSeniorNow');
+ seniorBox.innerHTML=senior?'<div class="senior-now"><span>Старший сегодня</span><b>'+esc(senior.short||senior.full||'—')+'</b></div>':'<div class="senior-now senior-none"><span>Старший сегодня</span><b>Нет сотрудников на месте</b></div>';
+ document.getElementById('peopleTable').innerHTML='<div class="people-list">'+list.map(p=>{
+   const st=states.get(p.id)||{present:true,label:'На месте'};
+   const n=rank.get(p.id)||'—';
+   return '<div class="people-card '+(st.present?'people-present':'people-absent')+' '+(senior&&senior.id===p.id?'people-current-senior':'')+'"><span class="people-rank">'+esc(n)+'</span><div class="people-main"><b>'+esc(p.short||p.full||'—')+'</b><span>'+esc(p.role||'')+' · '+esc(p.category||'')+'</span></div><div class="people-state">'+(senior&&senior.id===p.id?'<em>Старший</em>':'')+'<strong>'+esc(st.label)+'</strong></div></div>';
+ }).join('')+'</div><details class="people-manage"><summary><span>Управление сотрудниками</span><span class="muted">Показать</span></summary><div class="people-manage-list">'+list.map(p=>'<div><span><b>'+esc(p.short||p.full||'—')+'</b> · '+esc(p.role||'')+'</span><button onclick="delPerson(\''+p.id+'\')">Удалить</button></div>').join('')+'</div></details>';
+}
 function fgssLeaveLimit(personId){
  if(personId==='СЕВ')return 35;
  if(personId==='ГЮК')return 37;
