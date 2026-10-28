@@ -230,12 +230,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .exit-card .exit-type{grid-area:type;font-size:10.5px;text-align:right;white-space:nowrap}
 .exit-card .exit-date{grid-area:date;font-size:10px;color:var(--muted)}
 .exit-card .exit-days{grid-area:days;font-size:9px;font-weight:700;border-radius:999px;padding:1px 6px;background:#e8eef6;white-space:nowrap}
-.exits-summary{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 10px}.exits-summary .card{padding:10px 12px}.exits-summary .card h3{font-size:11px;margin-bottom:4px}.exits-summary .metric{font-size:22px}.exits-summary .metric.small{font-size:14px;line-height:1.15}
+.exits-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0 12px}.exits-summary .card{padding:10px 12px}.exits-summary .card h3{font-size:11px;margin-bottom:4px}.exits-summary .metric{font-size:22px}.exits-summary .metric.small{font-size:14px;line-height:1.15}
 .exit-people-overall{margin:0 0 10px}.exit-people-title{font-size:11px;font-weight:800;color:#44515e;margin:0 0 5px 2px}.exit-people-overall .exit-people{margin:0}
 .exit-history-toggle{background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden}.exit-history-toggle>summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 10px;font-size:11px;font-weight:800;list-style:none}.exit-history-toggle>summary::-webkit-details-marker{display:none}.exit-history-toggle[open]>summary{background:#eef3f8}.exit-history-toggle[open]>summary .muted{font-size:0}.exit-history-toggle[open]>summary .muted:after{content:'Скрыть';font-size:10px}
 .exits-monthly{display:grid;gap:7px;padding:7px}.exit-history-month{border:1px solid var(--line);border-radius:9px;padding:7px;background:#fbfcfe}.exit-history-month-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:5px;font-size:10.5px}.exit-history-month-head span{font-size:9.5px;font-weight:800;color:#536273}.exit-comment{grid-column:1/-1;font-size:8.5px;color:var(--muted);margin-top:2px}.exit-month{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}.exit-month summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px;align-items:center;padding:10px 12px;background:#f7f9fc}.exit-month summary::-webkit-details-marker{display:none}.exit-month[open] summary{background:#eef3f8}.exit-month-title{font-weight:800;font-size:13px}.exit-month-total{font-size:11px;font-weight:800;color:#34495e;background:#e8eef6;border-radius:999px;padding:4px 8px;white-space:nowrap}.exit-month-body{padding:10px 12px}.exit-month-breakdown{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.exit-mini{font-size:10px;border-radius:999px;padding:4px 7px;background:#f1f4f8;color:#44515e}.exit-people{display:grid;gap:5px;margin:8px 0}.exit-person-row{display:grid;grid-template-columns:minmax(110px,1fr) auto auto;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;font-size:11px}.exit-person-row b{font-size:11px}.exit-person-days{font-weight:800}.exit-detail-list{display:grid;gap:4px;margin-top:8px}
-@media(max-width:900px){.exits-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.exits-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.exits-summary .card{padding:7px 8px}.exits-summary .card h3{font-size:9px}.exits-summary .metric{font-size:18px}.exit-person-row{grid-template-columns:minmax(90px,1fr) auto auto;gap:5px;padding:4px 6px;font-size:10px}.exit-person-row b{font-size:10px}.exit-people-title{font-size:10px}.exit-history-toggle>summary{padding:6px 8px;font-size:10px}.exits-monthly{padding:5px;gap:5px}.exit-history-month{padding:5px}.exit-history-month-head{font-size:9.5px}.exit-detail-list{margin-top:5px}}
+@media(max-width:900px){.exits-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.exits-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.exits-summary .card{padding:7px 6px;min-height:58px}.exits-summary .card h3{font-size:8.8px;line-height:1.05;margin-bottom:3px}.exits-summary .metric{font-size:17px;line-height:1.05}.exit-person-row{grid-template-columns:minmax(95px,1fr) auto auto;gap:6px;min-height:49px;padding:8px 9px;font-size:11.5px;border-radius:10px}.exit-person-row b{font-size:12.5px}.exit-person-days{font-size:11.5px}.exit-people{gap:5px}.exit-people-title{font-size:11px;margin-bottom:6px}.exit-history-toggle>summary{padding:8px 10px;font-size:11px}.exits-monthly{padding:5px;gap:5px}.exit-history-month{padding:5px}.exit-history-month-head{font-size:9.5px}.exit-detail-list{margin-top:5px}}
 #exits>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}
 #exits>p{font-size:11px;line-height:1.25;margin:0 0 8px}
 #today{margin-top:-2px}
@@ -277,7 +277,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.10.0</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.10.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -329,7 +329,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.10.0';
+const APP_VERSION='1.10.1';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -552,13 +552,16 @@ function renderExitsAnalytics(list){
  const monthList=yearList.filter(e=>new Date(e.start+'T00:00:00').getMonth()===month);
  const sum=x=>x.reduce((s,e)=>s+exitDays(e),0);
  const weekend=yearList.filter(e=>e.type==='Выход в выходной/праздничный день');
- const special=yearList.filter(e=>e.type==='Выход на больничном'||e.type==='Выход в отпуске');
+ const sickExit=yearList.filter(e=>e.type==='Выход на больничном');
+ const leaveExit=yearList.filter(e=>e.type==='Выход в отпуске');
 
  document.getElementById('exitsSummary').innerHTML=[
-  ['Итого за '+year,sum(yearList)+' '+dayWord(sum(yearList))],
+  ['Итого дней',sum(yearList)+' '+dayWord(sum(yearList))],
   ['Текущий месяц',sum(monthList)+' '+dayWord(sum(monthList))],
-  ['Выходов в выходные',weekend.length],
-  ['Больничный / отпуск',special.length]
+  ['Всего выходов',yearList.length],
+  ['В выходные',weekend.length],
+  ['На больничном',sickExit.length],
+  ['В отпуске',leaveExit.length]
  ].map(([a,b])=>'<div class="card"><h3>'+esc(a)+'</h3><div class="metric">'+esc(b)+'</div></div>').join('');
 
  const byPerson={};
