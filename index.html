@@ -223,7 +223,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.9</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.0</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -275,7 +275,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.9';
+const APP_VERSION='1.9.0';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -322,8 +322,8 @@ function normalizeDisplayData(x){
    return y;
  }).filter(e=>{if(!e.id)return true;if(seen.has(e.id))return false;seen.add(e.id);return true});
  if(!x.events.some(e=>e.id==='MEET-001'))x.events.push({
-   id:'MEET-001',personId:'',type:'Апробация на полигоне',start:'2026-10-30',end:'2026-10-30',days:1,status:'План',
-   comment:'Приказ № 103 от 28.10.2026. Ближайшее мероприятие отдела: апробация на полигоне.'
+   id:'MEET-001',personId:'ПРВ',type:'Апробация на полигоне',start:'2026-10-30',end:'2026-10-30',days:1,status:'План',
+   comment:'Приказ № 103 от 28.10.2026. Апробацию на полигоне проводит Роман П.; от департамента участвует Роман П.'
  });
  const meetingDefaults=[
   {id:'MEET-002-P',personId:'ХПН',type:'Совещание с БПС',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'10:00',linkedEvent:'MEET-GRP-BPS-20261029-1000',comment:'Совещание с БПС в 10:00. Участники от отдела: Павел Х., Роман П.'},
