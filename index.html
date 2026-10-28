@@ -83,7 +83,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.3</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.4</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -129,7 +129,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.3';
+const APP_VERSION='1.6.4';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -330,6 +330,34 @@ function renderTasks(){
  document.getElementById('tasksTable').innerHTML=taskTable(list);
 }
 function renderPeople(){document.getElementById('peopleTable').innerHTML=table(['Имя','Должность','Категория',''],db.people.map(p=>'<tr><td class="nowrap"><b>'+esc(p.short||p.full)+'</b></td><td>'+esc(p.role||'')+'</td><td>'+esc(p.category||'')+'</td><td><button onclick="delPerson(\''+p.id+'\')">Удалить</button></td></tr>'))}
+function fgssLeaveLimit(personId){
+ if(personId==='СЕВ')return 35;
+ if(personId==='ГЮК')return 37;
+ return 30;
+}
+function isOfficialHolidayDate(dateStr){
+ const label=PROD_NONWORK_2026[dateStr]||'';
+ return !!label && !/перенесённый выходной/i.test(label);
+}
+function fgssHolidayBonusDays(e){
+ if(!e||!['Основной отпуск','Летний отпуск'].includes(e.type))return 0;
+ const p=person(e.personId); if(!p||p.category!=='ФГГС'||!e.start)return 0;
+ const end=e.end||e.start, d=new Date(e.start+'T00:00:00'), fin=new Date(end+'T00:00:00');
+ while(d<=fin){
+  const ds=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+  if(isOfficialHolidayDate(ds))return 1;
+  d.setDate(d.getDate()+1);
+ }
+ return 0;
+}
+function leaveDaysForBalance(e,bounds){
+ const raw=eventDaysForStats(e,bounds);
+ if(raw<=0)return 0;
+ const p=person(e.personId);
+ if(!p||p.category!=='ФГГС')return raw;
+ const bonus=fgssHolidayBonusDays(e);
+ return Math.max(0,raw-bonus);
+}
 let statsTab='employees',statsPersonId='КДВ';
 function statsBounds(){
  const mode=document.getElementById('statsPeriod')?.value||'year',now=new Date(),y=now.getFullYear(),m=now.getMonth();
@@ -369,18 +397,24 @@ function renderStats(){
   const self=sumType(p.id,['Болен','Больна'],bounds),child=sumType(p.id,['Болезнь по уходу за ребёнком'],bounds),total=self+child;
   let detail=buttons+'<div class="card"><h3>'+esc(p.short)+' — детализация</h3>';
   if((p.id==='ГЮК'||p.id==='СЕВ')&&total){detail+='<div>Болела сама: <b>'+self+' дн.</b> · По уходу за ребёнком: <b>'+child+' дн.</b></div><div class="splitbar"><span class="split-self" style="width:'+(self/total*100)+'%"></span><span class="split-child" style="width:'+(child/total*100)+'%"></span></div>'}
-  const isMil=p.category==='Военнослужащий',mainLimit=isMil?45:30,vbdLimit=isMil?15:0;
-  const usedMain=sumType(p.id,['Основной отпуск','Летний отпуск','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],bounds);
+  const isMil=p.category==='Военнослужащий',mainLimit=isMil?45:fgssLeaveLimit(p.id),vbdLimit=isMil?15:0;
+  const annualTypes=['Основной отпуск','Летний отпуск'];
+  const usedMain=db.events.filter(e=>e.personId===p.id&&annualTypes.includes(e.type)).reduce((a,e)=>a+leaveDaysForBalance(e,bounds),0);
   const usedVbd=sumType(p.id,['Отпуск ВБД'],bounds),used=usedMain+usedVbd,totalLimit=mainLimit+vbdLimit;
   detail+='<div class="leave-meter"><div class="card"><h3>Основной отпуск</h3><b>'+usedMain+' / '+mainLimit+' дн.</b><div class="muted">Осталось '+Math.max(0,mainLimit-usedMain)+' дн.</div></div>';
   if(isMil)detail+='<div class="card"><h3>Отпуск ВБД</h3><b>'+usedVbd+' / '+vbdLimit+' дн.</b><div class="muted">Осталось '+Math.max(0,vbdLimit-usedVbd)+' дн.</div></div>';
-  detail+='</div><p><b>Всего отпусков:</b> использовано '+used+' из '+totalLimit+' дн.; осталось '+Math.max(0,totalLimit-used)+' дн.</p></div>';
+  detail+='</div><p><b>Всего отпусков:</b> использовано '+used+' из '+totalLimit+' дн.; осталось '+Math.max(0,totalLimit-used)+' дн.</p>';
+  if(!isMil)detail+='<p class="muted">Для ФГГС официальный праздничный день внутри отпуска даёт максимум +1 календарный день сверх нормы за один период отпуска; этот день остаток не уменьшает.</p>';
+  detail+='</div>';
   out.innerHTML=detail;return;
  }
  if(statsTab==='sick'){grid.innerHTML=[['Всего дней болезни',statRank(sick,bounds).reduce((a,x)=>a+x.days,0)]].map(([a,b])=>'<div class="card"><h3>'+a+'</h3><div class="metric">'+b+'</div></div>').join('');out.innerHTML=rankHtml(sick,bounds);return}
  if(statsTab==='overtime'){out.innerHTML=rankHtml(overtime,bounds);return}
  if(statsTab==='trips'){out.innerHTML=rankHtml(['Командировка'],bounds);return}
- if(statsTab==='leave'){out.innerHTML=rankHtml(['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'],bounds);return}
+ if(statsTab==='leave'){
+  const leaveTypes=['Основной отпуск','Летний отпуск','Отпуск ВБД'];
+  const rows=db.people.map(p=>({p,days:db.events.filter(e=>e.personId===p.id&&leaveTypes.includes(e.type)).reduce((a,e)=>a+(p.category==='ФГГС'?leaveDaysForBalance(e,bounds):eventDaysForStats(e,bounds)),0)})).sort((a,b)=>b.days-a.days);
+  out.innerHTML='<div class="card">'+rows.map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.days+' дн.</b></div>').join('')+'</div>';return}
  if(statsTab==='duty'){
   const rows=db.people.map(p=>({p,n:db.events.filter(e=>e.personId===p.id&&e.type==='Наряд'&&effectiveEventStatus(e)!=='Замена'&&effectiveEventStatus(e)!=='План'&&eventDaysForStats(e,bounds)>0).length})).sort((a,b)=>b.n-a.n);
   out.innerHTML='<div class="card">'+rows.map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.n+' нар.</b></div>').join('')+'</div>';return;
