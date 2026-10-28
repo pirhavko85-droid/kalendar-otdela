@@ -35,7 +35,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .today-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric-label-mobile{display:none}.mobile-meeting-card{display:none}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .year-chart{display:grid;gap:8px}.year-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}.year-label{font-weight:700;font-size:12px;color:#44515e}.year-track{position:relative;min-height:38px;background:linear-gradient(90deg,#f6f8fb 0,#fff 100%);border:1px solid var(--line);border-radius:9px;overflow:hidden}.year-block{position:absolute;top:4px;bottom:4px;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 4px #0002}.leave-vbd{background:#f5a3a3;color:#681313}.leave-summer{background:#a9ddb9;color:#174b27}.leave-main{background:#ffe49a;color:#644b00}.leave-family{background:#a9c9f5;color:#173d70}.leave-other{background:#d9c8f0;color:#4f3570}
-.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.birthday-grid{display:grid;grid-template-columns:1fr;gap:5px}
+.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.events-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.events-head h2{margin:0}.events-search{margin-bottom:8px}.events-search input{width:100%}
+.event-section{margin-top:10px}.event-section-title{font-size:13px;font-weight:800;margin:0 0 5px;color:#25364a}.event-today .event-section-title{color:#185f38}
+.event-day-group{background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:6px;overflow:hidden}.event-day-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#f7f9fc;border-bottom:1px solid var(--line);font-size:10.5px}.event-day-head span{color:var(--muted);font-weight:700}
+.event-day-items{display:grid}.event-compact-card{display:grid;grid-template-columns:48px 1fr;gap:7px;align-items:center;padding:6px 8px;border-top:1px solid #edf0f3}.event-compact-card:first-child{border-top:0}.event-time{font-size:11px;font-weight:800;color:#173d70}.event-main{display:grid;gap:1px;min-width:0}.event-main b{font-size:11px;line-height:1.15}.event-main span{font-size:9.5px;color:var(--muted)}
+.event-empty{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:10px;color:var(--muted)}.event-history{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fff}.event-history summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 9px;font-size:11px;font-weight:800}.event-history-body{padding:0 6px 6px}
+.birthday-grid{display:grid;grid-template-columns:1fr;gap:5px}
 .birthday-line{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;white-space:nowrap;min-width:0;font-size:11px}
 .birthday-line.nearest{background:#fff9df;border-color:#ead58a}
 .birthday-line strong{color:#6b5200}
@@ -180,7 +185,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
+@media(max-width:520px){.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.events-head{margin-bottom:5px}.events-head h2{font-size:25px;line-height:1.05}.events-head .primary{padding:6px 8px;font-size:10px}.events-search{margin-bottom:6px}.events-search input{padding:6px 8px;font-size:10px}.event-section{margin-top:7px}.event-section-title{font-size:11px;margin-bottom:3px}.event-day-group{margin-bottom:4px;border-radius:9px}.event-day-head{padding:4px 6px;font-size:9.5px}.event-compact-card{grid-template-columns:43px 1fr;padding:4px 6px;gap:5px}.event-time{font-size:10px}.event-main b{font-size:10px}.event-main span{font-size:8.5px}.event-history{margin-top:7px}.event-history summary{padding:6px 7px;font-size:10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
 #todayEvents table{display:block;border:0;background:transparent}
 #todayEvents thead{display:none}
 #todayEvents tbody{display:grid;gap:5px}
@@ -227,7 +232,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.1</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.2</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -247,7 +252,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <main>
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar"><button id="prevMonth">←</button><strong id="monthTitle"></strong><button id="nextMonth">→</button></div><div id="calendarGrid" class="calendar"></div></section>
-<section id="events" class="section"><h2>Мероприятия</h2><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Мероприятие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
+<section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><button class="primary" onclick="openEventModal()">+ Мероприятие</button></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><div id="exitsMonthly" class="exits-monthly"></div><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><h2>Отпуска</h2>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
@@ -279,7 +284,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.1';
+const APP_VERSION='1.9.2';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -326,7 +331,7 @@ function normalizeDisplayData(x){
    return y;
  }).filter(e=>{if(!e.id)return true;if(seen.has(e.id))return false;seen.add(e.id);return true});
  if(!x.events.some(e=>e.id==='MEET-001'))x.events.push({
-   id:'MEET-001',personId:'ПРВ',type:'Апробация на полигоне',start:'2026-10-30',end:'2026-10-30',days:1,status:'План',
+   id:'MEET-001',personId:'ПРВ',type:'Апробация на полигоне',start:'2026-10-30',end:'2026-10-30',days:1,status:'План',basis:'09:00',
    comment:'Приказ № 103 от 28.10.2026. Апробацию на полигоне 30.10.2026 проводит Роман П. От нашего отдела участвует Роман П.'
  });
  const meetingDefaults=[
@@ -407,11 +412,59 @@ function eventRows(list){return list.map(e=>{
 function isMeetingEvent(e){
  return /совещ|мероприят|встреч|апробац|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
 }
+function eventTime(e){
+ const values=[e.basis,e.time,e.comment,e.note].filter(Boolean).join(' ');
+ const m=String(values).match(/(?:^|\s)([01]?\d|2[0-3]):([0-5]\d)(?:\s|\.|,|$)/);
+ return m?String(m[1]).padStart(2,'0')+':'+m[2]:'';
+}
+function eventRelative(dateStr){
+ if(!dateStr)return'';
+ const a=new Date(todayISO()+'T00:00:00'),b=new Date(dateStr+'T00:00:00');
+ const d=Math.round((b-a)/86400000);
+ if(d===0)return'сегодня';
+ if(d===1)return'завтра';
+ if(d>1)return'через '+d+' '+dayWord(d);
+ if(d===-1)return'вчера';
+ return Math.abs(d)+' '+dayWord(Math.abs(d))+' назад';
+}
+function eventDateTitle(dateStr){
+ const d=new Date(dateStr+'T00:00:00');
+ const s=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});
+ return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function groupedMeetingEvents(list){
+ const map=new Map();
+ list.forEach(e=>{
+  const key=e.linkedEvent||[e.start,e.type,eventTime(e)].join('|');
+  if(!map.has(key))map.set(key,{...e,participants:[]});
+  const g=map.get(key),who=person(e.personId)?.short;
+  if(who&&!g.participants.includes(who))g.participants.push(who);
+ });
+ return [...map.values()];
+}
+function renderEventDateGroups(list,mode){
+ const byDate=new Map();
+ list.forEach(e=>{if(!byDate.has(e.start))byDate.set(e.start,[]);byDate.get(e.start).push(e)});
+ const dates=[...byDate.keys()].sort((a,b)=>mode==='past'?b.localeCompare(a):a.localeCompare(b));
+ return dates.map(date=>{
+   const items=byDate.get(date).sort((a,b)=>eventTime(a).localeCompare(eventTime(b)));
+   const rel=eventRelative(date);
+   return '<div class="event-day-group"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
+     const tm=eventTime(e)||'—';
+     const people=e.participants.length?e.participants.join(', '):'Участник не указан';
+     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b><span>'+esc(people)+'</span></div></div>';
+   }).join('')+'</div></div>';
+ }).join('');
+}
 function renderEvents(){
- const pf=document.getElementById('eventEmployeeFilter').value,tf=document.getElementById('eventTypeFilter').value,sf=document.getElementById('eventStatusFilter').value,q=document.getElementById('eventSearch').value.toLowerCase();
- const list=db.events.filter(e=>isMeetingEvent(e)&&(!pf||e.personId===pf)&&(!tf||e.type===tf)&&(!sf||effectiveEventStatus(e)===sf)&&(!q||JSON.stringify(e).toLowerCase().includes(q)))
-  .sort((a,b)=>(a.start||'').localeCompare(b.start||''));
- document.getElementById('eventsTable').innerHTML=table(['Участник','Мероприятие','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
+ const q=(document.getElementById('eventSearch')?.value||'').toLowerCase();
+ const raw=db.events.filter(e=>isMeetingEvent(e)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
+ const list=groupedMeetingEvents(raw);
+ const today=todayISO(),todayList=list.filter(e=>e.start===today),future=list.filter(e=>e.start>today),past=list.filter(e=>e.start<today);
+ const todayHtml='<div class="event-section event-today"><div class="event-section-title">Сегодня</div>'+(todayList.length?renderEventDateGroups(todayList,'future'):'<div class="event-empty">Сегодня мероприятий нет</div>')+'</div>';
+ const futureHtml='<div class="event-section"><div class="event-section-title">Предстоящие</div>'+(future.length?renderEventDateGroups(future,'future'):'<div class="event-empty">Предстоящих мероприятий нет</div>')+'</div>';
+ const pastHtml='<details class="event-history"><summary><span>Прошедшие мероприятия</span><span class="muted">'+past.length+'</span></summary><div class="event-history-body">'+(past.length?renderEventDateGroups(past,'past'):'<div class="event-empty">История пока пуста</div>')+'</div></details>';
+ document.getElementById('eventsTable').innerHTML=todayHtml+futureHtml+pastHtml;
 }
 function fmtShortYear(d){
  if(!d)return'';
