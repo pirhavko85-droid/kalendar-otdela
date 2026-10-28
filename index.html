@@ -138,7 +138,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.9</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.0</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -184,7 +184,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.7.9';
+const APP_VERSION='1.8.0';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -289,7 +289,10 @@ function renderToday(){
    const isWork=['Выход на больничном','Выход в отпуске','Наряд','Выход в выходной/праздничный день','Зачёт по ФП'].includes(top.type);
    const label=top.type==='Выход на больничном'?'На месте — выход на больничном':top.type==='Выход в отпуске'?'На месте — выход в отпуске':top.type;
    const status=isWork?'На службе':effectiveEventStatus(top,today);
-   return '<tr class="'+(presentIds.includes(p.id)?'today-present':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+fmt(top.start)+(top.end?' — '+fmt(top.end):'')+'</td><td><span class="pill '+(isWork?'green':'')+'">'+esc(status)+'</span></td></tr>';
+   const ongoing=effectiveEventStatus(top,today)==='Продолжается';
+   const period=ongoing?(fmt(top.start)+' — по настоящее время'):(fmt(top.start)+(top.end?' — '+fmt(top.end):''));
+   const stateCell=ongoing?'':('<span class="pill '+(isWork?'green':'')+'">'+esc(status)+'</span>');
+   return '<tr class="'+(presentIds.includes(p.id)?'today-present':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+esc(period)+'</td><td>'+stateCell+'</td></tr>';
  });
  document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Где / статус','Период','Статус'],rows);
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
