@@ -207,7 +207,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 @media(max-width:520px){.people-head{margin-bottom:6px}.people-head h2{font-size:21px;line-height:1.08}.people-add{font-size:10px;padding:6px 8px}.senior-now{padding:7px 9px;margin-bottom:6px;border-radius:10px}.senior-now span{font-size:10px}.senior-now b{font-size:12.5px}.people-list{gap:5px;grid-template-rows:repeat(7,minmax(52px,1fr));min-height:min(58vh,500px)}.people-card{grid-template-columns:27px minmax(0,1fr) auto;gap:8px;min-height:52px;padding:7px 9px;border-radius:11px}.people-rank{width:24px;height:24px;font-size:10.5px}.people-main b{font-size:12.5px;line-height:1.1}.people-main span{font-size:9.7px;line-height:1.15}.people-state{gap:5px}.people-state strong{font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis}.people-state em{font-size:8.5px;padding:2px 5px}.people-manage{margin-top:7px}.people-manage summary{padding:7px 9px;font-size:10.5px}.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.events-head{margin-bottom:5px}.events-head h2{font-size:25px;line-height:1.05}.events-head .primary{padding:6px 8px;font-size:10px}.events-search{margin-bottom:6px}.events-search input{padding:6px 8px;font-size:10px}.event-section{margin-top:7px}.event-section-title{font-size:11px;margin-bottom:3px}.event-day-group{margin-bottom:4px;border-radius:9px}.event-day-head{padding:4px 6px;font-size:9.5px}.event-compact-card{grid-template-columns:43px 1fr;padding:4px 6px;gap:5px}.event-time{font-size:10px}.event-main b{font-size:10px}.event-main span{font-size:8.5px}.event-history{margin-top:7px}.event-history summary{padding:6px 7px;font-size:10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
 #todayEvents table{display:block;border:0;background:transparent}
 #todayEvents thead{display:none}
-#todayEvents tbody{display:grid;gap:5px}
+#todayEvents tbody{display:grid;gap:5px;grid-template-rows:repeat(7,minmax(58px,1fr))}
 #todayEvents tr{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "period state";gap:1px 8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
 #todayEvents td{border:0!important;padding:0!important;font-size:11px;line-height:1.25;display:block;min-width:0}
 #todayEvents td:before{display:none!important;content:none!important}
@@ -216,6 +216,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #todayEvents td:nth-child(3){grid-area:period;color:var(--muted);align-self:center;white-space:nowrap}
 #todayEvents td:nth-child(4){grid-area:state;text-align:right;align-self:center}
 #todayEvents tr.today-present{background:#eef9f1;border-color:#b8dfc2}
+#todayEvents tr.today-senior{border-color:#7db98b;box-shadow:inset 4px 0 0 #7db98b}
+#todayEvents tr.today-senior td:first-child:after{content:'Старший';display:inline-block;margin-left:6px;padding:1px 5px;border-radius:999px;background:#dff1e4;color:#215f36;font-size:8px;font-weight:800;vertical-align:1px}
 #todayEvents tr.today-present td:nth-child(1),#todayEvents tr.today-present td:nth-child(2){color:#215f36}
 #todayEvents .pill{font-size:9px;padding:2px 6px}
 #todayTasks table{display:none}
@@ -239,21 +241,24 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #exits>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}
 #exits>p{font-size:11px;line-height:1.25;margin:0 0 8px}
 #today{margin-top:-2px}
-#today>h2{font-size:27px;line-height:1.05;margin:4px 0 10px}
-#today>h3{font-size:18px;line-height:1.1;margin:12px 0 7px}
-#today .today-metrics{gap:4px}
-#today .today-metrics .card{min-height:52px;padding:4px 6px;grid-template-rows:minmax(18px,auto) 1fr;border-radius:12px}
-#today .today-metrics .card h3{font-size:9px;line-height:1.05}
-#today .today-metrics .metric{font-size:21px}
-#todayEvents tbody{gap:3px}
-#todayEvents tr{padding:4px 7px;border-radius:9px;gap:0 7px}
-#todayEvents td{font-size:10.5px;line-height:1.15}
-#todayEvents .pill{font-size:8.5px;padding:1px 5px}
+#today>h2{font-size:29px;line-height:1.05;margin:5px 0 12px}
+#today>h3{font-size:19px;line-height:1.1;margin:14px 0 8px}
+#today .today-metrics{gap:6px}
+#today .today-metrics .card{min-height:70px;padding:7px 8px;grid-template-rows:minmax(22px,auto) 1fr;border-radius:13px}
+#today .today-metrics .card h3{font-size:10.5px;line-height:1.08}
+#today .today-metrics .metric{font-size:30px}
+#todayEvents tbody{gap:5px}
+#todayEvents tr{min-height:58px;padding:7px 9px;border-radius:11px;gap:1px 9px}
+#todayEvents td{font-size:13px;line-height:1.18}
+#todayEvents td:nth-child(1){font-size:14px}
+#todayEvents td:nth-child(3){font-size:11.5px}
+#todayEvents .pill{font-size:10px;padding:2px 6px}
+#todayTasks .empty-compact{min-height:46px;display:flex;align-items:center;padding:9px 10px;font-size:11.5px}
 .grid.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.6</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.7</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -305,7 +310,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.6';
+const APP_VERSION='1.9.7';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -393,6 +398,8 @@ function renderToday(){
    return true;
  }).map(p=>p.id);
  const present=presentIds.length,absent=db.people.length-present;
+ const seniorityOrder=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
+ const seniorPresentId=seniorityOrder.find(id=>presentIds.includes(id))||'';
  const meetingLike=e=>/совещ|мероприят|встреч|апробац/i.test(String(e.type||'')+' '+String(e.comment||''));
  const todayMeetingRows=db.events.filter(e=>e.start===today&&e.status!=='Отменена'&&meetingLike(e));
  const todayMeetings=new Set(todayMeetingRows.map(e=>e.linkedEvent||e.id)).size;
@@ -412,7 +419,7 @@ function renderToday(){
      const ai=priority.indexOf(a.type),bi=priority.indexOf(b.type);
      return (ai<0?999:ai)-(bi<0?999:bi);
    });
-   if(!pe.length)return '<tr class="today-present"><td>'+esc(p.short||p.full||'—')+'</td><td><b>На месте</b></td><td>'+fmt(today)+'</td><td><span class="pill green">На службе</span></td></tr>';
+   if(!pe.length)return '<tr class="today-present '+(p.id===seniorPresentId?'today-senior':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td><b>На месте</b></td><td>'+fmt(today)+'</td><td><span class="pill green">На службе</span></td></tr>';
    const top=pe[0];
    const isWork=['Выход на больничном','Выход в отпуске','Наряд','Выход в выходной/праздничный день','Зачёт по ФП'].includes(top.type);
    const label=top.type==='Выход на больничном'?'На месте — выход на больничном':top.type==='Выход в отпуске'?'На месте — выход в отпуске':top.type;
@@ -420,7 +427,7 @@ function renderToday(){
    const ongoing=effectiveEventStatus(top,today)==='Продолжается';
    const period=ongoing?(fmt(top.start)+' — по настоящее время'):(fmt(top.start)+(top.end?' — '+fmt(top.end):''));
    const stateCell=ongoing?'':('<span class="pill '+(isWork?'green':'')+'">'+esc(status)+'</span>');
-   return '<tr class="'+(presentIds.includes(p.id)?'today-present':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+esc(period)+'</td><td>'+stateCell+'</td></tr>';
+   return '<tr class="'+(presentIds.includes(p.id)?'today-present ':'')+(p.id===seniorPresentId?'today-senior':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+esc(period)+'</td><td>'+stateCell+'</td></tr>';
  });
  document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Где / статус','Период','Статус'],rows);
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
