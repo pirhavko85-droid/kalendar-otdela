@@ -48,6 +48,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  th{position:static;top:auto}
  .calendar{grid-template-columns:repeat(2,minmax(0,1fr))}
  .year-track{min-height:26px;padding:3px}
+ #leaveChart .year-track{display:none}
+ #leaveChart .year-row{align-items:start}
  .year-lane{height:20px;margin-bottom:2px}
  .year-block{font-size:0;padding:0;min-width:5px}
 
@@ -81,7 +83,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.2</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.3</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -127,7 +129,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.2';
+const APP_VERSION='1.6.3';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -255,7 +257,7 @@ function monthItems(events,y,m){
 }
 function monthMobileList(events,y,m,kind){
  const items=monthItems(events,y,m);
- if(!items.length)return '';
+ if(!items.length)return kind==='leave'?'<div class="year-mobile-list"><div class="mobile-month-card"><span>—</span></div></div>':'';
  return '<div class="year-mobile-list">'+items.map(({e})=>{
   const who=person(e.personId)?.short||'';
   let label=e.type;
