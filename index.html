@@ -29,12 +29,55 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .year-chart{display:grid;gap:8px}.year-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}.year-label{font-weight:700;font-size:12px;color:#44515e}.year-track{position:relative;min-height:38px;background:linear-gradient(90deg,#f6f8fb 0,#fff 100%);border:1px solid var(--line);border-radius:9px;overflow:hidden}.year-block{position:absolute;top:4px;bottom:4px;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 4px #0002}.leave-vbd{background:#f5a3a3;color:#681313}.leave-summer{background:#a9ddb9;color:#174b27}.leave-main{background:#ffe49a;color:#644b00}.leave-family{background:#a9c9f5;color:#173d70}.leave-other{background:#d9c8f0;color:#4f3570}
 .duty-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:start;margin:8px 0}.duty-month{font-weight:700;font-size:12px;color:#44515e;padding-top:6px}.duty-chips{display:flex;gap:6px;flex-wrap:wrap;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 7px;font-size:11px;font-weight:700}.birthday-grid{display:grid;grid-template-columns:1fr;gap:8px}.birthday-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.5fr) minmax(120px,.8fr);gap:10px;align-items:center}.birthday-card .days{font-size:18px;font-weight:800;text-align:right}.birthday-card .date{color:var(--muted);font-size:12px}.nowrap{white-space:nowrap}.year-track{padding:4px;overflow:hidden}.year-lane{position:relative;height:28px;margin:0 0 4px}.year-lane:last-child{margin-bottom:0}.year-block{top:0;bottom:0}.trip-block{background:#b9d7ff;color:#174b78}.sick-self{background:#f4b7b7;color:#6d2020}.sick-child{background:#c9b8f5;color:#493174}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}.stats-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.stats-tabs button{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:9px;cursor:pointer}.stats-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}.rank-row{display:grid;grid-template-columns:34px minmax(130px,1fr) 100px;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--line)}.rank-row:last-child{border-bottom:0}.person-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.person-buttons button{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:9px;cursor:pointer}.person-buttons button.active{background:#e7eef8;border-color:#9eb9df}.splitbar{height:16px;border-radius:999px;overflow:hidden;background:#eef2f6;display:flex;margin:8px 0}.splitbar span{height:100%}.split-self{background:#f4b7b7}.split-child{background:#c9b8f5}.leave-meter{display:grid;grid-template-columns:1fr 1fr;gap:10px}.leave-meter .card{padding:12px}
-@media(max-width:900px){.today-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.year-row,.duty-row{grid-template-columns:78px 1fr}.birthday-grid{grid-template-columns:1fr}.layout{display:block}nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}nav button{min-width:max-content;width:auto;padding:8px 10px}main{padding:12px 12px 86px}.grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}th{position:static;top:auto}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.section>div[id$="Table"],#todayEvents,#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}.section table,#todayEvents table,#todayTasks table{min-width:640px}}
-@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.day{min-height:92px;padding:8px}.day .n{font-size:14px}.section table,#todayEvents table,#todayTasks table{min-width:600px}}
+.year-mobile-list{display:none}
+.mobile-month-card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:5px 0;font-size:12px;line-height:1.35}
+.mobile-month-card b{display:block;margin-bottom:2px}
+
+@media(max-width:900px){
+ .today-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .year-row,.duty-row{grid-template-columns:72px 1fr}
+ .birthday-grid{grid-template-columns:1fr}
+ .layout{display:block}
+ nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;display:flex;overflow-x:auto;z-index:30;padding:6px;background:#102538}
+ nav button{min-width:max-content;width:auto;padding:8px 10px}
+ main{padding:12px 12px 86px}
+ .grid{grid-template-columns:repeat(2,1fr)}
+ .form-grid{grid-template-columns:1fr}
+ th{position:static;top:auto}
+ .calendar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .year-track{min-height:34px}
+ .year-block{font-size:0;padding:0;min-width:6px}
+ .year-block:after{content:''}
+ .year-mobile-list{display:block;margin-top:5px}
+ .year-row{align-items:start}
+ .year-label{padding-top:8px}
+ #todayEvents,#leaveTable,#tripsTable,#sickTable{overflow:visible!important}
+ #todayEvents table,#leaveTable table,#tripsTable table,#sickTable table{display:block;background:transparent;min-width:0!important}
+ #todayEvents thead,#leaveTable thead,#tripsTable thead,#sickTable thead{display:none}
+ #todayEvents tbody,#leaveTable tbody,#tripsTable tbody,#sickTable tbody{display:grid;gap:8px}
+ #todayEvents tr,#leaveTable tr,#tripsTable tr,#sickTable tr{display:grid;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 2px 8px #17202a0a}
+ #todayEvents td,#leaveTable td,#tripsTable td,#sickTable td{display:flex;justify-content:space-between;gap:12px;border:0;padding:3px 0;font-size:13px}
+ #todayEvents td:before,#leaveTable td:before,#tripsTable td:before,#sickTable td:before{color:var(--muted);font-size:11px;font-weight:700;flex:0 0 auto}
+ #todayEvents td:nth-child(1):before{content:'Сотрудник'}
+ #todayEvents td:nth-child(2):before{content:'Статус'}
+ #todayEvents td:nth-child(3):before{content:'Период'}
+ #todayEvents td:nth-child(4):before{content:'Состояние'}
+ #leaveTable td:nth-child(1):before,#tripsTable td:nth-child(1):before,#sickTable td:nth-child(1):before{content:'Сотрудник'}
+ #leaveTable td:nth-child(2):before,#tripsTable td:nth-child(2):before,#sickTable td:nth-child(2):before{content:'Тип'}
+ #leaveTable td:nth-child(3):before,#tripsTable td:nth-child(3):before,#sickTable td:nth-child(3):before{content:'Начало'}
+ #leaveTable td:nth-child(4):before,#tripsTable td:nth-child(4):before,#sickTable td:nth-child(4):before{content:'Окончание'}
+ #leaveTable td:nth-child(5):before,#tripsTable td:nth-child(5):before,#sickTable td:nth-child(5):before{content:'Дни'}
+ #leaveTable td:nth-child(6):before,#tripsTable td:nth-child(6):before,#sickTable td:nth-child(6):before{content:'Статус'}
+ #leaveTable td:nth-child(7),#tripsTable td:nth-child(7),#sickTable td:nth-child(7){display:none}
+ #leaveTable td:nth-child(8),#tripsTable td:nth-child(8),#sickTable td:nth-child(8){display:none}
+ .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
+}
+@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.day{min-height:92px;padding:8px}.day .n{font-size:14px}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.0</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -80,7 +123,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.6.1';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -203,9 +246,23 @@ function leaveClass(type){
  if(type==='Отпуск по семейным обстоятельствам')return'leave-family';
  return'leave-other';
 }
+function monthItems(events,y,m){
+ return events.map(e=>({e,r:overlapRange(e,y,m)})).filter(x=>x.r);
+}
+function monthMobileList(events,y,m,kind){
+ const items=monthItems(events,y,m);
+ if(!items.length)return '';
+ return '<div class="year-mobile-list">'+items.map(({e})=>{
+  const who=person(e.personId)?.short||'';
+  let label=e.type;
+  if(kind==='leave')label=e.type.replace('Отпуск ','');
+  if(kind==='sick')label=e.type==='Болезнь по уходу за ребёнком'?'по уходу за ребёнком':'болеет';
+  const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
+  return '<div class="mobile-month-card"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+'</span></div>';
+ }).join('')+'</div>';
+}
 function renderYearLanes(events,y,m,kind){
- const dim=daysInMonth(y,m),items=[];
- events.forEach(e=>{const r=overlapRange(e,y,m);if(!r)return;items.push({e,r})});
+ const dim=daysInMonth(y,m),items=monthItems(events,y,m);
  if(!items.length)return '<div class="year-lane"><span class="muted" style="position:absolute;left:8px;top:6px">—</span></div>';
  return items.map(({e,r})=>{
   const left=((r.start-1)/dim)*100,width=((r.end-r.start+1)/dim)*100,who=person(e.personId)?.short||'';
@@ -222,12 +279,12 @@ function renderLeaveChart(){
  const months=Array.from({length:12},(_,m)=>({y:2026,m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const types=['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'];
  const leaves=db.events.filter(e=>types.includes(e.type));
- document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
+ document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
 }
 function renderTimelineChart(target,types,kind){
  const months=Array.from({length:12},(_,m)=>({y:2026,m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const list=db.events.filter(e=>types.includes(e.type));
- document.getElementById(target).innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div></div>').join('')+'</div>';
+ document.getElementById(target).innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>').join('')+'</div>';
 }
 function renderDutyChart(){
  const months=Array.from({length:12},(_,m)=>({m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
