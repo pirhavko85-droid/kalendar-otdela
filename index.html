@@ -223,12 +223,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.8</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.9</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
 <button data-page="calendar">Календарь</button>
-<button data-page="events">События</button>
+<button data-page="events">Мероприятия</button>
 <button data-page="exits">Переработка</button>
 <button data-page="leave">Отпуска</button>
 <button data-page="duty">Наряды</button>
@@ -243,7 +243,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <main>
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar"><button id="prevMonth">←</button><strong id="monthTitle"></strong><button id="nextMonth">→</button></div><div id="calendarGrid" class="calendar"></div></section>
-<section id="events" class="section"><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Событие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
+<section id="events" class="section"><h2>Мероприятия</h2><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Мероприятие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><div id="exitsMonthly" class="exits-monthly"></div><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><h2>Отпуска</h2>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
@@ -268,14 +268,14 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </main>
 </div>
 
-<div id="eventModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Событие</h3><button onclick="closeModal('eventModal')">×</button></div><form id="eventForm" class="form-grid">
+<div id="eventModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Мероприятие</h3><button onclick="closeModal('eventModal')">×</button></div><form id="eventForm" class="form-grid">
 <select id="evPerson" required></select><select id="evType" required></select><input id="evStart" type="date" required><input id="evEnd" type="date"><input id="evDays" type="number" step="0.5" placeholder="Количество дней"><select id="evStatus"></select><textarea id="evComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
 <div id="taskModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Задача</h3><button onclick="closeModal('taskModal')">×</button></div><form id="taskForm" class="form-grid">
 <select id="taskPerson" required></select><input id="taskTitle" required placeholder="Задача"><textarea id="taskDesc" class="full" placeholder="Описание"></textarea><input id="taskCreated" type="date" required><input id="taskDeadline" type="date"><select id="taskPriority"></select><select id="taskStatus"></select><input id="taskAuthor" placeholder="Постановщик"><textarea id="taskComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.8';
+const APP_VERSION='1.8.9';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -400,10 +400,14 @@ function eventRows(list){return list.map(e=>{
  const st=effectiveEventStatus(e),endText=st==='Продолжается'?'…':fmt(e.end),daysText=eventDisplayDays(e);
  return '<tr><td class="nowrap">'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+esc(endText)+'</td><td>'+esc(daysText)+'</td><td><span class="pill">'+esc(st)+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>'
 })}
+function isMeetingEvent(e){
+ return /совещ|мероприят|встреч|апробац|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
+}
 function renderEvents(){
  const pf=document.getElementById('eventEmployeeFilter').value,tf=document.getElementById('eventTypeFilter').value,sf=document.getElementById('eventStatusFilter').value,q=document.getElementById('eventSearch').value.toLowerCase();
- const list=db.events.filter(e=>(!pf||e.personId===pf)&&(!tf||e.type===tf)&&(!sf||effectiveEventStatus(e)===sf)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
- document.getElementById('eventsTable').innerHTML=table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
+ const list=db.events.filter(e=>isMeetingEvent(e)&&(!pf||e.personId===pf)&&(!tf||e.type===tf)&&(!sf||effectiveEventStatus(e)===sf)&&(!q||JSON.stringify(e).toLowerCase().includes(q)))
+  .sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+ document.getElementById('eventsTable').innerHTML=table(['Участник','Мероприятие','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list));
 }
 function fmtShortYear(d){
  if(!d)return'';
@@ -804,7 +808,7 @@ function openEventModal(){document.getElementById('evStart').value=todayISO();do
 function openTaskModal(){document.getElementById('taskCreated').value=todayISO();document.getElementById('taskModal').classList.add('open')}
 function openPersonModal(){document.getElementById('personModal').classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
-function delEvent(id){if(confirm('Удалить событие?')){db.events=db.events.filter(x=>x.id!==id);save()}}
+function delEvent(id){if(confirm('Удалить мероприятие?')){db.events=db.events.filter(x=>x.id!==id);save()}}
 function delTask(id){if(confirm('Удалить задачу?')){db.tasks=db.tasks.filter(x=>x.id!==id);save()}}
 function delPerson(id){if(db.events.some(e=>e.personId===id)||db.tasks.some(t=>t.personId===id))return alert('Сначала удалите связанные события и задачи.');if(confirm('Удалить сотрудника?')){db.people=db.people.filter(x=>x.id!==id);save()}}
 function setTaskStatus(id,status){const t=db.tasks.find(x=>x.id===id);if(t){t.status=status;t.completed=status==='Выполнена'?todayISO():'';save()}}
