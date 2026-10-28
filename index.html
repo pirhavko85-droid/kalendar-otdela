@@ -35,7 +35,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .today-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric-label-mobile{display:none}.mobile-meeting-card{display:none}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .year-chart{display:grid;gap:8px}.year-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}.year-label{font-weight:700;font-size:12px;color:#44515e}.year-track{position:relative;min-height:38px;background:linear-gradient(90deg,#f6f8fb 0,#fff 100%);border:1px solid var(--line);border-radius:9px;overflow:hidden}.year-block{position:absolute;top:4px;bottom:4px;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 4px #0002}.leave-vbd{background:#f5a3a3;color:#681313}.leave-summer{background:#a9ddb9;color:#174b27}.leave-main{background:#ffe49a;color:#644b00}.leave-family{background:#a9c9f5;color:#173d70}.leave-other{background:#d9c8f0;color:#4f3570}
-.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.birthday-grid{display:grid;grid-template-columns:1fr;gap:8px}.birthday-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.5fr) minmax(120px,.8fr);gap:10px;align-items:center}.birthday-card .days{font-size:18px;font-weight:800;text-align:right}.birthday-card .date{color:var(--muted);font-size:12px}.nowrap{white-space:nowrap}.year-track{padding:4px;overflow:hidden}.year-lane{position:relative;height:28px;margin:0 0 4px}.year-lane:last-child{margin-bottom:0}.year-block{top:0;bottom:0}.trip-block{background:#b9d7ff;color:#174b78}
+.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.birthday-grid{display:grid;grid-template-columns:1fr;gap:5px}
+.birthday-line{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;white-space:nowrap;min-width:0;font-size:11px}
+.birthday-line.nearest{background:#fff9df;border-color:#ead58a}
+.birthday-line strong{color:#6b5200}
+.birthday-aff{margin-left:auto;background:#eef3f8;border-radius:999px;padding:2px 6px;font-size:9px;font-weight:700;color:#536273}.birthday-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.5fr) minmax(120px,.8fr);gap:10px;align-items:center}.birthday-card .days{font-size:18px;font-weight:800;text-align:right}.birthday-card .date{color:var(--muted);font-size:12px}.nowrap{white-space:nowrap}.year-track{padding:4px;overflow:hidden}.year-lane{position:relative;height:28px;margin:0 0 4px}.year-lane:last-child{margin-bottom:0}.year-block{top:0;bottom:0}.trip-block{background:#b9d7ff;color:#174b78}
 .trip-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .trip-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
 .trip-list-toggle summary::-webkit-details-marker{display:none}
@@ -176,7 +180,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-card{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name days" "date age";gap:2px 8px;padding:7px 9px;border-radius:10px;min-height:54px}.birthday-grid{gap:4px}.birthday-card>div:nth-child(1){grid-area:name;font-size:12px;font-weight:800;align-self:end}.birthday-card .date{grid-area:date;font-size:10px;align-self:start}.birthday-card>div:nth-child(2){grid-area:age;text-align:right;font-size:10.5px;font-weight:700;align-self:start}.birthday-card .days{grid-area:days;text-align:right;font-size:12px;line-height:1.1;align-self:end;white-space:nowrap}.birthday-card:first-child{background:#fff9df;border-color:#ead58a}.birthday-card:first-child .days{color:#7a5a00}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
+@media(max-width:520px){.birthday-grid{gap:3px}.birthday-line{gap:3px;padding:5px 6px;border-radius:9px;font-size:clamp(8px,2.35vw,9.5px);line-height:1.05}.birthday-aff{font-size:7.5px;padding:1px 4px}.birthday-line span,.birthday-line b,.birthday-line strong{min-width:0}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
 #todayEvents table{display:block;border:0;background:transparent}
 #todayEvents thead{display:none}
 #todayEvents tbody{display:grid;gap:5px}
@@ -223,7 +227,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.0</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -275,7 +279,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.0';
+const APP_VERSION='1.9.1';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -308,7 +312,7 @@ function normalizeDisplayData(x){
  };
  const old={};(x.people||[]).forEach(p=>old[p.id]=p);
  x.people=order.map(id=>Object.assign({},old[id]||{},meta[id]));
- x.birthdays=(x.birthdays||[]).map(b=>Object.assign({},b,{name:(b.id&&meta[b.id])?meta[b.id].short:(b.name||b.person||'')}));
+ x.birthdays=(x.birthdays||[]).map(b=>Object.assign({},b,{name:(b.id&&meta[b.id])?meta[b.id].short:(b.name||b.person||''),affiliation:b.affiliation||b.group||b.department||'Наш отдел'}));
  const seen=new Set();
  x.events=(x.events||[]).map(e=>{
    const y=Object.assign({},e);
@@ -323,7 +327,7 @@ function normalizeDisplayData(x){
  }).filter(e=>{if(!e.id)return true;if(seen.has(e.id))return false;seen.add(e.id);return true});
  if(!x.events.some(e=>e.id==='MEET-001'))x.events.push({
    id:'MEET-001',personId:'ПРВ',type:'Апробация на полигоне',start:'2026-10-30',end:'2026-10-30',days:1,status:'План',
-   comment:'Приказ № 103 от 28.10.2026. Апробацию на полигоне проводит Роман П.; от департамента участвует Роман П.'
+   comment:'Приказ № 103 от 28.10.2026. Апробацию на полигоне 30.10.2026 проводит Роман П. От нашего отдела участвует Роман П.'
  });
  const meetingDefaults=[
   {id:'MEET-002-P',personId:'ХПН',type:'Совещание с БПС',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'10:00',linkedEvent:'MEET-GRP-BPS-20261029-1000',comment:'Совещание с БПС в 10:00. Участники от отдела: Павел Х., Роман П.'},
@@ -658,14 +662,16 @@ function nextBirthday(dateStr){
 }
 function renderBirthdays(){
  let list=(db.birthdays||[]).slice();
- if(!list.length)list=(db.people||[]).filter(p=>p.birthdate||p.birthday).map(p=>({id:p.id,name:p.short,date:p.birthdate||p.birthday}));
+ if(!list.length)list=(db.people||[]).filter(p=>p.birthdate||p.birthday).map(p=>({id:p.id,name:p.short,date:p.birthdate||p.birthday,affiliation:'Наш отдел'}));
  const grid=document.getElementById('birthdaysGrid');
  if(!list.length){grid.innerHTML='<div class="empty">Дни рождения появятся после обновления защищённого снимка данных.</div>';return}
  const rows=list.map(b=>{const n=nextBirthday(b.date);return Object.assign({},b,{_n:n})}).filter(b=>b._n).sort((a,b)=>a._n.days-b._n.days);
- grid.innerHTML=rows.map(b=>{
+ grid.innerHTML=rows.map((b,idx)=>{
   const full=new Date(b.date+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
-  const when=b._n.days===0?'Сегодня':b._n.days===1?'Завтра':'Через '+b._n.days+' дн.';
-  return '<div class="birthday-card"><div><b>'+esc(b.name||b.person||'')+'</b></div><div><div class="date">'+esc(full)+'</div><div><b>Исполнится '+b._n.age+' лет</b></div></div><div class="days">'+esc(when)+'</div></div>';
+  const when=b._n.days===0?'сегодня':b._n.days===1?'завтра':'через '+b._n.days+' дн.';
+  const age='исполнится '+b._n.age+' лет';
+  const aff=b.affiliation||'Наш отдел';
+  return '<div class="birthday-line '+(idx===0?'nearest':'')+'"><b>'+esc(b.name||b.person||'')+'</b><span>·</span><span>'+esc(full)+'</span><span>·</span><strong>'+esc(when)+'</strong><span>·</span><span>'+esc(age)+'</span><span class="birthday-aff">'+esc(aff)+'</span></div>';
  }).join('');
 }
 function taskTable(list){return table(['Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
