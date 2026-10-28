@@ -43,6 +43,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .mobile-month-card.leave-family span{color:#173d70}
 .mobile-month-card.leave-other{background:#d9c8f0;border-color:#b8a1da;color:#4f3570}
 .mobile-month-card.leave-other span{color:#4f3570}
+#leaveChart .mobile-month-card,#tripsChart .mobile-month-card{margin:2px 0;border-radius:7px;padding:5px 7px}
+#tripsChart .mobile-month-card{background:#f7f9fc;border-color:#e1e6ed;color:#243447}
+#tripsChart .mobile-month-card span{color:#4f5d6b}
 
 
 @media(max-width:900px){
@@ -58,8 +61,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  th{position:static;top:auto}
  .calendar{grid-template-columns:repeat(2,minmax(0,1fr))}
  .year-track{min-height:26px;padding:3px}
- #leaveChart .year-track{display:none}
- #leaveChart .year-row{align-items:start}
+ #leaveChart .year-track,#tripsChart .year-track{display:none}
+ #leaveChart .year-row,#tripsChart .year-row{align-items:start}
+ #leaveChart .year-row>div:last-child,#tripsChart .year-row>div:last-child{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 5px;min-height:30px}
+ #leaveChart .year-mobile-list,#tripsChart .year-mobile-list{margin-top:0}
  .year-lane{height:20px;margin-bottom:2px}
  .year-block{font-size:0;padding:0;min-width:5px}
 
@@ -93,7 +98,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.5</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.6</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -139,7 +144,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.5';
+const APP_VERSION='1.6.6';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -265,6 +270,15 @@ function leaveClass(type){
 function monthItems(events,y,m){
  return events.map(e=>({e,r:overlapRange(e,y,m)})).filter(x=>x.r);
 }
+function eventDisplayDays(e){
+ const raw=Number(e.days);
+ if(Number.isFinite(raw)&&raw>=0&&raw<=366)return raw;
+ if(!e.start)return '';
+ const st=effectiveEventStatus(e),endStr=st==='Продолжается'?todayISO():(e.end||e.start);
+ const a=new Date(e.start+'T00:00:00'),b=new Date(endStr+'T00:00:00');
+ if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return '';
+ return Math.max(1,Math.round((b-a)/86400000)+1);
+}
 function monthMobileList(events,y,m,kind){
  const items=monthItems(events,y,m);
  if(!items.length)return kind==='leave'?'<div class="year-mobile-list"><div class="mobile-month-card"><span>—</span></div></div>':'';
@@ -274,7 +288,8 @@ function monthMobileList(events,y,m,kind){
   if(kind==='leave')label=e.type.replace('Отпуск ','');
   if(kind==='sick')label=e.type==='Болезнь по уходу за ребёнком'?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
-  const days=(e.days!==''&&e.days!=null)?(' · '+e.days+' дн.'):'';
+  const displayDays=eventDisplayDays(e);
+  const days=(displayDays!==''&&displayDays!=null)?(' · '+displayDays+' дн.'):'';
   const cardClass=kind==='leave'?' '+leaveClass(e.type):'';
   return '<div class="mobile-month-card'+cardClass+'"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+esc(days)+'</span></div>';
  }).join('')+'</div>';
