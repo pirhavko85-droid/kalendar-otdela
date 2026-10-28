@@ -107,7 +107,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
+@media(max-width:520px){.birthday-card{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name days" "date age";gap:2px 8px;padding:7px 9px;border-radius:10px;min-height:54px}.birthday-grid{gap:4px}.birthday-card>div:nth-child(1){grid-area:name;font-size:12px;font-weight:800;align-self:end}.birthday-card .date{grid-area:date;font-size:10px;align-self:start}.birthday-card>div:nth-child(2){grid-area:age;text-align:right;font-size:10.5px;font-weight:700;align-self:start}.birthday-card .days{grid-area:days;text-align:right;font-size:12px;line-height:1.1;align-self:end;white-space:nowrap}.birthday-card:first-child{background:#fff9df;border-color:#ead58a}.birthday-card:first-child .days{color:#7a5a00}#birthdays>h2{font-size:25px;line-height:1.05;margin:4px 0 10px}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
 #todayEvents table{display:block;border:0;background:transparent}
 #todayEvents thead{display:none}
 #todayEvents tbody{display:grid;gap:5px}
@@ -138,7 +138,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.1</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.2</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -184,7 +184,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.1';
+const APP_VERSION='1.8.2';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
