@@ -104,7 +104,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.8</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.9</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -150,7 +150,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.8';
+const APP_VERSION='1.6.9';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -184,13 +184,18 @@ function normalizeDisplayData(x){
  const old={};(x.people||[]).forEach(p=>old[p.id]=p);
  x.people=order.map(id=>Object.assign({},old[id]||{},meta[id]));
  x.birthdays=(x.birthdays||[]).map(b=>Object.assign({},b,{name:(b.id&&meta[b.id])?meta[b.id].short:(b.name||b.person||'')}));
+ const seen=new Set();
  x.events=(x.events||[]).map(e=>{
    const y=Object.assign({},e);
    if(y.type==='Больничный')y.type=(y.personId==='ГЮК'||y.personId==='СЕВ')?'Больна':'Болен';
    if(['Боевой отпуск','Ветеранский отпуск','Отпуск VBD','Отпуск ВБД'].includes(y.type))y.type='Отпуск ВБД';
    if(y.type==='Выход во время больничного')y.type='Выход на больничном';
+   if(y.status==='Продолжается'){
+     if(typeof y.end==='string' && (/^=/.test(y.end)||/Invalid Date/i.test(y.end))) y.end='';
+     if(typeof y.days==='string' && (/^=/.test(y.days)||/1900-|Invalid Date/i.test(y.days))) y.days='';
+   }
    return y;
- });
+ }).filter(e=>{if(!e.id)return true;if(seen.has(e.id))return false;seen.add(e.id);return true});
  return x;
 }
 let db=normalizeDisplayData(load());localStorage.setItem(KEY,JSON.stringify(db));
@@ -244,7 +249,10 @@ function renderToday(){
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
  document.getElementById('todayTasks').innerHTML=taskTable(list);
 }
-function eventRows(list){return list.map(e=>'<tr><td class="nowrap">'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+fmt(e.end)+'</td><td>'+esc(e.days??'')+'</td><td><span class="pill">'+esc(effectiveEventStatus(e))+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>')}
+function eventRows(list){return list.map(e=>{
+ const st=effectiveEventStatus(e),endText=st==='Продолжается'?'…':fmt(e.end),daysText=eventDisplayDays(e);
+ return '<tr><td class="nowrap">'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+esc(endText)+'</td><td>'+esc(daysText)+'</td><td><span class="pill">'+esc(st)+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>'
+})}
 function renderEvents(){
  const pf=document.getElementById('eventEmployeeFilter').value,tf=document.getElementById('eventTypeFilter').value,sf=document.getElementById('eventStatusFilter').value,q=document.getElementById('eventSearch').value.toLowerCase();
  const list=db.events.filter(e=>(!pf||e.personId===pf)&&(!tf||e.type===tf)&&(!sf||effectiveEventStatus(e)===sf)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
@@ -277,10 +285,13 @@ function monthItems(events,y,m){
  return events.map(e=>({e,r:overlapRange(e,y,m)})).filter(x=>x.r);
 }
 function eventDisplayDays(e){
- const raw=Number(e.days);
- if(Number.isFinite(raw)&&raw>=0&&raw<=366)return raw;
+ const st=effectiveEventStatus(e);
+ if(st!=='Продолжается'){
+  const raw=Number(e.days);
+  if(Number.isFinite(raw)&&raw>=0&&raw<=366)return raw;
+ }
  if(!e.start)return '';
- const st=effectiveEventStatus(e),endStr=st==='Продолжается'?todayISO():(e.end||e.start);
+ const endStr=st==='Продолжается'?todayISO():(e.end||e.start);
  const a=new Date(e.start+'T00:00:00'),b=new Date(endStr+'T00:00:00');
  if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return '';
  return Math.max(1,Math.round((b-a)/86400000)+1);
