@@ -23,7 +23,14 @@ main{padding:18px;max-width:1500px;width:100%;margin:auto}.section{display:none}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#eef3f8;color:#44515e;position:sticky;top:52px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#e8eef6}.pill.red{background:#fde7e4;color:#a1271d}.pill.green{background:#e2f4e8;color:#196d3c}.pill.amber{background:#fff2d8;color:#8a5a00}.overdue{background:#fff3f2}.completed{background:#f1fbf4}.muted{color:var(--muted)}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.form-grid .full{grid-column:1/-1}.form-grid textarea{min-height:80px}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.open{display:flex}.modal-box{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head button{border:0;background:transparent;font-size:24px;cursor:pointer}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day.nonwork{background:#ffdede!important;border-color:#e7aaaa!important}.day .n{font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.day .dow{font-size:11px;color:var(--muted);font-weight:700}.day .holiday{font-size:10px;color:#a33b3b;margin:0 0 5px;line-height:1.2}.day .mobile-day-meta{display:none}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.calendar-prefix,.week-block{grid-column:1/-1}
+.calendar-prefix{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week-block{border:1px solid #d7dee7;background:#f1f4f8;border-radius:14px;padding:7px;margin:2px 0 5px}
+.week-title{font-size:11px;font-weight:800;color:#667382;margin:0 0 6px 2px}
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day.adjacent{opacity:.72;background:#fafbfc}
+.day.adjacent.nonwork{background:#ffe7e7!important}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:100px;padding:7px;font-size:12px}.day.nonwork{background:#ffdede!important;border-color:#e7aaaa!important}.day .n{font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.day .dow{font-size:11px;color:var(--muted);font-weight:700}.day .holiday{font-size:10px;color:#a33b3b;margin:0 0 5px;line-height:1.2}.day .mobile-day-meta{display:none}.event-chip{display:block;padding:3px 5px;border-radius:6px;background:#e7eef8;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .empty{padding:30px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px}
 .today-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -100,11 +107,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
+@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.1</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.2</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -150,7 +157,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.7.1';
+const APP_VERSION='1.7.2';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -463,15 +470,41 @@ function renderStats(){
   out.innerHTML='<div class="card">'+rows.map((x,i)=>'<div class="rank-row"><b>'+(i+1)+'</b><span>'+esc(x.p.short)+'</span><b>'+x.n+' нар.</b></div>').join('')+'</div>';return;
  }
 }
+function calendarDayHtml(dateStr,adjacent=false){
+ const d=new Date(dateStr+'T00:00:00'),info=productionDayInfo(dateStr),ev=db.events.filter(e=>activeEvent(e,dateStr));
+ const mobileMeta=info.dow+(info.label?' · '+info.label:'');
+ return '<div class="day '+(info.nonwork?'nonwork ':'')+(adjacent?'adjacent':'')+'"><div class="n"><span>'+d.getDate()+'</span><span class="dow">'+info.dow+'</span><span class="mobile-day-meta">'+esc(mobileMeta)+'</span></div>'+(info.label?'<div class="holiday">'+esc(info.label)+'</div>':'')+ev.map(e=>'<span class="event-chip">'+esc(person(e.personId)?.short||'')+' • '+esc(e.type)+'</span>').join('')+'</div>';
+}
+function isoDateLocal(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function renderCalendar(){
- const y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById('monthTitle').textContent=calDate.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
- const first=(new Date(y,m,1).getDay()+6)%7,days=new Date(y,m+1,0).getDate();let html='';
- for(let i=0;i<first;i++)html+='<div></div>';
- for(let d=1;d<=days;d++){
-  const date=[y,String(m+1).padStart(2,'0'),String(d).padStart(2,'0')].join('-');
-  const info=productionDayInfo(date),ev=db.events.filter(e=>activeEvent(e,date));
-  const mobileMeta=info.dow+(info.label?' · '+info.label:'');
-  html+='<div class="day '+(info.nonwork?'nonwork':'')+'"><div class="n"><span>'+d+'</span><span class="dow">'+info.dow+'</span><span class="mobile-day-meta">'+esc(mobileMeta)+'</span></div>'+(info.label?'<div class="holiday">'+esc(info.label)+'</div>':'')+ev.map(e=>'<span class="event-chip">'+esc(person(e.personId)?.short||'')+' • '+esc(e.type)+'</span>').join('')+'</div>'
+ const y=calDate.getFullYear(),m=calDate.getMonth();
+ document.getElementById('monthTitle').textContent=calDate.toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+ const firstDate=new Date(y,m,1),lastDate=new Date(y,m+1,0),firstDow=(firstDate.getDay()+6)%7;
+ let html='';
+
+ // Начальный фрагмент месяца до первого понедельника — без номера недели.
+ if(firstDow!==0){
+   html+='<div class="calendar-prefix">';
+   for(let i=0;i<firstDow;i++)html+='<div></div>';
+   const firstMonday=new Date(y,m,1+(7-firstDow));
+   for(let d=new Date(firstDate);d<firstMonday&&d<=lastDate;d.setDate(d.getDate()+1))html+=calendarDayHtml(isoDateLocal(d),false);
+   html+='</div>';
+ }
+
+ // Первый понедельник месяца.
+ let monday;
+ if(firstDow===0)monday=new Date(y,m,1);
+ else monday=new Date(y,m,1+(7-firstDow));
+ let weekNo=1;
+ while(monday<=lastDate){
+   html+='<div class="week-block"><div class="week-title">'+weekNo+'-я неделя</div><div class="week-days">';
+   for(let i=0;i<7;i++){
+     const d=new Date(monday);d.setDate(monday.getDate()+i);
+     const adjacent=d.getMonth()!==m;
+     html+=calendarDayHtml(isoDateLocal(d),adjacent);
+   }
+   html+='</div></div>';
+   monday.setDate(monday.getDate()+7);weekNo++;
  }
  document.getElementById('calendarGrid').innerHTML=html;
 }
