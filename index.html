@@ -111,7 +111,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.2</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.3</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -157,7 +157,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.7.2';
+const APP_VERSION='1.7.3';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -497,7 +497,8 @@ function renderCalendar(){
  else monday=new Date(y,m,1+(7-firstDow));
  let weekNo=1;
  while(monday<=lastDate){
-   html+='<div class="week-block"><div class="week-title">'+weekNo+'-я неделя</div><div class="week-days">';
+   const monthName=new Date(y,m,1).toLocaleDateString('ru-RU',{month:'long'});
+   html+='<div class="week-block"><div class="week-title">'+weekNo+'-я неделя '+esc(monthName)+' '+y+' года</div><div class="week-days">';
    for(let i=0;i<7;i++){
      const d=new Date(monday);d.setDate(monday.getDate()+i);
      const adjacent=d.getMonth()!==m;
