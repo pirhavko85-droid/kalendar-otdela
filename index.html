@@ -100,11 +100,11 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.day{min-height:56px;padding:5px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
+@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:1fr}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.0</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.1</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -150,7 +150,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.7.0';
+const APP_VERSION='1.7.1';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -209,7 +209,7 @@ function fmtShort(d){if(!d)return'';const x=new Date(d+'T00:00:00');return Strin
 function todayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function person(id){return db.people.find(x=>x.id===id)}
 function effectiveEventStatus(e,date=todayISO()){return e.status==='План'&&e.start&&e.start<=date?'Факт':e.status}
-function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?date:(e.end||e.start));return e.start<=date && end>=date && st!=='Замена'}
+function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?todayISO():(e.end||e.start));return e.start<=date && end>=date && st!=='Замена'}
 function overdue(t){return t.deadline && t.deadline<todayISO()&&!['Выполнена','Отменена'].includes(t.status)}
 function fillSelect(id,arr,placeholder){const el=document.getElementById(id);el.innerHTML=(placeholder?'<option value="">'+placeholder+'</option>':'')+arr.map(x=>'<option>'+esc(x)+'</option>').join('')}
 function fillPeopleSelect(id,placeholder='Выберите сотрудника'){const el=document.getElementById(id);el.innerHTML='<option value="">'+placeholder+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+esc(p.short||p.full)+'</option>').join('')}
