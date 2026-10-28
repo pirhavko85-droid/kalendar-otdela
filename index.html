@@ -55,11 +55,26 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .trip-compact-dates{color:#55708f;white-space:nowrap;font-size:9.5px}
 .trip-compact-days{font-weight:800;white-space:nowrap;border-radius:999px;padding:1px 5px;background:#dcecff;color:#174b78}
 @media(max-width:520px){
+ .sick-list-toggle{margin-top:7px}
+ .sick-list-toggle summary{padding:7px 9px;font-size:11px}
+ #sickCompactList{padding:5px;gap:3px}
+ .sick-compact-card{grid-template-columns:minmax(72px,1fr) minmax(90px,1.2fr) auto;grid-template-areas:"name type days" "dates dates dates" "comment comment comment";gap:2px 5px;min-height:34px;padding:4px 6px}
+ .sick-compact-card b{grid-area:name;font-size:10.3px}
+ .sick-compact-type{grid-area:type;font-size:9.6px}
+ .sick-compact-dates{grid-area:dates;font-size:9.2px}
+ .sick-compact-days{grid-area:days;font-size:9.2px;padding:1px 5px}
+ .sick-compact-comment{grid-area:comment;font-size:8px}
  .trip-list-toggle{margin-top:7px}
  .trip-list-toggle summary{padding:7px 9px;font-size:11px}
  #tripCompactList{grid-template-columns:1fr;gap:3px;padding:5px}
  .trip-compact-card{min-height:31px;padding:4px 6px}
-}.sick-self{background:#f4b7b7;color:#6d2020}.sick-child{background:#b9d7ff;color:#173d70}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
+}.sick-self{background:#f4b7b7;color:#6d2020}.sick-child{background:#b9d7ff;color:#173d70}
+.sick-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sick-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
+.sick-list-toggle summary::-webkit-details-marker{display:none}.sick-list-toggle[open] summary{background:#eef3f8}
+#sickCompactList{display:grid;gap:4px;padding:7px}.sick-compact-card{display:grid;grid-template-columns:minmax(88px,1fr) minmax(110px,1.2fr) auto auto;gap:6px;align-items:center;min-height:36px;padding:5px 7px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:10.5px;line-height:1.1}
+.sick-compact-card b{font-size:10.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sick-compact-type{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sick-compact-dates{color:var(--muted);white-space:nowrap;font-size:10px}.sick-compact-days{font-weight:800;white-space:nowrap;border-radius:999px;padding:2px 6px;background:#eef2f6}.sick-compact-comment{grid-column:1/-1;font-size:8.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sick-self-card{background:#fff1f1;border-color:#efb1b1}.sick-child-card{background:#eff5ff;border-color:#b7cff2}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
 .duty-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .duty-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
 .duty-list-toggle summary::-webkit-details-marker{display:none}
@@ -234,7 +249,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.3</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.9.4</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -267,7 +282,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="trips" class="section"><h2>Командировки</h2><div id="tripsChart"></div>
 <details class="trip-list-toggle"><summary><span>Список командировок</span><span class="muted">Показать</span></summary><div id="tripCompactList"></div></details>
 <div id="tripsTable" style="display:none"></div></section>
-<section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><div id="sickTable" style="margin-top:14px"></div></section>
+<section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><details class="sick-list-toggle"><summary><span>История больничных</span><span class="muted">Показать</span></summary><div id="sickCompactList"></div></details><div id="sickTable" style="display:none"></div></section>
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
 <section id="stats" class="section"><h2>Статистика</h2><div class="toolbar"><select id="statsPeriod"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid"></div><div id="statsTable" style="margin-top:12px"></div></section>
@@ -286,7 +301,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.9.3';
+const APP_VERSION='1.9.4';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -673,6 +688,24 @@ function renderTripCompactList(){
   return '<div class="trip-compact-card" title="'+esc((e.comment||'')+' '+st)+'"><span class="trip-compact-name">'+esc(who)+'</span><span class="trip-compact-dates">'+esc(dates)+'</span><span class="trip-compact-days">'+esc(days)+'</span></div>';
  }).join('');
 }
+function renderSickCompactList(){
+ const types=['Болен','Больна','Болезнь по уходу за ребёнком'];
+ const list=db.events.filter(e=>types.includes(e.type)).slice().sort((a,b)=>(b.start||'').localeCompare(a.start||''));
+ const target=document.getElementById('sickCompactList');
+ if(!target)return;
+ if(!list.length){target.innerHTML='<div class="empty">Пока нет данных о больничных</div>';return}
+ target.innerHTML=list.map(e=>{
+  const who=person(e.personId)?.short||'—';
+  const child=e.type==='Болезнь по уходу за ребёнком';
+  const label=child?'По уходу за ребёнком':'Болеет';
+  const st=effectiveEventStatus(e);
+  const end=st==='Продолжается'?'по настоящее время':fmtShortYear(e.end||e.start);
+  const dates=fmtShortYear(e.start)+(e.end||st==='Продолжается'?'–'+end:'');
+  const d=eventDisplayDays(e),days=(d!==''&&d!=null)?d+' '+dayWord(Number(d)):'—';
+  const comment=e.comment?'<span class="sick-compact-comment">'+esc(e.comment)+'</span>':'';
+  return '<div class="sick-compact-card '+(child?'sick-child-card':'sick-self-card')+'"><b>'+esc(who)+'</b><span class="sick-compact-type">'+esc(label)+'</span><span class="sick-compact-dates">'+esc(dates)+'</span><span class="sick-compact-days">'+esc(days)+'</span>'+comment+'</div>';
+ }).join('');
+}
 function renderTimelineChart(target,types,kind){
  const months=Array.from({length:12},(_,m)=>({y:2026,m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const list=db.events.filter(e=>types.includes(e.type));
@@ -681,6 +714,7 @@ function renderTimelineChart(target,types,kind){
   return '<div class="year-row '+(kind==='trip'&&!hasItems?'trip-empty-month':'')+'"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>';
  }).join('')+'</div>';
  if(kind==='trip')renderTripCompactList();
+ if(kind==='sick')renderSickCompactList();
 }
 function renderDutyCompactList(){
  const list=db.events.filter(e=>e.type==='Наряд').slice().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
