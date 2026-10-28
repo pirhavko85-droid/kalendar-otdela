@@ -1,4 +1,4 @@
-const CACHE='kalendar-otdela-v15';
+const CACHE='kalendar-otdela-v16';
 const CORE=['./','./index.html','./manifest.json'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
