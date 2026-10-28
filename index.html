@@ -46,6 +46,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #leaveChart .mobile-month-card,#tripsChart .mobile-month-card{margin:2px 0;border-radius:7px;padding:5px 7px}
 #tripsChart .mobile-month-card{background:#f7f9fc;border-color:#e1e6ed;color:#243447}
 #tripsChart .mobile-month-card span{color:#4f5d6b}
+#sickChart .mobile-month-card{background:#fff;border-color:#e1e6ed;color:#243447}
+#sickChart .mobile-month-card span{color:#4f5d6b}
+#sickChart .mobile-month-card.sick-self{background:#f4b7b7;border-color:#df9797;color:#6d2020}
+#sickChart .mobile-month-card.sick-self span{color:#6d2020}
+#sickChart .mobile-month-card.sick-child{background:#c9b8f5;border-color:#ab95e1;color:#493174}
+#sickChart .mobile-month-card.sick-child span{color:#493174}
 
 
 @media(max-width:900px){
@@ -61,10 +67,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  th{position:static;top:auto}
  .calendar{grid-template-columns:repeat(2,minmax(0,1fr))}
  .year-track{min-height:26px;padding:3px}
- #leaveChart .year-track,#tripsChart .year-track{display:none}
- #leaveChart .year-row,#tripsChart .year-row{align-items:start}
- #leaveChart .year-row>div:last-child,#tripsChart .year-row>div:last-child{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 5px;min-height:30px}
- #leaveChart .year-mobile-list,#tripsChart .year-mobile-list{margin-top:0}
+ #leaveChart .year-track,#tripsChart .year-track,#sickChart .year-track{display:none}
+ #leaveChart .year-row,#tripsChart .year-row,#sickChart .year-row{align-items:start}
+ #leaveChart .year-row>div:last-child,#tripsChart .year-row>div:last-child,#sickChart .year-row>div:last-child{background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 5px;min-height:30px}
+ #leaveChart .year-mobile-list,#tripsChart .year-mobile-list,#sickChart .year-mobile-list{margin-top:0}
  .year-lane{height:20px;margin-bottom:2px}
  .year-block{font-size:0;padding:0;min-width:5px}
 
@@ -98,7 +104,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.6</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.6.7</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -144,7 +150,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.6.6';
+const APP_VERSION='1.6.7';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -290,7 +296,7 @@ function monthMobileList(events,y,m,kind){
   const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
   const displayDays=eventDisplayDays(e);
   const days=(displayDays!==''&&displayDays!=null)?(' · '+displayDays+' дн.'):'';
-  const cardClass=kind==='leave'?' '+leaveClass(e.type):'';
+  const cardClass=kind==='leave'?' '+leaveClass(e.type):kind==='sick'?' '+(e.type==='Болезнь по уходу за ребёнком'?'sick-child':'sick-self'):'';
   return '<div class="mobile-month-card'+cardClass+'"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+esc(days)+'</span></div>';
  }).join('')+'</div>';
 }
