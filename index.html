@@ -35,7 +35,22 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .today-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}.metric-label-mobile{display:none}.mobile-meeting-card{display:none}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .year-chart{display:grid;gap:8px}.year-row{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}.year-label{font-weight:700;font-size:12px;color:#44515e}.year-track{position:relative;min-height:38px;background:linear-gradient(90deg,#f6f8fb 0,#fff 100%);border:1px solid var(--line);border-radius:9px;overflow:hidden}.year-block{position:absolute;top:4px;bottom:4px;border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 4px #0002}.leave-vbd{background:#f5a3a3;color:#681313}.leave-summer{background:#a9ddb9;color:#174b27}.leave-main{background:#ffe49a;color:#644b00}.leave-family{background:#a9c9f5;color:#173d70}.leave-other{background:#d9c8f0;color:#4f3570}
-.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.birthday-grid{display:grid;grid-template-columns:1fr;gap:8px}.birthday-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.5fr) minmax(120px,.8fr);gap:10px;align-items:center}.birthday-card .days{font-size:18px;font-weight:800;text-align:right}.birthday-card .date{color:var(--muted);font-size:12px}.nowrap{white-space:nowrap}.year-track{padding:4px;overflow:hidden}.year-lane{position:relative;height:28px;margin:0 0 4px}.year-lane:last-child{margin-bottom:0}.year-block{top:0;bottom:0}.trip-block{background:#b9d7ff;color:#174b78}.sick-self{background:#f4b7b7;color:#6d2020}.sick-child{background:#b9d7ff;color:#173d70}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
+.duty-row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:start;margin:6px 0}.duty-month{font-weight:700;font-size:11px;color:#44515e;padding-top:5px}.duty-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-height:34px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:4px}.duty-chip{background:#e7eef8;border-radius:7px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.desktop-exits{display:block}.mobile-exits{display:none}.birthday-grid{display:grid;grid-template-columns:1fr;gap:8px}.birthday-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.5fr) minmax(120px,.8fr);gap:10px;align-items:center}.birthday-card .days{font-size:18px;font-weight:800;text-align:right}.birthday-card .date{color:var(--muted);font-size:12px}.nowrap{white-space:nowrap}.year-track{padding:4px;overflow:hidden}.year-lane{position:relative;height:28px;margin:0 0 4px}.year-lane:last-child{margin-bottom:0}.year-block{top:0;bottom:0}.trip-block{background:#b9d7ff;color:#174b78}
+.trip-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.trip-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
+.trip-list-toggle summary::-webkit-details-marker{display:none}
+.trip-list-toggle[open] summary{background:#eef3f8}
+#tripCompactList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:7px}
+.trip-compact-card{display:grid;grid-template-columns:minmax(78px,1fr) auto auto;gap:6px;align-items:center;min-height:34px;padding:5px 7px;border:1px solid #b9d7ff;border-radius:9px;background:#eff6ff;font-size:10px;line-height:1.1}
+.trip-compact-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trip-compact-dates{color:#55708f;white-space:nowrap;font-size:9.5px}
+.trip-compact-days{font-weight:800;white-space:nowrap;border-radius:999px;padding:1px 5px;background:#dcecff;color:#174b78}
+@media(max-width:520px){
+ .trip-list-toggle{margin-top:7px}
+ .trip-list-toggle summary{padding:7px 9px;font-size:11px}
+ #tripCompactList{grid-template-columns:1fr;gap:3px;padding:5px}
+ .trip-compact-card{min-height:31px;padding:4px 6px}
+}.sick-self{background:#f4b7b7;color:#6d2020}.sick-child{background:#b9d7ff;color:#173d70}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
 .duty-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .duty-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
 .duty-list-toggle summary::-webkit-details-marker{display:none}
@@ -200,7 +215,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.6</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.7</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -230,7 +245,9 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyChart"></div>
 <details class="duty-list-toggle"><summary><span>Список нарядов</span><span class="muted">Показать</span></summary><div id="dutyCompactList"></div></details>
 <div id="dutyTable" style="display:none"></div></section>
-<section id="trips" class="section"><h2>Командировки</h2><div id="tripsChart"></div><div id="tripsTable" style="margin-top:14px"></div></section>
+<section id="trips" class="section"><h2>Командировки</h2><div id="tripsChart"></div>
+<details class="trip-list-toggle"><summary><span>Список командировок</span><span class="muted">Показать</span></summary><div id="tripCompactList"></div></details>
+<div id="tripsTable" style="display:none"></div></section>
 <section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><div id="sickTable" style="margin-top:14px"></div></section>
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
 <section id="tasks" class="section"><div class="toolbar"><button class="primary" onclick="openTaskModal()">+ Задача</button><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div><div id="tasksTable"></div></section>
@@ -250,7 +267,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.6';
+const APP_VERSION='1.8.7';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -570,10 +587,25 @@ function renderLeaveChart(){
  document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
  renderLeaveCompactList();
 }
+function renderTripCompactList(){
+ const list=db.events.filter(e=>e.type==='Командировка').slice().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+ const target=document.getElementById('tripCompactList');
+ if(!target)return;
+ if(!list.length){target.innerHTML='<div class="empty">Пока нет данных о командировках</div>';return}
+ target.innerHTML=list.map(e=>{
+  const who=person(e.personId)?.short||'—';
+  const st=effectiveEventStatus(e);
+  const end=st==='Продолжается'?'…':fmtShortYear(e.end||e.start);
+  const dates=fmtShortYear(e.start)+(e.end||st==='Продолжается'?'–'+end:'');
+  const d=eventDisplayDays(e),days=(d!==''&&d!=null)?d+' '+dayWord(Number(d)):'—';
+  return '<div class="trip-compact-card" title="'+esc((e.comment||'')+' '+st)+'"><span class="trip-compact-name">'+esc(who)+'</span><span class="trip-compact-dates">'+esc(dates)+'</span><span class="trip-compact-days">'+esc(days)+'</span></div>';
+ }).join('');
+}
 function renderTimelineChart(target,types,kind){
  const months=Array.from({length:12},(_,m)=>({y:2026,m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const list=db.events.filter(e=>types.includes(e.type));
  document.getElementById(target).innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>').join('')+'</div>';
+ if(kind==='trip')renderTripCompactList();
 }
 function renderDutyCompactList(){
  const list=db.events.filter(e=>e.type==='Наряд').slice().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
