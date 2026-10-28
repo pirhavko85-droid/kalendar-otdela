@@ -114,6 +114,14 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #leaveChart .mobile-month-card,#tripsChart .mobile-month-card{margin:2px 0;border-radius:7px;padding:5px 7px}
 #tripsChart .mobile-month-card{background:#f7f9fc;border-color:#e1e6ed;color:#243447}
 #tripsChart .mobile-month-card span{color:#4f5d6b}
+@media(max-width:900px){
+ #tripsChart .trip-empty-month{display:none}
+ #tripsChart .year-chart{gap:4px}
+ #tripsChart .year-row{grid-template-columns:64px 1fr}
+ #tripsChart .year-label{padding-top:6px}
+ #tripsChart .mobile-month-card{padding:4px 6px;margin:1px 0}
+ .trip-list-toggle{margin-top:8px}
+}
 #sickChart .mobile-month-card{background:#fff;border-color:#e1e6ed;color:#243447}
 #sickChart .mobile-month-card span{color:#4f5d6b}
 #sickChart .mobile-month-card.sick-self{background:#f4b7b7;border-color:#df9797;color:#6d2020}
@@ -215,7 +223,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.7</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.8</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -267,7 +275,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.7';
+const APP_VERSION='1.8.8';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -543,7 +551,7 @@ function monthMobileList(events,y,m,kind){
   let label=e.type;
   if(kind==='leave')label=e.type.replace('Отпуск ','');
   if(kind==='sick')label=e.type==='Болезнь по уходу за ребёнком'?'по уходу за ребёнком':'болеет';
-  const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
+  const endLabel=effectiveEventStatus(e)==='Продолжается'?(kind==='trip'?'по наст. вр.':'…'):fmtShort(e.end||e.start);
   const displayDays=eventDisplayDays(e);
   const days=(displayDays!==''&&displayDays!=null)?(' · '+displayDays+' дн.'):'';
   const cardClass=kind==='leave'?' '+leaveClass(e.type):kind==='sick'?' '+(e.type==='Болезнь по уходу за ребёнком'?'sick-child':'sick-self'):'';
@@ -574,7 +582,7 @@ function renderLeaveCompactList(){
   const who=person(e.personId)?.short||'—';
   const type=e.type==='Основной отпуск'?'Основной':e.type==='Летний отпуск'?'Летний':e.type==='Отпуск ВБД'?'ВБД':e.type==='Отпуск по семейным обстоятельствам'?'Семейный':'Доп.';
   const st=effectiveEventStatus(e);
-  const end=st==='Продолжается'?'…':fmtShortYear(e.end||e.start);
+  const end=st==='Продолжается'?'по настоящее время':fmtShortYear(e.end||e.start);
   const dates=fmtShortYear(e.start)+(e.end||st==='Продолжается'?'–'+end:'');
   const d=eventDisplayDays(e),days=(d!==''&&d!=null)?d+' '+dayWord(Number(d)):'—';
   return '<div class="leave-compact-card '+leaveClass(e.type)+'" title="'+esc((e.comment||'')+' '+st)+'"><b>'+esc(who)+'</b><span class="leave-compact-type">'+esc(type)+'</span><span class="leave-compact-dates">'+esc(dates)+'</span><span class="leave-compact-days">'+esc(days)+'</span></div>';
@@ -604,7 +612,10 @@ function renderTripCompactList(){
 function renderTimelineChart(target,types,kind){
  const months=Array.from({length:12},(_,m)=>({y:2026,m,label:new Date(2026,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const list=db.events.filter(e=>types.includes(e.type));
- document.getElementById(target).innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>').join('')+'</div>';
+ document.getElementById(target).innerHTML='<div class="year-chart">'+months.map(mm=>{
+  const hasItems=monthItems(list,mm.y,mm.m).length>0;
+  return '<div class="year-row '+(kind==='trip'&&!hasItems?'trip-empty-month':'')+'"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>';
+ }).join('')+'</div>';
  if(kind==='trip')renderTripCompactList();
 }
 function renderDutyCompactList(){
