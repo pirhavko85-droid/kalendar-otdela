@@ -133,6 +133,10 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .exit-card .exit-type{grid-area:type;font-size:10.5px;text-align:right;white-space:nowrap}
 .exit-card .exit-date{grid-area:date;font-size:10px;color:var(--muted)}
 .exit-card .exit-days{grid-area:days;font-size:9px;font-weight:700;border-radius:999px;padding:1px 6px;background:#e8eef6;white-space:nowrap}
+.exits-summary{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:8px 0 14px}.exits-summary .card{padding:10px 12px}.exits-summary .card h3{font-size:11px;margin-bottom:4px}.exits-summary .metric{font-size:22px}.exits-summary .metric.small{font-size:14px;line-height:1.15}
+.exits-monthly{display:grid;gap:8px}.exit-month{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}.exit-month summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px;align-items:center;padding:10px 12px;background:#f7f9fc}.exit-month summary::-webkit-details-marker{display:none}.exit-month[open] summary{background:#eef3f8}.exit-month-title{font-weight:800;font-size:13px}.exit-month-total{font-size:11px;font-weight:800;color:#34495e;background:#e8eef6;border-radius:999px;padding:4px 8px;white-space:nowrap}.exit-month-body{padding:10px 12px}.exit-month-breakdown{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.exit-mini{font-size:10px;border-radius:999px;padding:4px 7px;background:#f1f4f8;color:#44515e}.exit-people{display:grid;gap:5px;margin:8px 0}.exit-person-row{display:grid;grid-template-columns:minmax(110px,1fr) auto auto;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;font-size:11px}.exit-person-row b{font-size:11px}.exit-person-days{font-weight:800}.exit-detail-list{display:grid;gap:4px;margin-top:8px}
+@media(max-width:900px){.exits-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.exits-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.exits-summary .card{padding:7px 8px}.exits-summary .card h3{font-size:9px}.exits-summary .metric{font-size:18px}.exits-summary .metric.small{font-size:11px}.exit-month summary{padding:8px 9px}.exit-month-body{padding:8px}.exit-person-row{grid-template-columns:minmax(90px,1fr) auto auto;gap:5px;padding:5px 6px}}
 #exits>h2{font-size:25px;line-height:1.05;margin:4px 0 8px}
 #exits>p{font-size:11px;line-height:1.25;margin:0 0 8px}
 #today{margin-top:-2px}
@@ -150,7 +154,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.3</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.8.4</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -171,7 +175,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar"><button id="prevMonth">←</button><strong id="monthTitle"></strong><button id="nextMonth">→</button></div><div id="calendarGrid" class="calendar"></div></section>
 <section id="events" class="section"><div class="toolbar"><button class="primary" onclick="openEventModal()">+ Событие</button><select id="eventEmployeeFilter"><option value="">Все сотрудники</option></select><select id="eventTypeFilter"><option value="">Все типы</option></select><select id="eventStatusFilter"><option value="">Все статусы</option></select><input id="eventSearch" placeholder="Поиск"></div><div id="eventsTable"></div></section>
-<section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsTable"></div></section>
+<section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><div id="exitsMonthly" class="exits-monthly"></div><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><h2>Отпуска</h2>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
 <div id="leaveChart"></div><div id="leaveTable" style="margin-top:14px"></div></section>
@@ -196,7 +200,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.8.3';
+const APP_VERSION='1.8.4';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -337,7 +341,84 @@ function exitMobileType(type){
  if(type==='Выход в отпуске')return'Выход в отпуске';
  return type;
 }
+function exitCountable(e){
+ const st=effectiveEventStatus(e);
+ return st==='Факт'||st==='Продолжается';
+}
+function exitDays(e){
+ const d=Number(eventDisplayDays(e));
+ return Number.isFinite(d)?d:0;
+}
+function dayWord(n){
+ const v=Math.abs(n)%100,last=v%10;
+ if(v>10&&v<20)return'дней';
+ if(last===1)return'день';
+ if(last>=2&&last<=4)return'дня';
+ return'дней';
+}
+function exitTypeShort(type){
+ if(type==='Выход в выходной/праздничный день')return'Выходные';
+ if(type==='Выход на больничном')return'На больничном';
+ if(type==='Выход в отпуске')return'В отпуске';
+ return type;
+}
+function renderExitsAnalytics(list){
+ const actual=list.filter(exitCountable);
+ const today=new Date(),year=today.getFullYear(),month=today.getMonth();
+ const yearList=actual.filter(e=>new Date(e.start+'T00:00:00').getFullYear()===year);
+ const monthList=yearList.filter(e=>new Date(e.start+'T00:00:00').getMonth()===month);
+ const sum=x=>x.reduce((s,e)=>s+exitDays(e),0);
+ const byPerson={};
+ yearList.forEach(e=>{const k=e.personId;byPerson[k]=(byPerson[k]||0)+exitDays(e)});
+ const leader=Object.entries(byPerson).sort((a,b)=>b[1]-a[1])[0];
+ const leaderText=leader?(person(leader[0])?.short||'—')+' · '+leader[1]+' '+dayWord(leader[1]):'—';
+ const weekend=yearList.filter(e=>e.type==='Выход в выходной/праздничный день');
+ const special=yearList.filter(e=>e.type==='Выход на больничном'||e.type==='Выход в отпуске');
+ document.getElementById('exitsSummary').innerHTML=[
+  ['Итого за '+year,sum(yearList)+' '+dayWord(sum(yearList))],
+  ['Текущий месяц',sum(monthList)+' '+dayWord(sum(monthList))],
+  ['Выходов в выходные',weekend.length],
+  ['Больничный / отпуск',special.length],
+  ['Больше всех',leaderText]
+ ].map(([a,b],i)=>'<div class="card"><h3>'+esc(a)+'</h3><div class="metric '+(i===4?'small':'')+'">'+esc(b)+'</div></div>').join('');
+
+ const monthMap=new Map();
+ list.forEach(e=>{
+  if(!e.start)return;
+  const d=new Date(e.start+'T00:00:00');
+  if(Number.isNaN(d.getTime()))return;
+  const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  if(!monthMap.has(key))monthMap.set(key,[]);
+  monthMap.get(key).push(e);
+ });
+ const keys=[...monthMap.keys()].sort().reverse();
+ const currentKey=year+'-'+String(month+1).padStart(2,'0');
+ document.getElementById('exitsMonthly').innerHTML=keys.length?keys.map(key=>{
+   const arr=monthMap.get(key),parts=key.split('-'),y=Number(parts[0]),m=Number(parts[1])-1;
+   const actualMonth=arr.filter(exitCountable),days=sum(actualMonth);
+   const monthName=new Date(y,m,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+   const counts={
+    weekend:actualMonth.filter(e=>e.type==='Выход в выходной/праздничный день').length,
+    sick:actualMonth.filter(e=>e.type==='Выход на больничном').length,
+    leave:actualMonth.filter(e=>e.type==='Выход в отпуске').length
+   };
+   const pp={};
+   actualMonth.forEach(e=>{
+    if(!pp[e.personId])pp[e.personId]={days:0,count:0};
+    pp[e.personId].days+=exitDays(e);pp[e.personId].count++;
+   });
+   const personRows=Object.entries(pp).sort((a,b)=>b[1].days-a[1].days).map(([id,v])=>'<div class="exit-person-row"><b>'+esc(person(id)?.short||'—')+'</b><span>'+v.count+' '+(v.count===1?'выход':'выхода')+'</span><span class="exit-person-days">'+v.days+' '+dayWord(v.days)+'</span></div>').join('');
+   const details=arr.sort((a,b)=>(a.start||'').localeCompare(b.start||'')).map(e=>{
+    const cls=e.type==='Выход на больничном'?' exit-sick':e.type==='Выход в отпуске'?' exit-leave':'';
+    const same=!e.end||e.end===e.start,date=same?fmtShortYear(e.start):(fmtShortYear(e.start)+'–'+fmtShortYear(e.end));
+    const d=exitDays(e),planned=!exitCountable(e);
+    return '<div class="exit-card'+cls+'"><div class="exit-name">'+esc(person(e.personId)?.short||'—')+'</div><div class="exit-type">'+esc(exitMobileType(e.type))+(planned?' · План':'')+'</div><div class="exit-date">'+esc(date)+'</div><div class="exit-days">'+esc(d+' '+dayWord(d))+'</div></div>';
+   }).join('');
+   return '<details class="exit-month" '+(key===currentKey?'open':'')+'><summary><span class="exit-month-title">'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))+'</span><span class="exit-month-total">Итого: '+days+' '+dayWord(days)+'</span></summary><div class="exit-month-body"><div class="exit-month-breakdown"><span class="exit-mini">Выходные: '+counts.weekend+'</span><span class="exit-mini">На больничном: '+counts.sick+'</span><span class="exit-mini">В отпуске: '+counts.leave+'</span></div>'+(personRows?'<div class="exit-people">'+personRows+'</div>':'<div class="muted">Фактической переработки пока нет</div>')+'<div class="exit-detail-list">'+details+'</div></div></details>';
+ }).join(''):'<div class="empty">Пока нет данных о переработке</div>';
+}
 function renderExitsView(list){
+ renderExitsAnalytics(list);
  const desktop='<div class="desktop-exits">'+table(['Сотрудник','Тип','Начало','Окончание','Дни','Статус','Комментарий',''],eventRows(list))+'</div>';
  const mobile='<div class="mobile-exits">'+list.map(e=>{
    const who=person(e.personId)?.short||'—';
