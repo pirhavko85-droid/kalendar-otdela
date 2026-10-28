@@ -107,11 +107,24 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .section>div[id$="Table"]:not(#leaveTable):not(#tripsTable):not(#sickTable),#todayTasks{overflow-x:auto;-webkit-overflow-scrolling:touch}
  .section table:not(#todayEvents table):not(#leaveTable table):not(#tripsTable table):not(#sickTable table),#todayTasks table{min-width:640px}
 }
-@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}.grid.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
+@media(max-width:520px){.birthday-card{grid-template-columns:1fr}.birthday-card .days{text-align:left}.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.today-metrics .card{padding:6px 6px;min-height:60px;display:grid;grid-template-rows:minmax(22px,auto) 1fr}.today-metrics .card h3{font-size:9.5px;line-height:1.12;margin:0}.today-metrics .metric{font-size:22px;line-height:1;align-self:center;justify-self:center;text-align:center}.metric-label-desktop{display:none}.metric-label-mobile{display:inline}.mobile-meeting-card{display:block}.year-label,.duty-month{font-size:11px}.grid{grid-template-columns:1fr}
+#todayEvents table{display:block;border:0;background:transparent}
+#todayEvents thead{display:none}
+#todayEvents tbody{display:grid;gap:5px}
+#todayEvents tr{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "period state";gap:1px 8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px}
+#todayEvents td{border:0!important;padding:0!important;font-size:11px;line-height:1.2}
+#todayEvents td:nth-child(1){grid-area:name;font-weight:700}
+#todayEvents td:nth-child(2){grid-area:status;text-align:right;max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#todayEvents td:nth-child(3){grid-area:period;color:var(--muted)}
+#todayEvents td:nth-child(4){grid-area:state;text-align:right}
+#todayEvents .pill{font-size:9px;padding:2px 6px}
+#todayTasks table{display:none}
+#todayTasks .empty-compact{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--muted)}
+.grid.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.6</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.7.7</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -157,7 +170,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.7.6';
+const APP_VERSION='1.7.7';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -240,7 +253,7 @@ function renderToday(){
  }).map(p=>p.id);
  const present=presentIds.length,absent=db.people.length-present;
  const meetingLike=e=>/совещ|мероприят|встреч|апробац/i.test(String(e.type||'')+' '+String(e.comment||''));
- const upcomingMeetings=db.events.filter(e=>e.start&&e.start>=today&&e.status!=='Отменена'&&meetingLike(e)).length;
+ const todayMeetings=db.events.filter(e=>e.start===today&&e.status!=='Отменена'&&meetingLike(e)).length;
  const metrics=[
   {d:'Всего сотрудников',m:'Всего<br>сотрудников',v:db.people.length},
   {d:'Налицо',m:'Налицо',v:present},
@@ -249,7 +262,7 @@ function renderToday(){
   {d:'Просрочено',m:'Просрочено',v:od.length}
  ];
  document.getElementById('todayMetrics').innerHTML=metrics.map(x=>'<div class="card"><h3><span class="metric-label-desktop">'+x.d+'</span><span class="metric-label-mobile">'+x.m+'</span></h3><div class="metric">'+x.v+'</div></div>').join('')+
-  '<div class="card mobile-meeting-card"><h3>Совещание<br>(мероприятие)</h3><div class="metric">'+upcomingMeetings+'</div></div>';
+  '<div class="card mobile-meeting-card"><h3>Совещание<br>(мероприятие)</h3><div class="metric">'+todayMeetings+'</div></div>';
 
  const priority=['Выход на больничном','Выход в отпуске','Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
  const rows=db.people.map(p=>{
@@ -266,7 +279,7 @@ function renderToday(){
  });
  document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Где / статус','Период','Статус'],rows);
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
- document.getElementById('todayTasks').innerHTML=taskTable(list);
+ document.getElementById('todayTasks').innerHTML=list.length?taskTable(list):'<div class="empty-compact">Нет актуальных задач</div>';
 }
 function eventRows(list){return list.map(e=>{
  const st=effectiveEventStatus(e),endText=st==='Продолжается'?'…':fmt(e.end),daysText=eventDisplayDays(e);
