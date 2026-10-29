@@ -114,7 +114,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .mobile-month-card.leave-summer span{color:#174b27}
 .mobile-month-card.leave-main{background:#ffe49a;border-color:#e5c45d;color:#644b00}
 .mobile-month-card.leave-main span{color:#644b00}
-.leave-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.leave-overlap-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}.leave-overlap-toggle>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}.leave-overlap-toggle>summary::-webkit-details-marker{display:none}.leave-overlap-toggle[open]>summary{background:#eef3f8}.leave-overlap-toggle[open]>summary .muted{font-size:0}.leave-overlap-toggle[open]>summary .muted:after{content:'Скрыть';font-size:10px}#leaveOverlap{display:grid;gap:7px;padding:7px}.leave-overlap-month{border:1px solid var(--line);border-radius:10px;background:#fbfcfe;overflow:hidden}.leave-overlap-month>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;font-size:10.5px;font-weight:800}.leave-overlap-month>summary::-webkit-details-marker{display:none}.leave-overlap-month[open]>summary{background:#f2f5f8}.leave-overlap-stat{font-size:8.8px;color:#5e6b78;font-weight:700;text-align:right}.leave-overlap-body{padding:5px 6px 7px;border-top:1px solid #edf1f5}.leave-overlap-grid{display:grid;gap:2px}.leave-overlap-row{display:grid;grid-template-columns:64px repeat(var(--days),minmax(0,1fr));gap:1px;align-items:center}.leave-overlap-name{font-size:8.2px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:3px}.leave-overlap-dayhead{font-size:5.8px;color:#8a95a1;text-align:center;line-height:1}.leave-overlap-cell{height:12px;border-radius:2px;background:#eef1f4;border:1px solid #e5e9ee}.leave-overlap-cell.leave-vbd{background:#f5a3a3;border-color:#e38d8d}.leave-overlap-cell.leave-summer{background:#a9ddb9;border-color:#8dcca1}.leave-overlap-cell.leave-main{background:#ffe49a;border-color:#edcf70}.leave-overlap-cell.leave-family{background:#a9c9f5;border-color:#8fb5e8}.leave-overlap-cell.leave-other{background:#d9c8f0;border-color:#c1adde}.leave-overlap-empty{font-size:9px;color:#9aa4af;padding:3px 0}.leave-overlap-summaryline{font-size:8.8px;color:#596775;margin-top:5px;line-height:1.25}.leave-overlap-summaryline b{color:#314151}.leave-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .leave-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
 .leave-list-toggle summary::-webkit-details-marker{display:none}
 .leave-list-toggle[open] summary{background:#eef3f8}
@@ -253,7 +253,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 #todayEvents td:nth-child(2){font-size:11.5px}
 #todayEvents td:nth-child(3){font-size:10px}
 #todayEvents .pill{font-size:8.5px;padding:1px 5px}
-#todayTasks .empty-compact{min-height:32px;display:flex;align-items:center;padding:5px 7px;font-size:9.8px}.leave-head select{padding:6px 9px;font-size:10px}.leave-head{margin-bottom:3px}.tasks-head{margin-bottom:7px}.tasks-head h2{font-size:24px}.tasks-head p{font-size:10px}.tasks-add{padding:7px 9px;font-size:10px}.tasks-filters>summary{padding:7px 9px;font-size:10.5px}.tasks-filter-grid{grid-template-columns:1fr 1fr;gap:5px;padding:6px}.tasks-filter-grid input{grid-column:1/-1}.tasks-filter-grid select,.tasks-filter-grid input{font-size:10px;padding:7px 8px}.tasks-list{gap:5px}.task-card{padding:8px 9px;border-radius:11px;grid-template-columns:minmax(0,1fr) auto}.task-card-title{font-size:11.5px}.task-card-desc{font-size:9.5px}.task-meta-chip{font-size:8.5px;padding:2px 5px}.task-card-actions{gap:4px}.task-card-actions select{max-width:98px;font-size:9px;padding:4px 5px}.task-card-actions button{font-size:8.5px;padding:4px 6px}.tasks-empty{padding:18px 12px;font-size:10.5px}.tasks-empty b{font-size:12.5px}.calendar-toolbar{display:grid;grid-template-columns:42px 1fr 42px 76px;align-items:center;gap:6px;margin-bottom:8px}.calendar-toolbar strong{text-align:center;font-size:12px;line-height:1.15}.calendar-toolbar button{min-height:40px;padding:6px 8px;font-size:10px;border-radius:11px}.week-mobile-grid{grid-auto-rows:auto;min-height:0;gap:5px}.week-mobile-day{min-height:46px;height:auto;padding:7px 9px}.week-mobile-day:has(.week-cal-item){min-height:58px}.week-mobile-head{margin-bottom:3px;padding-bottom:3px}.week-mobile-head b{font-size:11.5px}.week-mobile-head span{font-size:9.2px}.week-cal-item{font-size:9.4px;padding:3px 5px;line-height:1.15}.week-cal-empty{padding-top:0;font-size:8.8px}
+#todayTasks .empty-compact{min-height:32px;display:flex;align-items:center;padding:5px 7px;font-size:9.8px}.leave-head select{padding:6px 9px;font-size:10px}.leave-head{margin-bottom:3px}.leave-overlap-toggle{margin-top:7px}.leave-overlap-toggle>summary{padding:7px 9px;font-size:11px}#leaveOverlap{padding:5px;gap:5px}.leave-overlap-month>summary{padding:6px 7px;font-size:9.8px}.leave-overlap-stat{font-size:8px}.leave-overlap-body{padding:4px 5px 6px}.leave-overlap-row{grid-template-columns:58px repeat(var(--days),minmax(0,1fr));gap:1px}.leave-overlap-name{font-size:7.8px}.leave-overlap-dayhead{font-size:5.2px}.leave-overlap-cell{height:11px}.leave-overlap-summaryline{font-size:8px}.tasks-head{margin-bottom:7px}.tasks-head h2{font-size:24px}.tasks-head p{font-size:10px}.tasks-add{padding:7px 9px;font-size:10px}.tasks-filters>summary{padding:7px 9px;font-size:10.5px}.tasks-filter-grid{grid-template-columns:1fr 1fr;gap:5px;padding:6px}.tasks-filter-grid input{grid-column:1/-1}.tasks-filter-grid select,.tasks-filter-grid input{font-size:10px;padding:7px 8px}.tasks-list{gap:5px}.task-card{padding:8px 9px;border-radius:11px;grid-template-columns:minmax(0,1fr) auto}.task-card-title{font-size:11.5px}.task-card-desc{font-size:9.5px}.task-meta-chip{font-size:8.5px;padding:2px 5px}.task-card-actions{gap:4px}.task-card-actions select{max-width:98px;font-size:9px;padding:4px 5px}.task-card-actions button{font-size:8.5px;padding:4px 6px}.tasks-empty{padding:18px 12px;font-size:10.5px}.tasks-empty b{font-size:12.5px}.calendar-toolbar{display:grid;grid-template-columns:42px 1fr 42px 76px;align-items:center;gap:6px;margin-bottom:8px}.calendar-toolbar strong{text-align:center;font-size:12px;line-height:1.15}.calendar-toolbar button{min-height:40px;padding:6px 8px;font-size:10px;border-radius:11px}.week-mobile-grid{grid-auto-rows:auto;min-height:0;gap:5px}.week-mobile-day{min-height:46px;height:auto;padding:7px 9px}.week-mobile-day:has(.week-cal-item){min-height:58px}.week-mobile-head{margin-bottom:3px;padding-bottom:3px}.week-mobile-head b{font-size:11.5px}.week-mobile-head span{font-size:9.2px}.week-cal-item{font-size:9.4px;padding:3px 5px;line-height:1.15}.week-cal-empty{padding-top:0;font-size:8.8px}
 .grid.today-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.metric{font-size:24px}.calendar{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.calendar-prefix,.week-days{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.week-block{padding:5px;border-radius:11px;margin:2px 0 6px}.week-title{font-size:10px;margin:0 0 4px 2px}.calendar-prefix{gap:4px}.day{min-height:44px;padding:4px 6px}.day .n{font-size:13px;margin-bottom:2px;display:flex;align-items:center;justify-content:flex-start;gap:6px;white-space:nowrap}.day .n>.dow{display:none}.day .mobile-day-meta{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted);font-weight:700}.day.nonwork .mobile-day-meta{color:#8f3232}.day .holiday{display:none}.event-chip{font-size:10px;padding:2px 4px;margin:2px 0}.day .n>span:first-child{flex:0 0 auto;font-weight:800}header{padding:12px}header h1{font-size:17px}.badge{font-size:11px;padding:5px 8px}.year-row{grid-template-columns:64px 1fr}.legend{gap:7px}.legend span{font-size:11px}}
 
 @media(max-width:520px){
@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.10.9</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.0</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -303,6 +303,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
 <div id="leaveChart"></div>
+<details class="leave-overlap-toggle"><summary><span>Наложение отпусков</span><span class="muted">Показать</span></summary><div id="leaveOverlap"></div></details>
 <details class="leave-list-toggle"><summary><span>Список отпусков</span><span class="muted">Показать</span></summary><div id="leaveCompactList"></div></details>
 <div id="leaveTable" style="display:none"></div></section>
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyChart"></div>
@@ -330,7 +331,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.10.9';
+const APP_VERSION='1.11.0';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -701,12 +702,48 @@ function renderLeaveCompactList(){
   return '<div class="leave-compact-card '+leaveClass(e.type)+'" title="'+esc((e.comment||'')+' '+st)+'"><b>'+esc(who)+'</b><span class="leave-compact-type">'+esc(type)+'</span><span class="leave-compact-dates">'+esc(dates)+'</span><span class="leave-compact-days">'+esc(days)+'</span></div>';
  }).join('');
 }
+function leaveTypes(){
+ return ['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'];
+}
+function leaveForPersonDay(personId,dateStr,leaves){
+ return leaves.find(e=>e.personId===personId&&e.start<=dateStr&&(e.end||e.start)>=dateStr);
+}
+function renderLeaveOverlap(){
+ const target=document.getElementById('leaveOverlap'); if(!target)return;
+ const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
+ const leaves=db.events.filter(e=>leaveTypes().includes(e.type));
+ const people=(db.people||[]).slice();
+ target.innerHTML=Array.from({length:12},(_,m)=>{
+  const dim=daysInMonth(year,m), monthName=new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'});
+  const dailyCounts=[];
+  for(let day=1;day<=dim;day++){
+   const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+   let n=0; people.forEach(p=>{if(leaveForPersonDay(p.id,ds,leaves))n++}); dailyCounts.push(n);
+  }
+  const hist={}; dailyCounts.forEach(n=>{if(n>=2)hist[n]=(hist[n]||0)+1});
+  const overlapParts=Object.keys(hist).map(Number).sort((a,b)=>b-a).map(n=>n+' чел. · '+hist[n]+' '+dayWord(hist[n]));
+  const max=Math.max(0,...dailyCounts), stat=max>=2?('макс. '+max+' чел.'):'без наложений';
+  const head=Array.from({length:dim},(_,i)=>'<span class="leave-overlap-dayhead">'+(i+1)+'</span>').join('');
+  const rows=people.map(p=>{
+   const cells=Array.from({length:dim},(_,i)=>{
+    const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
+    const e=leaveForPersonDay(p.id,ds,leaves);
+    return '<span class="leave-overlap-cell '+(e?leaveClass(e.type):'')+'" title="'+(e?esc((p.short||p.full||'')+' · '+e.type+' · '+fmtShortYear(e.start)+'–'+fmtShortYear(e.end||e.start)):'')+'"></span>';
+   }).join('');
+   return '<div class="leave-overlap-row" style="--days:'+dim+'"><span class="leave-overlap-name">'+esc(p.short||p.full||'—')+'</span>'+cells+'</div>';
+  }).join('');
+  const summaryLine=overlapParts.length?'<div class="leave-overlap-summaryline"><b>Одновременно отсутствуют:</b> '+esc(overlapParts.join(' · '))+'</div>':'<div class="leave-overlap-summaryline">Одновременных отпусков двух и более сотрудников нет.</div>';
+  const hasAny=dailyCounts.some(n=>n>0);
+  return '<details class="leave-overlap-month" '+(hasAny?'':'')+'><summary><span>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))+'</span><span class="leave-overlap-stat">'+esc(stat)+'</span></summary><div class="leave-overlap-body">'+(hasAny?'<div class="leave-overlap-grid"><div class="leave-overlap-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+'</div>'+summaryLine:'<div class="leave-overlap-empty">Отпусков в этом месяце нет</div>')+'</div></details>';
+ }).join('');
+}
 function renderLeaveChart(){
  const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
  const months=Array.from({length:12},(_,m)=>({y:year,m,label:new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const types=['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'];
  const leaves=db.events.filter(e=>types.includes(e.type));
  document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
+ renderLeaveOverlap();
  renderLeaveCompactList();
 }
 function renderTripCompactList(){
