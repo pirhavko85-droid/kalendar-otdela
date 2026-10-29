@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.5</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.6</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -330,7 +330,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.5';
+const APP_VERSION='1.11.6';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -395,7 +395,8 @@ function normalizeDisplayData(x){
  const meetingDefaults=[
   {id:'MEET-002-P',personId:'ХПН',type:'Совещание с БПС',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'10:00',linkedEvent:'MEET-GRP-BPS-20261029-1000',comment:'Совещание с БПС в 10:00. Участники от отдела: Павел Х., Роман П.'},
   {id:'MEET-002-R',personId:'ПРВ',type:'Совещание с БПС',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'10:00',linkedEvent:'MEET-GRP-BPS-20261029-1000',comment:'Совещание с БПС в 10:00. Участники от отдела: Павел Х., Роман П.'},
-  {id:'MEET-003-P',personId:'ХПН',type:'Совещание с ОВС по медицинским проектам',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'14:00',linkedEvent:'MEET-GRP-OVS-20261029-1400',comment:'Павел Х. принимает участие в совещании с ОВС по медицинским проектам в 14:00.'}
+  {id:'MEET-003-P',personId:'ХПН',type:'Совещание с ОВС по медицинским проектам',start:'2026-10-29',end:'2026-10-29',days:1,status:'План',basis:'14:00',linkedEvent:'MEET-GRP-OVS-20261029-1400',comment:'Павел Х. принимает участие в совещании с ОВС по медицинским проектам в 14:00.'},
+  {id:'MEET-004',personId:'',type:'Совещание по ТТТ под руководством БПС',start:'2026-11-06',end:'2026-11-06',days:1,status:'План',basis:'',comment:'Совещание по ТТТ под руководством БПС.'}
  ];
  meetingDefaults.forEach(m=>{if(!x.events.some(e=>e.id===m.id))x.events.push(m)});
  return x;
