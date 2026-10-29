@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.8</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.9</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -1213,8 +1213,24 @@ async function syncEncrypted(){
   }
   const x=JSON.parse(new TextDecoder().decode(payload));
   if(!x.people||!x.events||!x.tasks)throw new Error('bad payload');
-  db=normalizeDisplayData(x);save();
-  status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU');
+  // Keep a recoverable copy of the local state before applying a remote snapshot.
+  const previous=JSON.stringify(db);
+  try{localStorage.setItem('kalendarOtdelaPreSyncBackupV1',previous)}catch(_){}
+  const incoming=normalizeDisplayData(x);
+  const localOnly={people:0,events:0,tasks:0};
+  for(const collection of ['people','events','tasks']){
+    const known=new Set(incoming[collection].map(item=>String(item.id)));
+    for(const item of (db[collection]||[])){
+      if(item.id!=null&&!known.has(String(item.id))){
+        incoming[collection].push(item);
+        known.add(String(item.id));
+        localOnly[collection]++;
+      }
+    }
+  }
+  db=incoming;save();
+  const kept=localOnly.people+localOnly.events+localOnly.tasks;
+  status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU')+(kept?' · Сохранено локальных записей: '+kept:'');
  }catch(e){status.textContent='Не удалось обновить данные. Проверьте общий ключ отдела.'}
 }
 document.getElementById('sharedKeyFile').onchange=async e=>{
