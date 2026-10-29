@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.1</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.2</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -332,7 +332,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.1';
+const APP_VERSION='1.11.2';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -736,7 +736,7 @@ function renderLeaveVisualOverlap(){
    }).join('');
    body='<div class="leave-visual-grid"><div class="leave-visual-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+'</div>';
   }
-  return '<div class="leave-visual-month"><div class="leave-visual-month-head"><b>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))+'</b><span>'+personIds.length+' '+(personIds.length===1?'сотрудник':personIds.length>=2&&personIds.length<=4?'сотрудника':'сотрудников')+'</span></div><div class="leave-visual-body">'+body+'</div></div>';
+  return '<div class="leave-visual-month"><div class="leave-visual-month-head"><b>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1)+' '+year+' года')+'</b><span>'+personIds.length+' '+(personIds.length===1?'сотрудник':personIds.length>=2&&personIds.length<=4?'сотрудника':'сотрудников')+'</span></div><div class="leave-visual-body">'+body+'</div></div>';
  }).join('');
 }
 function renderLeaveOverlap(){
@@ -765,7 +765,7 @@ function renderLeaveOverlap(){
   }).join('');
   const summaryLine=overlapParts.length?'<div class="leave-overlap-summaryline"><b>Одновременно отсутствуют:</b> '+esc(overlapParts.join(' · '))+'</div>':'<div class="leave-overlap-summaryline">Одновременных отпусков двух и более сотрудников нет.</div>';
   const hasAny=dailyCounts.some(n=>n>0);
-  return '<details class="leave-overlap-month" '+(hasAny?'':'')+'><summary><span>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))+'</span><span class="leave-overlap-stat">'+esc(stat)+'</span></summary><div class="leave-overlap-body">'+(hasAny?'<div class="leave-overlap-grid"><div class="leave-overlap-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+'</div>'+summaryLine:'<div class="leave-overlap-empty">Отпусков в этом месяце нет</div>')+'</div></details>';
+  return '<details class="leave-overlap-month" '+(hasAny?'':'')+'><summary><span>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1)+' '+year+' года')+'</span><span class="leave-overlap-stat">'+esc(stat)+'</span></summary><div class="leave-overlap-body">'+(hasAny?'<div class="leave-overlap-grid"><div class="leave-overlap-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+'</div>'+summaryLine:'<div class="leave-overlap-empty">Отпусков в этом месяце нет</div>')+'</div></details>';
  }).join('');
 }
 function renderLeaveChart(){
