@@ -79,7 +79,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 .sick-list-toggle summary::-webkit-details-marker{display:none}.sick-list-toggle[open] summary{background:#eef3f8}
 #sickCompactList{display:grid;gap:4px;padding:7px}.sick-compact-card{display:grid;grid-template-columns:minmax(88px,1fr) minmax(110px,1.2fr) auto auto;gap:6px;align-items:center;min-height:36px;padding:5px 7px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:10.5px;line-height:1.1}
 .sick-compact-card b{font-size:10.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sick-compact-type{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sick-compact-dates{color:var(--muted);white-space:nowrap;font-size:10px}.sick-compact-days{font-weight:800;white-space:nowrap;border-radius:999px;padding:2px 6px;background:#eef2f6}.sick-compact-comment{grid-column:1/-1;font-size:8.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sick-self-card{background:#fff1f1;border-color:#efb1b1}.sick-child-card{background:#eff5ff;border-color:#b7cff2}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
+.sick-self-card{background:#fff1f1;border-color:#efb1b1}.sick-child-card{background:#e3efff;border-color:#9fc2f0}.duty-chip.replacement{background:#ffe58a;color:#684d00;border:1px solid #e5bf38}
 .duty-list-toggle{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .duty-list-toggle summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:9px 11px;font-size:12px;font-weight:800;background:#f7f9fc}
 .duty-list-toggle summary::-webkit-details-marker{display:none}
@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.2</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.3</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -332,7 +332,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.2';
+const APP_VERSION='1.11.3';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -665,11 +665,11 @@ function monthMobileList(events,y,m,kind){
   const who=person(e.personId)?.short||'';
   let label=e.type;
   if(kind==='leave')label=e.type.replace('Отпуск ','');
-  if(kind==='sick')label=e.type==='Болезнь по уходу за ребёнком'?'по уходу за ребёнком':'болеет';
+  if(kind==='sick')label=isChildCareSick(e)?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?(kind==='trip'?'по наст. вр.':'…'):fmtShort(e.end||e.start);
   const displayDays=eventDisplayDays(e);
   const days=(displayDays!==''&&displayDays!=null)?(' · '+displayDays+' дн.'):'';
-  const cardClass=kind==='leave'?' '+leaveClass(e.type):kind==='sick'?' '+(e.type==='Болезнь по уходу за ребёнком'?'sick-child':'sick-self'):'';
+  const cardClass=kind==='leave'?' '+leaveClass(e.type):kind==='sick'?' '+(isChildCareSick(e)?'sick-child':'sick-self'):'';
   return '<div class="mobile-month-card'+cardClass+'"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+esc(days)+'</span></div>';
  }).join('')+'</div>';
 }
@@ -678,10 +678,10 @@ function renderYearLanes(events,y,m,kind){
  if(!items.length)return '<div class="year-lane"><span class="muted" style="position:absolute;left:8px;top:6px">—</span></div>';
  return items.map(({e,r})=>{
   const left=((r.start-1)/dim)*100,width=((r.end-r.start+1)/dim)*100,who=person(e.personId)?.short||'';
-  let cls=kind==='leave'?leaveClass(e.type):kind==='trip'?'trip-block':(e.type==='Болезнь по уходу за ребёнком'?'sick-child':'sick-self');
+  let cls=kind==='leave'?leaveClass(e.type):kind==='trip'?'trip-block':(isChildCareSick(e)?'sick-child':'sick-self');
   let kindLabel=e.type;
   if(kind==='leave')kindLabel=e.type.replace('Отпуск ','');
-  if(kind==='sick')kindLabel=e.type==='Болезнь по уходу за ребёнком'?'по уходу за ребёнком':'болеет';
+  if(kind==='sick')kindLabel=isChildCareSick(e)?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
   const txt=who+' — '+kindLabel+' ('+fmtShort(e.start)+'–'+endLabel+')';
   return '<div class="year-lane"><div class="year-block '+cls+'" style="left:'+left+'%;width:'+Math.max(width,4)+'%" title="'+esc(txt)+'">'+esc(txt)+'</div></div>';
@@ -809,6 +809,7 @@ function renderTripChart(){
  }).join('');
  renderTripCompactList();
 }
+function isChildCareSick(e){return /уход.*реб/i.test(String(e?.type||''))}
 function renderSickCompactList(){
  const types=['Болен','Больна','Болезнь по уходу за ребёнком'];
  const list=db.events.filter(e=>types.includes(e.type)).slice().sort((a,b)=>(b.start||'').localeCompare(a.start||''));
@@ -817,7 +818,7 @@ function renderSickCompactList(){
  if(!list.length){target.innerHTML='<div class="empty">Пока нет данных о больничных</div>';return}
  target.innerHTML=list.map(e=>{
   const who=person(e.personId)?.short||'—';
-  const child=e.type==='Болезнь по уходу за ребёнком';
+  const child=isChildCareSick(e);
   const label=child?'По уходу за ребёнком':'Болеет';
   const st=effectiveEventStatus(e);
   const end=st==='Продолжается'?'по настоящее время':fmtShortYear(e.end||e.start);
