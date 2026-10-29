@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.4</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.5</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -303,9 +303,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
 <div id="leaveChart"></div>
-<details class="leave-overlap-toggle"><summary><span>Наложение отпусков по дням</span><span class="muted">Показать</span></summary><div id="leaveOverlap"></div></details>
-<details class="leave-visual-toggle"><summary><span>Наложение отпусков</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details>
-<details class="leave-list-toggle"><summary><span>Список отпусков</span><span class="muted">Показать</span></summary><div id="leaveCompactList"></div></details>
+<details class="leave-visual-toggle"><summary><span>Наложение отпусков графическое</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details>
 <div id="leaveTable" style="display:none"></div></section>
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyChart"></div>
 <details class="duty-list-toggle"><summary><span>Список нарядов</span><span class="muted">Показать</span></summary><div id="dutyCompactList"></div></details>
@@ -332,7 +330,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.4';
+const APP_VERSION='1.11.5';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -786,9 +784,7 @@ function renderLeaveChart(){
  const types=['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'];
  const leaves=db.events.filter(e=>types.includes(e.type));
  document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
- renderLeaveOverlap();
  renderLeaveVisualOverlap();
- renderLeaveCompactList();
 }
 function renderTripCompactList(){
  const list=db.events.filter(e=>e.type==='Командировка').slice().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
