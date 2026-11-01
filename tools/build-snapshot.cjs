@@ -46,7 +46,7 @@ function main() {
   if (!sourceFile || !keyFile || !outputFile) fail('Usage: node tools/build-snapshot.cjs --source private/drive-audit.json --key <key-file> --out private/data.enc.json');
   const source = read(sourceFile), keyConfig = read(keyFile), key = bytes(keyConfig.key);
   if (keyConfig.alg !== 'A256GCM' || key.length !== 32) fail('Invalid shared key file');
-  const original = read(path.join(root, 'data.enc.json'));
+  const original = read(argument('--baseline') || path.join(root, 'data.enc.json'));
   const previous = decrypt(original, key);
   const previousPeople = new Map(previous.people.map(p => [p.id, p]));
   const people = records(source, 'Сотрудники', ['ID', 'ФИО', 'Краткое имя']).map(r => ({
@@ -75,6 +75,26 @@ function main() {
     const ids = new Set(snapshot[collection].map(x => x.id));
     if ((previous[collection] || []).some(x => !ids.has(x.id))) fail(`Source omits existing records: ${collection}`);
   }
+  const metadataFile = argument('--metadata');
+  const metadata = metadataFile ? read(metadataFile) : null;
+  const contentHash = crypto.createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
+  if (metadata) {
+    snapshot.meta = {
+      contentHash,
+      sourceModifiedAt: metadata.modifiedTime || null,
+      modifiedBy: metadata.lastModifyingUser?.displayName || null,
+      publishedAt: new Date().toISOString(),
+      source: 'Google Sheets'
+    };
+  } else if (previous.meta) {
+    // Never carry forward an editor/date that belongs to older content.
+    snapshot.meta = {contentHash, sourceModifiedAt:null, modifiedBy:null,
+      publishedAt:new Date().toISOString(), source:'Google Sheets'};
+  }
+  const previousData = Object.fromEntries(['people','events','tasks','birthdays'].map(k=>[k,previous[k] || []]));
+  const sameData = crypto.createHash('sha256').update(JSON.stringify(previousData)).digest('hex') === contentHash;
+  const sameMetadata = metadata && previous.meta?.sourceModifiedAt === snapshot.meta.sourceModifiedAt && previous.meta?.modifiedBy === snapshot.meta.modifiedBy;
+  const unchanged = sameData && (!metadata || sameMetadata);
   const iv = crypto.randomBytes(12), cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
   const plain = Buffer.from(JSON.stringify(snapshot));
   const data = Buffer.concat([cipher.update(zlib.gzipSync(plain)), cipher.final(), cipher.getAuthTag()]);
@@ -84,7 +104,7 @@ function main() {
   if ([path.resolve(keyFile),path.resolve(sourceFile)].includes(output)) fail('Output would overwrite input');
   if (fs.existsSync(output)) fail('Output already exists; choose a new path');
   fs.mkdirSync(path.dirname(output), {recursive:true});
-  fs.writeFileSync(output, JSON.stringify(envelope) + '\n', {flag:'wx'});
-  console.log(JSON.stringify({output, counts:Object.fromEntries(Object.entries(snapshot).map(([k,v])=>[k,v.length])), encryption:'verified'},null,2));
+  fs.writeFileSync(output, JSON.stringify(unchanged ? original : envelope) + '\n', {flag:'wx'});
+  console.log(JSON.stringify({output, changed:!unchanged, counts:Object.fromEntries(['people','events','tasks','birthdays'].map(k=>[k,snapshot[k].length])), encryption:'verified'},null,2));
 }
 try { main(); } catch (e) { console.error(e.message); process.exitCode = 1; }

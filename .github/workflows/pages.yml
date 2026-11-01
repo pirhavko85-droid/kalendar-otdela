@@ -4,6 +4,11 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -23,12 +28,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Prepare website files only
+        run: |
+          mkdir public-site
+          cp index.html sw.js manifest.json data.enc.json .nojekyll public-site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public-site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

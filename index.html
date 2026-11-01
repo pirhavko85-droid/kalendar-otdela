@@ -278,7 +278,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.9</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.10</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -330,7 +330,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.8';
+const APP_VERSION='1.11.10';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
@@ -418,7 +418,19 @@ function normalizeDisplayData(x){
 let db=normalizeDisplayData(load());localStorage.setItem(KEY,JSON.stringify(db));
 let calDate=new Date();
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{people:[],events:[],tasks:[]}}catch(e){return{people:[],events:[],tasks:[]}}}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderDataRevision()}
+function renderDataRevision(){
+ let el=document.getElementById('dataRevision');
+ if(!el){el=document.createElement('p');el.id='dataRevision';el.className='muted';document.getElementById('syncStatus').after(el)}
+ const m=db.meta;
+ if(!m){el.textContent='Версия данных: дата изменения таблицы ещё не получена.';return}
+ const fmt=v=>{const d=new Date(v);return v&&!isNaN(d)?d.toLocaleString('ru-RU',{timeZone:'Europe/Moscow'})+' МСК':'неизвестно'};
+ el.style.whiteSpace='pre-line';
+ el.textContent='Версия данных: '+(m.contentHash?m.contentHash.slice(0,10):'неизвестна')+
+ '\nПоследняя правка таблицы: '+fmt(m.sourceModifiedAt)+
+ '\nПоследний редактор таблицы: '+(m.modifiedBy||'Google не сообщил имя')+
+ '\nСнимок сформирован: '+fmt(m.publishedAt);
+}
 function uid(p='ID'){return p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(d){if(!d)return'';const x=new Date(d+'T00:00:00');return x.toLocaleDateString('ru-RU')}
@@ -1249,7 +1261,7 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=normalizeDisplayData(x);save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
 document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
 document.getElementById('sampleBtn').onclick=()=>{db={people:[{id:'p1',short:'Сотрудник 1',full:'Демонстрационный сотрудник',role:'Сотрудник',category:'Другое'}],events:[{id:'e1',personId:'p1',type:'Командировка',start:todayISO(),end:'',days:'',status:'Продолжается',comment:'Демо-событие'}],tasks:[{id:'t1',personId:'p1',title:'Проверить работу приложения',description:'Демонстрационная задача',created:todayISO(),deadline:todayISO(),priority:'Высокий',status:'В работе',author:'Администратор',comment:''}]};save()}
-setupStatic();renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>

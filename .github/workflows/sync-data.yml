@@ -1,0 +1,80 @@
+name: Sync Google Sheets
+
+on:
+  schedule:
+    # UTC = Moscow minus 3 hours. Mon–Fri 09:00–17:55 Moscow.
+    - cron: '*/5 6-14 * * 1-5'
+    # Every day: 18:00, 00:00, 06:00 Moscow.
+    - cron: '0 3,15,21 * * *'
+    # Weekends also have a 12:00 Moscow check (no daytime five-minute checks).
+    - cron: '0 9 * * 0,6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: sheets-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: vars.AUTO_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+      head: ${{ steps.commit.outputs.head }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Authenticate read-only Google account
+        id: google
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.SHEETS_SERVICE_ACCOUNT_JSON }}
+          create_credentials_file: false
+          export_environment_variables: false
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/spreadsheets.readonly,https://www.googleapis.com/auth/drive.metadata.readonly
+      - name: Read consistent source and build verified snapshot
+        env:
+          GOOGLE_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
+          SHARED_KEY_JSON: ${{ secrets.DASHBOARD_SHARED_KEY_JSON }}
+        run: |
+          umask 077
+          node tools/fetch-sheets.cjs "$RUNNER_TEMP/sheets-sync"
+          node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP+"/sheets-sync/key.json", process.env.SHARED_KEY_JSON)'
+          node tools/build-snapshot.cjs --source "$RUNNER_TEMP/sheets-sync/source.json" --metadata "$RUNNER_TEMP/sheets-sync/metadata.json" --key "$RUNNER_TEMP/sheets-sync/key.json" --out "$RUNNER_TEMP/sheets-sync/new.enc.json"
+          cp "$RUNNER_TEMP/sheets-sync/new.enc.json" data.enc.json
+          node tools/check.cjs
+      - name: Commit actual changes only
+        id: commit
+        run: |
+          snapshot_changed=false
+          if ! git diff --quiet -- data.enc.json; then snapshot_changed=true; fi
+          node -e 'const fs=require("node:fs"); const p=".github/sync-health.json", month=new Date().toISOString().slice(0,7); const old=fs.existsSync(p)?JSON.parse(fs.readFileSync(p)):{}; if(old.month!==month)fs.writeFileSync(p,JSON.stringify({month,verifiedAt:new Date().toISOString(),status:"Google Sheets read and snapshot validation passed"},null,2)+"\n")'
+          git add data.enc.json .github/sync-health.json
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Record verified Sheets sync and snapshot changes'
+            git push origin HEAD:main
+          fi
+          echo "changed=$snapshot_changed" >> "$GITHUB_OUTPUT"
+          echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Remove temporary plaintext and key
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/sheets-sync"
+  publish:
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    uses: ./.github/workflows/pages.yml
+    with:
+      ref: ${{ needs.sync.outputs.head }}
