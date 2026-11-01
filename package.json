@@ -1,0 +1,8 @@
+{
+  "name": "kalendar-otdela",
+  "private": true,
+  "scripts": {
+    "start": "node tools/serve.cjs",
+    "check": "node tools/check.cjs"
+  }
+}
