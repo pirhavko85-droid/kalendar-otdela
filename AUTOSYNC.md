@@ -27,10 +27,25 @@
 не являются надёжной защитой от отключения расписания через 60 дней.
 Если уже отключено, расписание надо включить вручную.
 
-## Что ещё не включено
+## Текущее состояние — включено 01.11.2026
 
-Автоматизация не работает до настройки независимого Google-доступа и переменной
-AUTO_SYNC_ENABLED. Текущее подключение Google Drive в чате не передаётся GitHub.
+В GitHub Actions сохранены SHEETS_SERVICE_ACCOUNT_JSON и DASHBOARD_SHARED_KEY_JSON,
+переменная AUTO_SYNC_ENABLED=true. Первый независимый запуск:
+https://github.com/pirhavko85-droid/kalendar-otdela/actions/runs/41331551325
+Чтение таблицы, проверка снимка и запись изменений прошли успешно.
+Текущее подключение Google Drive в чате для фонового процесса не используется.
+
+Проект Google Cloud: kalendar-otdela. Служебный аккаунт:
+kalendar-sync@kalendar-otdela.iam.gserviceaccount.com.
+Он имеет чтение только основной таблицы и роль Service Account Token Creator
+на самого себя. Sheets, Drive и IAM Credentials API включены.
+Закрытый ключ сохранён локально в private/sheets-service-account.json,
+исключён из Git. Открытый сертификат загружен в Google, действует до 01.11.2027.
+До этой даты заменить ключ и обновить SHEETS_SERVICE_ACCOUNT_JSON;
+общий ключ шифрования дашборда при этом не менять.
+Потерянный первоначальный ключ отозван.
+
+## Инструкция для повторной настройки
 
 Настроить в Google Cloud:
 1. Выбрать проект; включить Google Sheets API, Google Drive API, IAM Credentials API.
