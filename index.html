@@ -277,10 +277,17 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 }
 .task-control-field{display:grid;gap:5px;font-size:12px;font-weight:700}.task-control-field select{width:100%;font-weight:400}.task-meta-chip.task-control-active{background:#e9e1fa;color:#593b8c}
 .duty-chip.duty-nonwork,.duty-compact-card.duty-nonwork{background:#ffe1e1;color:#a71919;border:1px solid #e78989}.duty-compact-card.duty-nonwork .duty-compact-date{color:#a71919}.duty-compact-card.duty-nonwork .duty-compact-status{background:#ffcaca;color:#a71919}.leave-visual-dayhead.nonwork,.leave-overlap-dayhead.nonwork{color:#e00000;font-weight:900}
+.leave-visual-dayhead,.leave-overlap-dayhead{min-height:13px;display:flex;align-items:center;justify-content:center;line-height:13px}
+.leave-visual-dayhead.nonwork,.leave-overlap-dayhead.nonwork{background:#d92732;color:#fff;font-weight:900;margin-inline:-.5px}
+.leave-visual-dayhead.nonwork-start,.leave-overlap-dayhead.nonwork-start{border-top-left-radius:3px;border-bottom-left-radius:3px;margin-left:0}
+.leave-visual-dayhead.nonwork-end,.leave-overlap-dayhead.nonwork-end{border-top-right-radius:3px;border-bottom-right-radius:3px;margin-right:0}
+.birthday-line.birthday-full{display:grid;grid-template-columns:minmax(0,1fr) auto;white-space:normal;gap:4px 8px;font-size:11px;line-height:1.3}
+.birthday-full>b{overflow-wrap:anywhere}.birthday-details{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:3px 10px;color:#64717d}.birthday-full .birthday-aff{font-size:9px}
+.calendar-birthday{background:#fff3bf;color:#775d00;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.12</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.13</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -333,7 +340,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.12';
+const APP_VERSION='1.11.13';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -759,6 +766,11 @@ function leaveTypes(){
 function leaveForPersonDay(personId,dateStr,leaves){
  return leaves.find(e=>e.personId===personId&&e.start<=dateStr&&(e.end||e.start)>=dateStr);
 }
+function leaveDayHeaders(year,month,count,baseClass){
+ const day=i=>year+'-'+String(month+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
+ const info=Array.from({length:count},(_,i)=>productionDayInfo(day(i)));
+ return info.map((x,i)=>{const cls=x.nonwork?' nonwork'+(!info[i-1]?.nonwork?' nonwork-start':'')+(!info[i+1]?.nonwork?' nonwork-end':''):'';return '<span class="'+baseClass+cls+'" title="'+esc(fmt(day(i))+(x.label?' · '+x.label:''))+'">'+(i+1)+'</span>'}).join('');
+}
 function renderLeaveVisualOverlap(){
  const target=document.getElementById('leaveVisualOverlap'); if(!target)return;
  const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
@@ -770,7 +782,7 @@ function renderLeaveVisualOverlap(){
   const monthName=new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'});
   const monthLeaves=leaves.filter(e=>overlapRange(e,year,m));
   const personIds=[...new Set(monthLeaves.map(e=>e.personId))].sort((a,b)=>(rank.get(a)??999)-(rank.get(b)??999));
-  const head=Array.from({length:dim},(_,i)=>{const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0'),info=productionDayInfo(ds);return '<span class="leave-visual-dayhead'+(info.nonwork?' nonwork':'')+'" title="'+esc(fmt(ds)+(info.label?' · '+info.label:''))+'">'+(i+1)+'</span>'}).join('');
+  const head=leaveDayHeaders(year,m,dim,'leave-visual-dayhead');
   let body='';
   if(!personIds.length){
    body='<div class="leave-visual-empty">Отпусков в этом месяце нет</div>';
@@ -804,7 +816,7 @@ function renderLeaveOverlap(){
   const hist={}; dailyCounts.forEach(n=>{if(n>=2)hist[n]=(hist[n]||0)+1});
   const overlapParts=Object.keys(hist).map(Number).sort((a,b)=>b-a).map(n=>n+' чел. · '+hist[n]+' '+dayWord(hist[n]));
   const max=Math.max(0,...dailyCounts), stat=max>=2?('макс. '+max+' чел.'):'без наложений';
-  const head=Array.from({length:dim},(_,i)=>{const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0'),info=productionDayInfo(ds);return '<span class="leave-overlap-dayhead'+(info.nonwork?' nonwork':'')+'" title="'+esc(fmt(ds)+(info.label?' · '+info.label:''))+'">'+(i+1)+'</span>'}).join('');
+  const head=leaveDayHeaders(year,m,dim,'leave-overlap-dayhead');
   const rows=people.map(p=>{
    const cells=Array.from({length:dim},(_,i)=>{
     const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
@@ -931,6 +943,7 @@ function renderBirthdays(){
   const when=b._n.days===0?'сегодня':b._n.days===1?'завтра':'через '+b._n.days+' дн.';
   const age='исполнится '+b._n.age+' лет';
   const aff=b.affiliation||'Наш отдел';
+  if(aff==='ДИД')return '<div class="birthday-line birthday-full '+(idx===0?'nearest':'')+'"><b>'+esc(b.name||'')+'</b><span class="birthday-aff">ДИД</span><div class="birthday-details"><span>'+esc(full)+'</span><strong>'+esc(when)+'</strong><span>'+esc(age)+'</span></div></div>';
   return '<div class="birthday-line '+(idx===0?'nearest':'')+'"><b>'+esc(b.name||b.person||'')+'</b><span>·</span><span>'+esc(full)+'</span><span>·</span><strong>'+esc(when)+'</strong><span>·</span><span>'+esc(age)+'</span><span class="birthday-aff">'+esc(aff)+'</span></div>';
  }).join('');
 }
@@ -1123,7 +1136,7 @@ function birthdayItemsForDate(dateStr){
  return list.filter(b=>{
   if(!b.date)return false;const x=new Date(b.date+'T00:00:00');
   return x.getMonth()+1===m&&x.getDate()===day;
- }).map(b=>({kind:'birthday',text:(b.name||b.person||person(b.id)?.short||'')+' — день рождения'}));
+ }).map(b=>({kind:'birthday',text:(b.name||b.person||person(b.id)?.short||'')+' — день рождения'+(b.affiliation==='ДИД'?' · ДИД':'')}));
 }
 function calendarWorkItems(dateStr){
  const out=[];
@@ -1162,7 +1175,7 @@ function renderWeeklyCalendar(){
 function calendarDayHtml(dateStr,adjacent=false){
  const d=new Date(dateStr+'T00:00:00'),info=productionDayInfo(dateStr),ev=db.events.filter(e=>activeEvent(e,dateStr));
  const mobileMeta=info.dow+(info.label?' · '+info.label:'');
- return '<div class="day '+(info.nonwork?'nonwork ':'')+(adjacent?'adjacent':'')+'"><div class="n"><span>'+d.getDate()+'</span><span class="dow">'+info.dow+'</span><span class="mobile-day-meta">'+esc(mobileMeta)+'</span></div>'+(info.label?'<div class="holiday">'+esc(info.label)+'</div>':'')+ev.map(e=>{const pn=person(e.personId)?.short||'';return '<span class="event-chip">'+esc((pn?pn+' • ':'')+e.type)+'</span>'}).join('')+'</div>';
+ return '<div class="day '+(info.nonwork?'nonwork ':'')+(adjacent?'adjacent':'')+'"><div class="n"><span>'+d.getDate()+'</span><span class="dow">'+info.dow+'</span><span class="mobile-day-meta">'+esc(mobileMeta)+'</span></div>'+(info.label?'<div class="holiday">'+esc(info.label)+'</div>':'')+ev.map(e=>{const pn=person(e.personId)?.short||'';return '<span class="event-chip">'+esc((pn?pn+' • ':'')+e.type)+'</span>'}).join('')+birthdayItemsForDate(dateStr).map(b=>'<span class="event-chip calendar-birthday">'+esc(b.text)+'</span>').join('')+'</div>';
 }
 function isoDateLocal(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function renderCalendar(){
