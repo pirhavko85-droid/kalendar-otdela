@@ -35,7 +35,8 @@ jobs:
       - name: Prepare website files only
         run: |
           mkdir public-site
-          cp index.html sw.js manifest.json data.enc.json .nojekyll public-site/
+          cp index.html sw.js manifest.json data.enc.json leave-extension.js .nojekyll public-site/
+          cp -R icons public-site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

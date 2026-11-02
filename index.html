@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#18324a">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/calendar-3-64.png?v=1">
+<link rel="icon" type="image/svg+xml" href="icons/calendar-3.svg?v=1">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/calendar-3-180.png?v=1">
 <title>Календарь отдела</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#17202a;--muted:#6b7785;--accent:#18324a;--accent2:#2f6fed;--red:#c0392b;--green:#1f8b4c;--amber:#b7791f;--line:#dfe5ec}
@@ -309,10 +312,16 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .people-card{min-height:37px;padding-top:4px;padding-bottom:4px}.duty-chip.replacement{display:flex;align-items:center;gap:3px}.duty-chip-label{min-width:0;overflow:hidden;text-overflow:ellipsis}.duty-replacement-icon{flex:0 0 auto;font-size:14px;font-weight:900}.duty-chip.replacement.duty-nonwork{background:#ffe58a;color:#684d00;border-color:#e5bf38}
 #sickVisualHistory{display:grid;gap:7px;padding:7px}.sick-visual-self{background:#f4b7b7;border-color:#df9999}.sick-visual-child{background:#b9d7ff;border-color:#8fb5e8}
 @media(max-width:520px){#today .today-metrics .card h3{font-size:clamp(6.2px,1.85vw,8.8px)}#today .today-metrics .card{min-height:42px;padding:4px}#today .today-metrics .metric{font-size:21px}.exit-person-row{min-height:35px;padding:4px 8px}.people-list{grid-template-rows:none;min-height:0}.people-card{min-height:43px;padding:5px 9px}.exit-detail-list .exit-type{max-width:123px}}
+
+/* Parallel disclosures inside each tab share one typography scale. */
+#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:12px}
+.section>details>summary{font-family:inherit;font-size:var(--disclosure-size,12px);font-weight:800;line-height:1.3}.section>details>summary .disclosure-action{font-family:inherit;font-size:.84em;font-weight:700}
+.leave-growth-body{padding:9px;display:grid;gap:7px}.leave-growth-explainer{font-size:11px;line-height:1.45;color:var(--muted);margin:0 0 3px}.leave-growth-card{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}.leave-growth-card>summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;cursor:pointer;list-style:none;padding:8px 9px;font-size:11px;font-weight:700}.leave-growth-card>summary::-webkit-details-marker{display:none}.leave-growth-name{flex:1;min-width:0}.leave-growth-net{font-variant-numeric:tabular-nums;white-space:nowrap}.leave-growth-net.positive{color:#24764c}.leave-growth-net.negative{color:#b44848}.leave-growth-meter{grid-column:1/-1;height:4px;background:#eef1f5;margin:0 9px 6px;border-radius:3px;overflow:hidden}.leave-growth-meter span{display:block;height:100%;background:#5caa80}.leave-growth-meter .negative{background:#d69292}.leave-growth-formula{grid-column:1/-1;padding:0;font-size:10px;color:var(--muted)}.leave-growth-periods{padding:0 9px 8px;display:grid;gap:7px;font-size:10px}.leave-growth-period{border-top:1px solid var(--line);padding-top:6px;line-height:1.5}.leave-growth-dates{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}.leave-growth-dates span{padding:2px 4px;border-radius:4px;background:#e7f4ec;color:#25603e}.leave-growth-dates .inside{background:#fdecec;color:#9d3b3b}
+@media(max-width:520px){#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:11px}.leave-growth-explainer{font-size:10px}.leave-growth-card>summary{font-size:10.5px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.16</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.17</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -337,7 +346,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
 <div id="leaveChart"></div>
-<details class="leave-visual-toggle"><summary><span>Наложение отпусков графическое</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details>
+<details class="leave-visual-toggle"><summary><span>Наложение отпусков графическое</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details><details class="leave-visual-toggle"><summary><span>Наращивание</span><span class="disclosure-action">Показать</span></summary><div id="leaveGrowth" class="leave-growth-body"></div></details>
 <div id="leaveTable" style="display:none"></div></section>
 <section id="duty" class="section"><h2>Наряды</h2><div id="dutyChart"></div>
 <details class="duty-list-toggle"><summary><span>Список нарядов</span><span class="muted">Показать</span></summary><div id="dutyCompactList"></div></details>
@@ -363,8 +372,9 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <select id="taskPerson" required></select><input id="taskTitle" required placeholder="Задача"><textarea id="taskDesc" class="full" placeholder="Описание"></textarea><input id="taskCreated" type="date" required><input id="taskDeadline" type="date"><select id="taskPriority"></select><select id="taskStatus"></select><input id="taskAuthor" placeholder="Постановщик"><textarea id="taskComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
+<script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.16';
+const APP_VERSION='1.11.17';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -863,13 +873,24 @@ function renderLeaveOverlap(){
   return '<details class="leave-overlap-month" '+(hasAny?'':'')+'><summary><span>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1)+' '+year+' года')+'</span><span class="leave-overlap-stat">'+esc(stat)+'</span></summary><div class="leave-overlap-body">'+(hasAny?'<div class="leave-overlap-grid"><div class="leave-overlap-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+nonworkBands(year,m,dim)+'</div>'+summaryLine:'<div class="leave-overlap-empty">Отпусков в этом месяце нет</div>')+'</div></details>';
  }).join('');
 }
+function renderLeaveGrowth(){
+ const year=Number(document.getElementById('leaveYearSelect').value),target=document.getElementById('leaveGrowth');
+ const rows=LeaveExtension.calculate(db.events,db.people,year,date=>productionDayInfo(date).nonwork,leaveTypes());
+ const max=Math.max(1,...rows.map(r=>Math.abs(r.net)));
+ const dates=(list,inside=false)=>list.length?'<div class="leave-growth-dates">'+list.map(date=>'<span class="'+(inside?'inside':'')+'">'+esc(fmtShort(date))+'</span>').join('')+'</div>':'<span class="muted">нет</span>';
+ target.innerHTML='<p class="leave-growth-explainer">'+year+' год. Выходные и праздники подряд до и после отпуска — в плюс; внутри отпуска — в минус. Итог = добавленные дни − нерабочие дни внутри. Соседние отпуска объединены, общие дни считаются один раз. Учитываются только даты выбранного года, включая плановые отпуска.</p>'+rows.map((r,i)=>{
+ const p=person(r.personId),cls=r.net>0?'positive':r.net<0?'negative':'',net=(r.net>0?'+':'')+r.net;
+ const detail=r.periods.length?r.periods.map(x=>'<div class="leave-growth-period"><b>Отпуск '+esc(fmtShortYear(x.start)+'–'+fmtShortYear(x.end))+'</b><div>До отпуска: '+x.before.length+'</div>'+dates(x.before)+'<div>После отпуска: '+x.after.length+'</div>'+dates(x.after)+'<div>Нерабочие внутри: '+x.inside.length+'</div>'+dates(x.inside,true)+'</div>').join(''):'<div class="muted">Отпусков в выбранном году нет.</div>';
+ return '<details class="leave-growth-card"><summary><span class="leave-growth-name">'+(i+1)+'. '+esc(p?.short||'—')+'</span><b class="leave-growth-net '+cls+'">'+net+' дн.</b><span class="disclosure-action">Показать</span><div class="leave-growth-meter"><span class="'+cls+'" style="width:'+Math.round(Math.abs(r.net)/max*100)+'%"></span></div><div class="leave-growth-formula">+'+r.bonus.length+' на стыках − '+r.inside.length+' внутри = '+net+' дн.</div></summary><div class="leave-growth-periods">'+detail+'</div></details>';
+ }).join('');
+}
 function renderLeaveChart(){
  const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
  const months=Array.from({length:12},(_,m)=>({y:year,m,label:new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'})}));
  const types=['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'];
  const leaves=db.events.filter(e=>types.includes(e.type));
  document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
- renderLeaveVisualOverlap();
+ renderLeaveVisualOverlap();renderLeaveGrowth();
 }
 function renderTripCompactList(){renderAbsenceVisual('tripCompactList','tripVisualYear',['Командировка'],false)}
 function renderSickVisualHistory(){renderAbsenceVisual('sickVisualHistory','sickVisualYear',['Болен','Больна','Болезнь по уходу за ребёнком'],true)}

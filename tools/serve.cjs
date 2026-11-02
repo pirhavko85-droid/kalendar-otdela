@@ -7,7 +7,10 @@ const files = new Map([
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
-  ['/data.enc.json', ['data.enc.json', 'application/json']]
+  ['/data.enc.json', ['data.enc.json', 'application/json']],
+  ['/leave-extension.js', ['leave-extension.js', 'text/javascript; charset=utf-8']],
+  ...[64,180,192,512].map(n=>['/icons/calendar-3-'+n+'.png',['icons/calendar-3-'+n+'.png','image/png']]),
+  ['/icons/calendar-3.svg',['icons/calendar-3.svg','image/svg+xml']]
 ]);
 const server = http.createServer((req, res) => {
   const entry = files.get(new URL(req.url, 'http://localhost').pathname);
