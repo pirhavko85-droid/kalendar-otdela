@@ -22,3 +22,16 @@ test('cross-year dates are counted only in selected year, cancelled leave exclud
  const cancelled={...event('2026-10-05','2026-10-09'),status:'Отменена'};assert.equal(result([cancelled]).periods.length,0);
  const ranked=calculate([event('2026-10-05','2026-10-09','b')],people,2026,ctx.nonwork,types);assert.equal(ranked[0].personId,'b');
 });
+function summerResult(events,year=2027){return calculate(events,people,year,ctx.nonwork,types,{from:'06-01',to:'08-31'}).find(r=>r.personId==='a')}
+test('summer debits only June-August dates for leave crossing May and June',()=>{
+ const r=summerResult([event('2027-05-31','2027-06-24')]);assert.equal(r.inside.length,7);assert.equal(r.bonus.length,0);assert.equal(r.net,-7);
+ assert.equal(r.periods[0].start,'2027-05-31');
+});
+test('summer preserves actual leave boundaries across August-September and omits outside dates',()=>{
+ const r=summerResult([event('2027-08-30','2027-09-03')]);assert.deepEqual(r.bonus,['2027-08-28','2027-08-29']);assert.equal(r.inside.length,0);assert.equal(r.net,2);
+ assert.equal(summerResult([event('2027-01-01','2027-01-15')]).periods.length,0);
+});
+test('summer shares the same overlap and shared-weekend deduplication as annual totals',()=>{
+ const r=summerResult([event('2027-07-05','2027-07-09'),event('2027-07-12','2027-07-16'),event('2027-07-05','2027-07-08')]);assert.equal(r.bonus.length,6);assert.equal(r.net,6);
+ const annual=result([event('2027-07-05','2027-07-09')],2027);const seasonal=summerResult([event('2027-07-05','2027-07-09')]);assert.equal(annual.net,seasonal.net);
+});

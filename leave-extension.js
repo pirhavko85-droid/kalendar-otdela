@@ -1,8 +1,8 @@
 // Pure calculation shared by the holiday-extension view and its tests.
 (function(root){
  function shift(date,days){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)}
- function calculate(events,people,year,isNonwork,types){
-  const first=year+'-01-01',last=year+'-12-31';
+ function calculate(events,people,year,isNonwork,types,window){
+  const first=year+'-'+(window?.from||'01-01'),last=year+'-'+(window?.to||'12-31');
   return people.map((p,index)=>{
    const list=events.filter(e=>e.personId===p.id&&types.includes(e.type)&&e.start&&e.status!=='Отменена').map(e=>({start:e.start,end:e.end||e.start})).filter(e=>e.end>=e.start).sort((a,b)=>a.start.localeCompare(b.start));
    const merged=[];for(const e of list){const prev=merged[merged.length-1];if(prev&&e.start<=shift(prev.end,1)){if(e.end>prev.end)prev.end=e.end}else merged.push({...e})}
