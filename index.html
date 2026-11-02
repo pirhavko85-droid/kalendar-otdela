@@ -300,10 +300,19 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 #birthdaysGrid .birthday-line{border-width:2px;display:grid;grid-template-columns:minmax(0,1fr) 6.4em 6.5em 5.9em 7em;gap:6px;align-items:center;font-variant-numeric:tabular-nums}#birthdaysGrid .birthday-line>*{min-width:0}#birthdaysGrid .birthday-aff{text-align:center}
 @media(max-width:900px){nav{width:100%;max-width:100vw;box-sizing:border-box;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pinch-zoom;padding-bottom:max(6px,env(safe-area-inset-bottom))}nav button{flex:0 0 auto;touch-action:manipulation}main{padding-bottom:calc(86px + env(safe-area-inset-bottom))}}
 @media(max-width:520px){.leave-visual-grid{--name-width:56px}.exits-summary .card{padding:5px 7px;min-height:43px}.exits-summary .card h3{font-size:9px}.exits-summary .metric{font-size:16px}.exits-units{font-size:10px}#birthdaysGrid .birthday-line{font-size:clamp(7.2px,2.25vw,10.5px);gap:3px}}
+
+/* Shared presentation rules for the department dashboard. */
+#today .today-metrics .card{min-height:44px;padding:5px 6px;grid-template-rows:auto 1fr}#today .today-metrics .card h3{white-space:nowrap;text-align:left;line-height:1.15;font-size:9px}#today .today-metrics .metric{font-size:21px}
+.day.nonwork,.day.adjacent.nonwork{background:#fff0f0!important;border-color:#edcaca!important}.week-mobile-day.weekend{background:#fff0f0;border-color:#edcaca}.event-day-group.event-nonwork{background:#fff0f0;border-color:#edcaca}.event-nonwork .event-day-head{background:#fce7e7}.event-nonwork .event-compact-card{background:transparent}
+.nonwork-bands{top:15px}.nonwork-band{border:.7px dashed #d85c64;border-radius:2px;margin:0 -.5px -1px}
+.exit-person-row{min-height:0;padding:4px 8px}.exit-detail-list .exit-card{grid-template-areas:"name type" "comment days";min-height:36px;padding:5px 7px;gap:3px 7px}.exit-detail-list .exit-name{display:flex;flex-wrap:wrap;gap:3px 8px;align-items:baseline}.exit-detail-list .exit-date{font-weight:400;font-size:9px;color:var(--muted)}.exit-detail-list .exit-comment{grid-area:comment;font-size:9px;margin:0;line-height:1.25}.exit-detail-list .exit-type{white-space:normal;font-size:9.5px;max-width:150px}.exit-detail-list .exit-days{justify-self:end}
+.people-card{min-height:37px;padding-top:4px;padding-bottom:4px}.duty-chip.replacement{display:flex;align-items:center;gap:3px}.duty-chip-label{min-width:0;overflow:hidden;text-overflow:ellipsis}.duty-replacement-icon{flex:0 0 auto;font-size:14px;font-weight:900}.duty-chip.replacement.duty-nonwork{background:#ffe58a;color:#684d00;border-color:#e5bf38}
+#sickVisualHistory{display:grid;gap:7px;padding:7px}.sick-visual-self{background:#f4b7b7;border-color:#df9999}.sick-visual-child{background:#b9d7ff;border-color:#8fb5e8}
+@media(max-width:520px){#today .today-metrics .card h3{font-size:clamp(6.2px,1.85vw,8.8px)}#today .today-metrics .card{min-height:42px;padding:4px}#today .today-metrics .metric{font-size:21px}.exit-person-row{min-height:35px;padding:4px 8px}.people-list{grid-template-rows:none;min-height:0}.people-card{min-height:43px;padding:5px 9px}.exit-detail-list .exit-type{max-width:123px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.15</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.16</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -336,14 +345,13 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <section id="trips" class="section"><h2>Командировки</h2><div id="tripsChart"></div>
 <details class="trip-list-toggle"><summary><span>Графическая визуализация</span><span class="muted">Показать</span></summary><label class="trip-year">Год <select id="tripVisualYear"><option>2026</option><option>2027</option></select></label><p class="trip-visual-note">Командировки без даты окончания показаны до сегодняшнего дня.</p><div id="tripCompactList"></div></details>
 <div id="tripsTable" style="display:none"></div></section>
-<section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><details class="sick-list-toggle"><summary><span>История больничных</span><span class="muted">Показать</span></summary><div id="sickCompactList"></div></details><div id="sickTable" style="display:none"></div></section>
+<section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><details class="sick-list-toggle"><summary><span>История больничных</span><span class="muted">Показать</span></summary><div id="sickCompactList"></div></details><details class="leave-visual-toggle"><summary><span>Графическая история</span><span class="disclosure-action">Показать</span></summary><label class="trip-year">Год <select id="sickVisualYear"><option>2026</option><option>2027</option></select></label><div id="sickVisualHistory"></div></details><div id="sickTable" style="display:none"></div></section>
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
 <section id="tasks" class="section"><div class="tasks-head"><div><h2>Задачи</h2><p>Текущие задачи отдела</p></div><button class="primary tasks-add" onclick="openTaskModal()">+ Задача</button></div><details class="tasks-filters"><summary><span>Фильтры и поиск</span><span class="muted">Показать</span></summary><div class="tasks-filter-grid"><select id="taskControlFilter" aria-label="Фильтр по контролю"><option value="">Все задачи по контролю</option><option value="true">На контроле</option><option value="false">Не на контроле</option></select><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div></details><div id="tasksTable"></div></section>
 <section id="stats" class="section"><div class="stats-head"><h2>Статистика</h2><select id="statsPeriod" class="stats-period"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid stats-kpi-grid"></div><div id="statsTable" class="stats-detail"></div></section>
 <section id="people" class="section"><div class="people-head"><h2>Сотрудники отдела по старшинству</h2><button class="primary people-add" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleSeniorNow"></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
-<div class="card"><h3>Локальные данные</h3><p>Персональные данные не хранятся в открытом виде в GitHub. Рабочая копия находится в браузере этого устройства.</p><div class="toolbar"><button id="exportBtn">Экспорт JSON</button><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Импорт JSON<input id="importFile" type="file" accept=".json" hidden></label><button id="sampleBtn">Загрузить демо-данные</button><button id="clearBtn" class="danger">Очистить локальные данные</button></div></div>
-<div class="card" style="margin-top:12px"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
+<div class="card"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
 </section>
 </main>
 </div>
@@ -356,7 +364,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.15';
+const APP_VERSION='1.11.16';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -385,7 +393,9 @@ function productionDayInfo(date){
  return {dow:DOW_SHORT[x.getDay()],nonwork:weekend||!!special,label:special||(weekend?'Выходной':'')};
 }
 const KEY='kalendarOtdelaDataV1';
+const RETIRED_TEST_EVENTS=new Set(['SYNC-TEST-20261030-1800','MEET-TEST-1234-R','SYNC-CONTROL-20261030-1700-PRV','SYNC-TEST-20261101']);
 function normalizeDisplayData(x){
+ x.events=(x.events||[]).filter(e=>!RETIRED_TEST_EVENTS.has(e.id));
  (x.tasks||[]).forEach(t=>{t.controlled=t.controlled===true||(t.controlled==null&&t.status==='На контроле');if(t.status==='На контроле')t.status='В работе'});
  const order=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
  const meta={
@@ -506,14 +516,14 @@ function renderToday(){
  const todayMeetingRows=db.events.filter(e=>e.start===today&&e.status!=='Отменена'&&meetingLike(e));
  const todayMeetings=new Set(todayMeetingRows.map(e=>e.linkedEvent||e.id)).size;
  const metrics=[
-  {d:'Всего сотрудников',m:'Всего<br>сотрудников',v:db.people.length},
+  {d:'Всего сотрудников',m:'Всего сотрудников',v:db.people.length},
   {d:'Налицо',m:'Налицо',v:present},
   {d:'Отсутствует',m:'Отсутствуют',v:absent},
-  {d:'Выполняемых задач',m:'Выполняемых<br>задач',v:due.length},
+  {d:'Выполняемых задач',m:'Выполняемых задач',v:due.length},
   {d:'Просрочено',m:'Просрочено',v:od.length}
  ];
  document.getElementById('todayMetrics').innerHTML=metrics.map(x=>'<div class="card"><h3><span class="metric-label-desktop">'+x.d+'</span><span class="metric-label-mobile">'+x.m+'</span></h3><div class="metric">'+x.v+'</div></div>').join('')+
-  '<div class="card mobile-meeting-card"><h3>Совещание<br>(мероприятие)</h3><div class="metric">'+todayMeetings+'</div></div>';
+  '<div class="card mobile-meeting-card"><h3>Совещание (мероприятие)</h3><div class="metric">'+todayMeetings+'</div></div>';
 
  const priority=['Выход на больничном','Выход в отпуске','Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
  const rows=db.people.map(p=>{
@@ -579,7 +589,7 @@ function renderEventDateGroups(list,mode){
  return dates.map(date=>{
    const items=byDate.get(date).sort((a,b)=>eventTime(a).localeCompare(eventTime(b)));
    const rel=eventRelative(date);
-   return '<div class="event-day-group"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
+   return '<div class="event-day-group'+(productionDayInfo(date).nonwork?' event-nonwork':'')+'"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
      const tm=eventTime(e)||'—';
      const people=e.participants.length?e.participants.join(', '):'Участник не указан';
      return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b><span>'+esc(people)+'</span></div></div>';
@@ -682,7 +692,7 @@ function renderExitsAnalytics(list){
     const same=!e.end||e.end===e.start,date=same?fmtShortYear(e.start):(fmtShortYear(e.start)+'–'+fmtShortYear(e.end));
     const d=exitDays(e),planned=!exitCountable(e);
     const comment=e.comment?'<div class="exit-comment">'+esc(e.comment)+'</div>':'';
-    return '<div class="exit-card'+cls+'"><div class="exit-name">'+esc(person(e.personId)?.short||'—')+'</div><div class="exit-type">'+esc(exitMobileType(e.type))+(planned?' · План':'')+'</div><div class="exit-date">'+esc(date)+'</div><div class="exit-days">'+esc(d+' '+dayWord(d))+'</div>'+comment+'</div>';
+    return '<div class="exit-card'+cls+'"><div class="exit-name">'+esc(person(e.personId)?.short||'—')+'<span class="exit-date">'+esc(date)+'</span></div><div class="exit-type">'+esc(exitMobileType(e.type))+(planned?' · План':'')+'</div>'+comment+'<div class="exit-days">'+esc(d+' '+dayWord(d))+'</div></div>';
    }).join('');
    return '<div class="exit-history-month"><div class="exit-history-month-head"><b>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1))+'</b><span>Итого: '+days+' '+dayWord(days)+'</span></div><div class="exit-month-breakdown"><span class="exit-mini">Выходные: '+counts.weekend+'</span><span class="exit-mini">На больничном: '+counts.sick+'</span><span class="exit-mini">В отпуске: '+counts.leave+'</span></div><div class="exit-detail-list">'+details+'</div></div>';
  }).join(''):'<div class="empty">Пока нет данных о переработке</div>';
@@ -861,15 +871,17 @@ function renderLeaveChart(){
  document.getElementById('leaveChart').innerHTML='<div class="year-chart">'+months.map(mm=>'<div class="year-row"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(leaves,mm.y,mm.m,'leave')+'</div>'+monthMobileList(leaves,mm.y,mm.m,'leave')+'</div></div>').join('')+'</div>';
  renderLeaveVisualOverlap();
 }
-function renderTripCompactList(){
- const target=document.getElementById('tripCompactList');if(!target)return;
- const year=Number(document.getElementById('tripVisualYear')?.value||2026);
- const trips=db.events.filter(e=>e.type==='Командировка');
+function renderTripCompactList(){renderAbsenceVisual('tripCompactList','tripVisualYear',['Командировка'],false)}
+function renderSickVisualHistory(){renderAbsenceVisual('sickVisualHistory','sickVisualYear',['Болен','Больна','Болезнь по уходу за ребёнком'],true)}
+function renderAbsenceVisual(targetId,yearId,types,sick){
+ const target=document.getElementById(targetId);if(!target)return;
+ const year=Number(document.getElementById(yearId)?.value||2026);
+ const trips=db.events.filter(e=>types.includes(e.type));
  target.innerHTML=Array.from({length:12},(_,m)=>{
  const dim=daysInMonth(year,m),items=trips.filter(e=>overlapRange(e,year,m));
  const people=(db.people||[]).filter(p=>items.some(e=>e.personId===p.id));
- const rows=people.map(p=>'<div class="leave-visual-row" style="--days:'+dim+'"><span class="leave-visual-name">'+esc(p.short||p.full)+'</span>'+Array.from({length:dim},(_,i)=>{const date=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');const active=items.some(e=>e.personId===p.id&&e.start<=date&&eventVisualEnd(e)>=date);return '<span class="leave-visual-cell'+(active?' trip-visual-active':'')+'" title="'+esc((p.short||p.full)+' · '+fmt(date)+(active?' · Командировка':''))+'"></span>'}).join('')+'</div>').join('');
- const body=people.length?'<div class="leave-visual-grid"><div class="leave-visual-row" style="--days:'+dim+'"><span></span>'+leaveDayHeaders(year,m,dim,'leave-visual-dayhead')+'</div>'+rows+nonworkBands(year,m,dim)+'</div>':'<div class="leave-visual-empty">Командировок в этом месяце нет</div>';
+ const rows=people.map(p=>'<div class="leave-visual-row" style="--days:'+dim+'"><span class="leave-visual-name">'+esc(p.short||p.full)+'</span>'+Array.from({length:dim},(_,i)=>{const date=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');const active=items.find(e=>e.personId===p.id&&e.start<=date&&eventVisualEnd(e)>=date);const cls=active?(sick?(isChildCareSick(active)?' sick-visual-child':' sick-visual-self'):' trip-visual-active'):'';return '<span class="leave-visual-cell'+cls+'" title="'+esc((p.short||p.full)+' · '+fmt(date)+(active?' · '+active.type:''))+'"></span>'}).join('')+'</div>').join('');
+ const body=people.length?'<div class="leave-visual-grid"><div class="leave-visual-row" style="--days:'+dim+'"><span></span>'+leaveDayHeaders(year,m,dim,'leave-visual-dayhead')+'</div>'+rows+nonworkBands(year,m,dim)+'</div>':'<div class="leave-visual-empty">'+(sick?'Больничных':'Командировок')+' в этом месяце нет</div>';
  return '<div class="leave-visual-month"><div class="leave-visual-month-head"><b>'+esc(new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'}))+'</b><span>Сотрудников: '+people.length+'</span></div><div class="leave-visual-body">'+body+'</div></div>';
  }).join('');
 }
@@ -917,7 +929,7 @@ function renderTimelineChart(target,types,kind){
   return '<div class="year-row '+(kind==='trip'&&!hasItems?'trip-empty-month':'')+'"><div class="year-label">'+esc(mm.label)+'</div><div><div class="year-track">'+renderYearLanes(list,mm.y,mm.m,kind)+'</div>'+monthMobileList(list,mm.y,mm.m,kind)+'</div></div>';
  }).join('')+'</div>';
  if(kind==='trip')renderTripCompactList();
- if(kind==='sick')renderSickCompactList();
+ if(kind==='sick'){renderSickCompactList();renderSickVisualHistory()}
 }
 function renderDutyCompactList(){
  const list=db.events.filter(e=>e.type==='Наряд').slice().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
@@ -941,8 +953,8 @@ function renderDutyChart(){
   return '<div class="duty-row"><div class="duty-month">'+esc(mm.label)+'</div><div class="duty-chips">'+(list.length?list.map(e=>{
    const replaced=e.status==='Замена'||/замен|компенс/i.test(e.comment||'');
    const date=fmtShort(e.start)+(e.end&&e.end!==e.start?'–'+fmtShort(e.end):'');
-   const label=date+' • '+(person(e.personId)?.short||'')+(e.status==='Замена'?' • Замена':replaced?' • За замену':'');
-   return '<span class="duty-chip '+(replaced?'replacement ':'')+(productionDayInfo(e.start).nonwork?'duty-nonwork':'')+'" title="'+esc(e.comment||'')+'">'+esc(label)+'</span>';
+   const label=date+' • '+(person(e.personId)?.short||'');
+   return '<span class="duty-chip '+(replaced?'replacement ':'')+(productionDayInfo(e.start).nonwork?'duty-nonwork':'')+'" title="'+esc((replaced?'Замена. ':'')+(e.comment||''))+'"><span class="duty-chip-label">'+esc(label)+'</span>'+(replaced?'<span class="duty-replacement-icon" role="img" aria-label="Замена">↻</span>':'')+'</span>';
   }).join(''):'<span class="muted">—</span>')+'</div></div>';
  }).join('');
  renderDutyCompactList();
@@ -966,7 +978,7 @@ function renderBirthdays(){
   const parts=originalName.trim().split(/\s+/);
   const name=birthdayDisplayName(b);
   const age='исполн. '+b._n.age;
-  return '<div class="birthday-line '+(idx===0?'nearest ':'')+(aff==='Наш отдел'?'own-department':'')+'"><b class="birthday-name" title="'+esc(originalName)+'">'+esc(name)+'</b><span>'+esc(full)+'</span><strong>'+esc(when)+'</strong><span title="Исполнится '+b._n.age+' лет">'+esc(age)+'</span><span class="birthday-aff">'+esc(aff==='Наш отдел'?'Третий отдел':aff)+'</span></div>';
+  return '<div class="birthday-line '+(idx===0?'nearest ':'')+(aff==='Наш отдел'?'own-department':'')+'"><b class="birthday-name" title="'+esc(originalName)+'">'+esc(name)+'</b><span>'+esc(full)+'</span><strong>'+esc(when)+'</strong><span title="Исполнится '+b._n.age+' лет">'+esc(age)+'</span><span class="birthday-aff">'+esc(aff==='Наш отдел'?'3 отд.':aff)+'</span></div>';
  }).join('');
 }
 function taskControlBadge(t){return '<span class="task-meta-chip'+(t.controlled===true?' task-control-active':'')+'">'+(t.controlled===true?'На контроле':'Не на контроле')+'</span>'}
@@ -1249,13 +1261,13 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.quer
 document.getElementById('statsPeriod').onchange=renderStats;
 document.getElementById('leaveYearSelect').onchange=renderLeaveChart;
 document.getElementById('tripVisualYear').onchange=renderTripCompactList;
+document.getElementById('sickVisualYear').onchange=renderSickVisualHistory;
 // Older Safari needs an explicit guard against dragging the document at nav edges.
 const tabNav=document.getElementById('nav');let navTouch=null;
 tabNav.addEventListener('touchstart',e=>{navTouch=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null},{passive:true});
 tabNav.addEventListener('touchmove',e=>{if(!navTouch||e.touches.length!==1)return;const dx=e.touches[0].clientX-navTouch.x,dy=e.touches[0].clientY-navTouch.y;if(Math.abs(dx)>Math.abs(dy)&&((dx>0&&tabNav.scrollLeft<=0)||(dx<0&&tabNav.scrollLeft+tabNav.clientWidth>=tabNav.scrollWidth-1))&&e.cancelable)e.preventDefault()},{passive:false});
 ;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskControlFilter','taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
 document.getElementById('prevMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()-7);else calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()+7);else calDate.setMonth(calDate.getMonth()+1);renderCalendar()};document.getElementById('calendarTodayBtn').onclick=()=>{calDate=new Date();renderCalendar()};
-document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-backup.json';a.click();URL.revokeObjectURL(a.href)}
 const SYNC_KEY='kalendarOtdelaSharedKeyV1';
 function b64ToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function syncEncrypted(){
@@ -1287,7 +1299,7 @@ async function syncEncrypted(){
   for(const collection of ['people','events','tasks']){
     const known=new Set(incoming[collection].map(item=>String(item.id)));
     for(const item of (db[collection]||[])){
-      if(item.id!=null&&!known.has(String(item.id))){
+      if(item.id!=null&&!known.has(String(item.id))&&!(collection==='events'&&RETIRED_TEST_EVENTS.has(item.id))){
         incoming[collection].push(item);
         known.add(String(item.id));
         localOnly[collection]++;
@@ -1312,9 +1324,6 @@ document.getElementById('sharedKeyFile').onchange=async e=>{
 document.getElementById('syncNowBtn').onclick=syncEncrypted;
 if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(syncEncrypted,600)}
 
-document.getElementById('importFile').onchange=async e=>{const txt=await e.target.files[0].text();try{const x=JSON.parse(txt);if(!x.people||!x.events||!x.tasks)throw 0;db=normalizeDisplayData(x);save();alert('Импорт завершён')}catch(_){alert('Неверный файл')}}
-document.getElementById('clearBtn').onclick=()=>{if(confirm('Очистить все локальные данные?')){db={people:[],events:[],tasks:[]};save()}}
-document.getElementById('sampleBtn').onclick=()=>{db={people:[{id:'p1',short:'Сотрудник 1',full:'Демонстрационный сотрудник',role:'Сотрудник',category:'Другое'}],events:[{id:'e1',personId:'p1',type:'Командировка',start:todayISO(),end:'',days:'',status:'Продолжается',comment:'Демо-событие'}],tasks:[{id:'t1',personId:'p1',title:'Проверить работу приложения',description:'Демонстрационная задача',created:todayISO(),deadline:todayISO(),priority:'Высокий',status:'В работе',author:'Администратор',comment:''}]};save()}
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
