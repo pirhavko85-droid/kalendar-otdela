@@ -23,7 +23,8 @@ async function main() {
     const sheet = metadata.sheets?.find(x => x.properties.title === title)?.properties;
     if (!sheet || sheet.gridProperties.columnCount < 14) throw new Error('Required source sheet missing or too narrow');
     if (sheet.gridProperties.rowCount > 20000) throw new Error('Source sheet exceeds configured read limit');
-    return `'${title}'!A1:N${sheet.gridProperties.rowCount}`;
+    const lastColumn = title === 'Задачи' && sheet.gridProperties.columnCount >= 15 ? 'O' : 'N';
+    return `'${title}'!A1:${lastColumn}${sheet.gridProperties.rowCount}`;
   });
   const query = new URLSearchParams({valueRenderOption:'FORMATTED_VALUE'});
   ranges.forEach(range => query.append('ranges',range));

@@ -62,9 +62,15 @@ function main() {
   const birthdays = records(source, 'Дни рождения', ['Сотрудник ID', 'Сотрудник', 'Дата рождения']).map(r => ({
     id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел'
   }));
+  const controlColumn = source['Задачи']?.[0]?.indexOf('Контроль') ?? -1;
+  function taskControl(row) {
+    const value = controlColumn < 0 ? '' : String(row[controlColumn] ?? '').trim();
+    if (value && !['На контроле','Не на контроле'].includes(value)) fail('Invalid task control value');
+    return value ? value === 'На контроле' : row[8] === 'На контроле';
+  }
   const tasks = records(source, 'Задачи', ['ID задачи', 'Исполнитель ID', 'Исполнитель', 'Задача']).map(r => ({
-    id:r[0], personId:r[1] || '', title:r[3] || '', description:r[4] || '', created:date(r[5]),
-    deadline:date(r[6]), priority:r[7] || '', status:r[8] || '', completed:date(r[9]), author:r[10] || '', comment:r[11] || ''
+    id:r[0], controlled:taskControl(r), personId:r[1] || '', title:r[3] || '', description:r[4] || '', created:date(r[5]),
+    deadline:date(r[6]), priority:r[7] || '', status:r[8] === 'На контроле' ? 'В работе' : r[8] || '', completed:date(r[9]), author:r[10] || '', comment:r[11] || ''
   }));
   const snapshot = {people, events, tasks, birthdays};
   const peopleIds = new Set(people.map(p => p.id));

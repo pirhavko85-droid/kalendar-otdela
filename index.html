@@ -275,10 +275,12 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
  .stats-person-select select{font-size:9.5px;padding:5px 6px}
  .stats-inline{padding:5px 6px;font-size:8.8px}
 }
+.task-control-field{display:grid;gap:5px;font-size:12px;font-weight:700}.task-control-field select{width:100%;font-weight:400}.task-meta-chip.task-control-active{background:#e9e1fa;color:#593b8c}
+.duty-chip.duty-nonwork,.duty-compact-card.duty-nonwork{background:#ffe1e1;color:#a71919;border:1px solid #e78989}.duty-compact-card.duty-nonwork .duty-compact-date{color:#a71919}.duty-compact-card.duty-nonwork .duty-compact-status{background:#ffcaca;color:#a71919}.leave-visual-dayhead.nonwork,.leave-overlap-dayhead.nonwork{color:#e00000;font-weight:900}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.10</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.12</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -313,7 +315,7 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="tripsTable" style="display:none"></div></section>
 <section id="sick" class="section"><h2>Больничные</h2><div class="legend"><span><i style="background:#f4b7b7"></i>Болеет</span><span><i style="background:#b9d7ff"></i>Болезнь по уходу за ребёнком</span></div><div id="sickChart"></div><details class="sick-list-toggle"><summary><span>История больничных</span><span class="muted">Показать</span></summary><div id="sickCompactList"></div></details><div id="sickTable" style="display:none"></div></section>
 <section id="birthdays" class="section"><h2>Дни рождения</h2><div id="birthdaysGrid" class="birthday-grid"></div></section>
-<section id="tasks" class="section"><div class="tasks-head"><div><h2>Задачи</h2><p>Текущие задачи отдела</p></div><button class="primary tasks-add" onclick="openTaskModal()">+ Задача</button></div><details class="tasks-filters"><summary><span>Фильтры и поиск</span><span class="muted">Показать</span></summary><div class="tasks-filter-grid"><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div></details><div id="tasksTable"></div></section>
+<section id="tasks" class="section"><div class="tasks-head"><div><h2>Задачи</h2><p>Текущие задачи отдела</p></div><button class="primary tasks-add" onclick="openTaskModal()">+ Задача</button></div><details class="tasks-filters"><summary><span>Фильтры и поиск</span><span class="muted">Показать</span></summary><div class="tasks-filter-grid"><select id="taskControlFilter" aria-label="Фильтр по контролю"><option value="">Все задачи по контролю</option><option value="true">На контроле</option><option value="false">Не на контроле</option></select><select id="taskEmployeeFilter"><option value="">Все исполнители</option></select><select id="taskStatusFilter"><option value="">Все статусы</option></select><select id="taskPriorityFilter"><option value="">Все приоритеты</option></select><input id="taskSearch" placeholder="Поиск"></div></details><div id="tasksTable"></div></section>
 <section id="stats" class="section"><div class="stats-head"><h2>Статистика</h2><select id="statsPeriod" class="stats-period"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid stats-kpi-grid"></div><div id="statsTable" class="stats-detail"></div></section>
 <section id="people" class="section"><div class="people-head"><h2>Сотрудники отдела по старшинству</h2><button class="primary people-add" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleSeniorNow"></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
@@ -326,14 +328,15 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 <div id="eventModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Мероприятие</h3><button onclick="closeModal('eventModal')">×</button></div><form id="eventForm" class="form-grid">
 <select id="evPerson" required></select><select id="evType" required></select><input id="evStart" type="date" required><input id="evEnd" type="date"><input id="evDays" type="number" step="0.5" placeholder="Количество дней"><select id="evStatus"></select><textarea id="evComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
 <div id="taskModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Задача</h3><button onclick="closeModal('taskModal')">×</button></div><form id="taskForm" class="form-grid">
+<label class="full task-control-field" for="taskControl">Контроль<select id="taskControl"><option value="false">Не на контроле</option><option value="true">На контроле</option></select></label>
 <select id="taskPerson" required></select><input id="taskTitle" required placeholder="Задача"><textarea id="taskDesc" class="full" placeholder="Описание"></textarea><input id="taskCreated" type="date" required><input id="taskDeadline" type="date"><select id="taskPriority"></select><select id="taskStatus"></select><input id="taskAuthor" placeholder="Постановщик"><textarea id="taskComment" class="full" placeholder="Комментарий"></textarea><button class="primary full">Сохранить</button></form></div></div>
 <div id="personModal" class="modal"><div class="modal-box"><div class="modal-head"><h3>Сотрудник</h3><button onclick="closeModal('personModal')">×</button></div><form id="personForm" class="form-grid"><input id="personShort" required placeholder="Краткое имя"><input id="personFull" required placeholder="ФИО"><input id="personRole" placeholder="Должность"><select id="personCategory"><option>Военнослужащий</option><option>ФГГС</option><option>Другое</option></select><button class="primary full">Сохранить</button></form></div></div>
 
 <script>
-const APP_VERSION='1.11.10';
+const APP_VERSION='1.11.12';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
-const TASK_STATUSES=['Новая','В работе','На контроле','Выполнена','Отменена'];
+const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
 const PRIORITIES=['Низкий','Обычный','Высокий','Срочный'];
 const PROD_NONWORK_2026={
  '2026-01-01':'Новогодние каникулы','2026-01-02':'Новогодние каникулы','2026-01-03':'Новогодние каникулы','2026-01-04':'Новогодние каникулы','2026-01-05':'Новогодние каникулы','2026-01-06':'Новогодние каникулы','2026-01-07':'Рождество Христово','2026-01-08':'Новогодние каникулы','2026-01-09':'Перенесённый выходной',
@@ -344,13 +347,23 @@ const PROD_NONWORK_2026={
  '2026-11-04':'День народного единства',
  '2026-12-31':'Перенесённый выходной'
 };
+// 2027 transfers: Government Decree 17.09.2026 No. 1187, government.ru/docs/59913/.
+const PROD_NONWORK_2027={
+ '2027-01-01':'Новогодние каникулы','2027-01-02':'Новогодние каникулы','2027-01-03':'Новогодние каникулы','2027-01-04':'Новогодние каникулы','2027-01-05':'Новогодние каникулы','2027-01-06':'Новогодние каникулы','2027-01-07':'Рождество Христово','2027-01-08':'Новогодние каникулы',
+ '2027-02-22':'Перенесённый выходной','2027-02-23':'День защитника Отечества','2027-03-08':'Международный женский день',
+ '2027-05-01':'Праздник Весны и Труда','2027-05-03':'Перенесённый выходной','2027-05-09':'День Победы','2027-05-10':'Перенесённый выходной',
+ '2027-06-12':'День России','2027-06-14':'Перенесённый выходной','2027-11-04':'День народного единства','2027-11-05':'Перенесённый выходной','2027-12-31':'Перенесённый выходной'
+};
+const PROD_WORKDAYS={'2027-02-20':'Рабочая суббота'};
 const DOW_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 function productionDayInfo(date){
- const x=new Date(date+'T00:00:00'), weekend=x.getDay()===0||x.getDay()===6, special=PROD_NONWORK_2026[date]||'';
+ const x=new Date(date+'T00:00:00'), weekend=x.getDay()===0||x.getDay()===6, special=PROD_NONWORK_2026[date]||PROD_NONWORK_2027[date]||'';
+ if(PROD_WORKDAYS[date])return {dow:DOW_SHORT[x.getDay()],nonwork:false,label:PROD_WORKDAYS[date]};
  return {dow:DOW_SHORT[x.getDay()],nonwork:weekend||!!special,label:special||(weekend?'Выходной':'')};
 }
 const KEY='kalendarOtdelaDataV1';
 function normalizeDisplayData(x){
+ (x.tasks||[]).forEach(t=>{t.controlled=t.controlled===true||(t.controlled==null&&t.status==='На контроле');if(t.status==='На контроле')t.status='В работе'});
  const order=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
  const meta={
   'КДВ':{id:'КДВ',short:'Денис К.',full:'Денис К.',role:'ЗНО',category:'Военнослужащий',birthdate:'1983-07-07'},
@@ -757,7 +770,7 @@ function renderLeaveVisualOverlap(){
   const monthName=new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'});
   const monthLeaves=leaves.filter(e=>overlapRange(e,year,m));
   const personIds=[...new Set(monthLeaves.map(e=>e.personId))].sort((a,b)=>(rank.get(a)??999)-(rank.get(b)??999));
-  const head=Array.from({length:dim},(_,i)=>'<span class="leave-visual-dayhead">'+(i+1)+'</span>').join('');
+  const head=Array.from({length:dim},(_,i)=>{const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0'),info=productionDayInfo(ds);return '<span class="leave-visual-dayhead'+(info.nonwork?' nonwork':'')+'" title="'+esc(fmt(ds)+(info.label?' · '+info.label:''))+'">'+(i+1)+'</span>'}).join('');
   let body='';
   if(!personIds.length){
    body='<div class="leave-visual-empty">Отпусков в этом месяце нет</div>';
@@ -791,7 +804,7 @@ function renderLeaveOverlap(){
   const hist={}; dailyCounts.forEach(n=>{if(n>=2)hist[n]=(hist[n]||0)+1});
   const overlapParts=Object.keys(hist).map(Number).sort((a,b)=>b-a).map(n=>n+' чел. · '+hist[n]+' '+dayWord(hist[n]));
   const max=Math.max(0,...dailyCounts), stat=max>=2?('макс. '+max+' чел.'):'без наложений';
-  const head=Array.from({length:dim},(_,i)=>'<span class="leave-overlap-dayhead">'+(i+1)+'</span>').join('');
+  const head=Array.from({length:dim},(_,i)=>{const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0'),info=productionDayInfo(ds);return '<span class="leave-overlap-dayhead'+(info.nonwork?' nonwork':'')+'" title="'+esc(fmt(ds)+(info.label?' · '+info.label:''))+'">'+(i+1)+'</span>'}).join('');
   const rows=people.map(p=>{
    const cells=Array.from({length:dim},(_,i)=>{
     const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
@@ -883,7 +896,7 @@ function renderDutyCompactList(){
   const who=person(e.personId)?.short||'—';
   const date=fmtShortYear(e.start)+(e.end&&e.end!==e.start?'–'+fmtShortYear(e.end):'');
   const status=e.status==='Замена'?'Замена':replaced?'За замену':effectiveEventStatus(e);
-  return '<div class="duty-compact-card '+(replaced?'replacement':'')+'" title="'+esc(e.comment||'')+'"><span class="duty-compact-date">'+esc(date)+'</span><span class="duty-compact-name">'+esc(who)+'</span><span class="duty-compact-status">'+esc(status)+'</span></div>';
+  return '<div class="duty-compact-card '+(replaced?'replacement ':'')+(productionDayInfo(e.start).nonwork?'duty-nonwork':'')+'" title="'+esc(e.comment||'')+'"><span class="duty-compact-date">'+esc(date)+'</span><span class="duty-compact-name">'+esc(who)+'</span><span class="duty-compact-status">'+esc(status)+'</span></div>';
  }).join('');
 }
 function renderDutyChart(){
@@ -896,7 +909,7 @@ function renderDutyChart(){
    const replaced=e.status==='Замена'||/замен|компенс/i.test(e.comment||'');
    const date=fmtShort(e.start)+(e.end&&e.end!==e.start?'–'+fmtShort(e.end):'');
    const label=date+' • '+(person(e.personId)?.short||'')+(e.status==='Замена'?' • Замена':replaced?' • За замену':'');
-   return '<span class="duty-chip '+(replaced?'replacement':'')+'" title="'+esc(e.comment||'')+'">'+esc(label)+'</span>';
+   return '<span class="duty-chip '+(replaced?'replacement ':'')+(productionDayInfo(e.start).nonwork?'duty-nonwork':'')+'" title="'+esc(e.comment||'')+'">'+esc(label)+'</span>';
   }).join(''):'<span class="muted">—</span>')+'</div></div>';
  }).join('');
  renderDutyCompactList();
@@ -921,10 +934,11 @@ function renderBirthdays(){
   return '<div class="birthday-line '+(idx===0?'nearest':'')+'"><b>'+esc(b.name||b.person||'')+'</b><span>·</span><span>'+esc(full)+'</span><span>·</span><strong>'+esc(when)+'</strong><span>·</span><span>'+esc(age)+'</span><span class="birthday-aff">'+esc(aff)+'</span></div>';
  }).join('');
 }
-function taskTable(list){return table(['Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
+function taskControlBadge(t){return '<span class="task-meta-chip'+(t.controlled===true?' task-control-active':'')+'">'+(t.controlled===true?'На контроле':'Не на контроле')+'</span>'}
+function taskTable(list){return table(['Контроль','Исполнитель','Задача','Срок','Приоритет','Статус','Комментарий',''],list.map(t=>'<tr class="'+(overdue(t)?'overdue':t.status==='Выполнена'?'completed':'')+'"><td>'+taskControlBadge(t)+'</td><td>'+esc(person(t.personId)?.short||'—')+'</td><td><b>'+esc(t.title)+'</b><div class="muted">'+esc(t.description||'')+'</div></td><td>'+fmt(t.deadline)+'</td><td><span class="pill '+(t.priority==='Срочный'?'red':t.priority==='Высокий'?'amber':'')+'">'+esc(t.priority)+'</span></td><td><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select></td><td>'+esc(t.comment||'')+'</td><td><button onclick="delTask(\''+t.id+'\')">Удалить</button></td></tr>'))}
 function renderTasks(){
- const pf=document.getElementById('taskEmployeeFilter').value,sf=document.getElementById('taskStatusFilter').value,pr=document.getElementById('taskPriorityFilter').value,q=document.getElementById('taskSearch').value.toLowerCase();
- const list=db.tasks.filter(t=>(!pf||t.personId===pf)&&(!sf||t.status===sf)&&(!pr||t.priority===pr)&&(!q||JSON.stringify(t).toLowerCase().includes(q)))
+ const cf=document.getElementById('taskControlFilter').value,pf=document.getElementById('taskEmployeeFilter').value,sf=document.getElementById('taskStatusFilter').value,pr=document.getElementById('taskPriorityFilter').value,q=document.getElementById('taskSearch').value.toLowerCase();
+ const list=db.tasks.filter(t=>(!cf||String(t.controlled===true)===cf)&&(!pf||t.personId===pf)&&(!sf||t.status===sf)&&(!pr||t.priority===pr)&&(!q||JSON.stringify(t).toLowerCase().includes(q)))
   .slice().sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
  const target=document.getElementById('tasksTable');
  if(!list.length){target.innerHTML='<div class="tasks-empty"><b>Задач пока нет</b><span>Здесь появятся текущие задачи отдела</span></div>';return}
@@ -934,7 +948,7 @@ function renderTasks(){
   const who=person(t.personId)?.short||'Без исполнителя';
   const desc=t.description?'<div class="task-card-desc">'+esc(t.description)+'</div>':'';
   const comment=t.comment?'<span class="task-meta-chip">'+esc(t.comment)+'</span>':'';
-  return '<div class="task-card'+cls+'"><div class="task-card-main"><div class="task-card-title">'+esc(t.title||'Без названия')+'</div>'+desc+'</div><div class="task-card-actions"><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select><button onclick="delTask(\''+t.id+'\')">Удалить</button></div><div class="task-card-meta"><span class="task-meta-chip">'+esc(who)+'</span><span class="task-meta-chip deadline">'+esc(fmt(t.deadline)||'Без срока')+'</span><span class="task-meta-chip'+pcls+'">'+esc(t.priority||'Обычный')+'</span>'+comment+'</div></div>';
+  return '<div class="task-card'+cls+'"><div class="task-card-main"><div class="task-card-title">'+esc(t.title||'Без названия')+'</div>'+desc+'</div><div class="task-card-actions"><select onchange="setTaskStatus(\''+t.id+'\',this.value)">'+TASK_STATUSES.map(s=>'<option '+(s===t.status?'selected':'')+'>'+s+'</option>').join('')+'</select><button onclick="delTask(\''+t.id+'\')">Удалить</button></div><div class="task-card-meta">'+taskControlBadge(t)+'<span class="task-meta-chip">'+esc(who)+'</span><span class="task-meta-chip deadline">'+esc(fmt(t.deadline)||'Без срока')+'</span><span class="task-meta-chip'+pcls+'">'+esc(t.priority||'Обычный')+'</span>'+comment+'</div></div>';
  }).join('')+'</div>';
 }
 function peoplePresenceInfo(p,date=todayISO()){
@@ -1186,7 +1200,7 @@ function renderCalendar(){
  document.getElementById('calendarGrid').innerHTML=html;
 }
 function openEventModal(){document.getElementById('evStart').value=todayISO();document.getElementById('eventModal').classList.add('open')}
-function openTaskModal(){document.getElementById('taskCreated').value=todayISO();document.getElementById('taskModal').classList.add('open')}
+function openTaskModal(){document.getElementById('taskControl').value='false';document.getElementById('taskCreated').value=todayISO();document.getElementById('taskModal').classList.add('open')}
 function openPersonModal(){document.getElementById('personModal').classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 function delEvent(id){if(confirm('Удалить мероприятие?')){db.events=db.events.filter(x=>x.id!==id);save()}}
@@ -1194,12 +1208,12 @@ function delTask(id){if(confirm('Удалить задачу?')){db.tasks=db.tas
 function delPerson(id){if(db.events.some(e=>e.personId===id)||db.tasks.some(t=>t.personId===id))return alert('Сначала удалите связанные события и задачи.');if(confirm('Удалить сотрудника?')){db.people=db.people.filter(x=>x.id!==id);save()}}
 function setTaskStatus(id,status){const t=db.tasks.find(x=>x.id===id);if(t){t.status=status;t.completed=status==='Выполнена'?todayISO():'';save()}}
 document.getElementById('eventForm').onsubmit=e=>{e.preventDefault();const s=evStart.value,en=evEnd.value;db.events.push({id:uid('EV'),personId:evPerson.value,type:evType.value,start:s,end:en,days:evDays.value?Number(evDays.value):'',status:evStatus.value,comment:evComment.value});e.target.reset();closeModal('eventModal');save()}
-document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();db.tasks.push({id:uid('TASK'),personId:taskPerson.value,title:taskTitle.value,description:taskDesc.value,created:taskCreated.value,deadline:taskDeadline.value,priority:taskPriority.value,status:taskStatus.value,author:taskAuthor.value,comment:taskComment.value});e.target.reset();closeModal('taskModal');save()}
+document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();db.tasks.push({id:uid('TASK'),controlled:taskControl.value==='true',personId:taskPerson.value,title:taskTitle.value,description:taskDesc.value,created:taskCreated.value,deadline:taskDeadline.value,priority:taskPriority.value,status:taskStatus.value,author:taskAuthor.value,comment:taskComment.value});e.target.reset();closeModal('taskModal');save()}
 document.getElementById('personForm').onsubmit=e=>{e.preventDefault();db.people.push({id:uid('P'),short:personShort.value,full:personFull.value,role:personRole.value,category:personCategory.value});e.target.reset();closeModal('personModal');save()}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active')})
 document.getElementById('statsPeriod').onchange=renderStats;
 document.getElementById('leaveYearSelect').onchange=renderLeaveChart;
-;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
+;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskControlFilter','taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
 document.getElementById('prevMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()-7);else calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()+7);else calDate.setMonth(calDate.getMonth()+1);renderCalendar()};document.getElementById('calendarTodayBtn').onclick=()=>{calDate=new Date();renderCalendar()};
 document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kalendar-otdela-backup.json';a.click();URL.revokeObjectURL(a.href)}
 const SYNC_KEY='kalendarOtdelaSharedKeyV1';

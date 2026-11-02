@@ -6,6 +6,32 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const zlib = require('node:zlib');
 const {spawnSync} = require('node:child_process');
+
+test('task control survives encryption independently of urgency and migrates legacy status',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'calendar-sync-test-'));
+ try{
+  const key=crypto.randomBytes(32),iv=crypto.randomBytes(12);
+  const baseline={people:[],events:[],tasks:[],birthdays:[]};
+  const c=crypto.createCipheriv('aes-256-gcm',key,iv);
+  const data=Buffer.concat([c.update(zlib.gzipSync(Buffer.from(JSON.stringify(baseline)))),c.final(),c.getAuthTag()]);
+  const put=(name,obj)=>fs.writeFileSync(path.join(dir,name),JSON.stringify(obj));
+  put('baseline.json',{v:1,alg:'A256GCM',compressed:'gzip',iv:iv.toString('base64'),data:data.toString('base64')});
+  put('key.json',{alg:'A256GCM',key:key.toString('base64')});
+  const header=['ID задачи','Исполнитель ID','Исполнитель','Задача','Описание','Дата постановки','Срок исполнения','Приоритет','Статус','Дата выполнения','Постановщик','Комментарий','Просрочена','Дней до срока','Контроль'];
+  const source={'Сотрудники':[['ID','ФИО','Краткое имя']],'События':[['ID события','Сотрудник ID','Сотрудник','Тип события']],'Дни рождения':[['Сотрудник ID','Сотрудник','Дата рождения']],
+   'Задачи':[header,['a','','','Urgent','','','','Срочный','Новая','','','','','','Не на контроле'],['b','','','Controlled','','','','Обычный','В работе','','','','','','На контроле'],['c','','','Legacy','','','','Низкий','На контроле']]};
+  const run=name=>{put('source.json',source);return spawnSync(process.execPath,[path.join(__dirname,'build-snapshot.cjs'),'--source',path.join(dir,'source.json'),'--key',path.join(dir,'key.json'),'--baseline',path.join(dir,'baseline.json'),'--out',path.join(dir,name)],{encoding:'utf8'})};
+  let r=run('result.json');assert.equal(r.status,0,r.stderr);
+  const env=JSON.parse(fs.readFileSync(path.join(dir,'result.json'))),raw=Buffer.from(env.data,'base64');
+  const d=crypto.createDecipheriv('aes-256-gcm',key,Buffer.from(env.iv,'base64'));d.setAuthTag(raw.subarray(-16));
+  const out=JSON.parse(zlib.gunzipSync(Buffer.concat([d.update(raw.subarray(0,-16)),d.final()])));
+  assert.deepEqual(out.tasks.map(t=>[t.controlled,t.priority,t.status]),[[false,'Срочный','Новая'],[true,'Обычный','В работе'],[true,'Низкий','В работе']]);
+  source['Задачи'][1][14]='неизвестно';r=run('invalid.json');assert.equal(r.status,1);assert.match(r.stderr,/Invalid task control/);
+ }finally{
+  if(path.dirname(dir)!==os.tmpdir()||!path.basename(dir).startsWith('calendar-sync-test-'))throw Error('Unsafe temporary cleanup path');
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});
 test('snapshot: stable unchanged output, metadata accuracy and deletion protection',()=>{
  const dir = fs.mkdtempSync(path.join(os.tmpdir(),'calendar-sync-test-'));
  try {
