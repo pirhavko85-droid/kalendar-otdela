@@ -323,7 +323,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.21</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.22</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -376,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.21';
+const APP_VERSION='1.11.22';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -614,7 +614,7 @@ function renderEvents(){
  const list=groupedMeetingEvents(raw);
  const today=todayISO(),todayList=list.filter(e=>e.start===today),future=list.filter(e=>e.start>today),past=list.filter(e=>e.start<today);
  const todayHtml='<div class="event-section event-today"><div class="event-section-title">Сегодня</div>'+(todayList.length?renderEventDateGroups(todayList,'future'):'<div class="event-empty">Сегодня мероприятий нет</div>')+'</div>';
- const futureHtml='<div class="event-section"><div class="event-section-title">Предстоящие</div>'+(future.length?renderEventDateGroups(future,'future'):'<div class="event-empty">Предстоящих мероприятий нет</div>')+'</div>';
+ const futureHtml='<details class="event-history"><summary><span>Предстоящие мероприятия ('+future.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(future.length?renderEventDateGroups(future,'future'):'<div class="event-empty">Предстоящих мероприятий нет</div>')+'</div></details>';
  const pastHtml='<details class="event-history"><summary><span>Прошедшие мероприятия ('+past.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(past.length?renderEventDateGroups(past,'past'):'<div class="event-empty">История пока пуста</div>')+'</div></details>';
  document.getElementById('eventsTable').innerHTML=todayHtml+futureHtml+pastHtml;
 }
