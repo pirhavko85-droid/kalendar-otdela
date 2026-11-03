@@ -319,10 +319,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .leave-growth-body{padding:9px;display:grid;gap:7px}.leave-growth-explainer{font-size:11px;line-height:1.45;color:var(--muted);margin:0 0 3px}.leave-growth-card{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}.leave-growth-card>summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;cursor:pointer;list-style:none;padding:8px 9px;font-size:11px;font-weight:700}.leave-growth-card>summary::-webkit-details-marker{display:none}.leave-growth-name{flex:1;min-width:0}.leave-growth-net{font-variant-numeric:tabular-nums;white-space:nowrap}.leave-growth-net.positive{color:#24764c}.leave-growth-net.negative{color:#b44848}.leave-growth-meter{grid-column:1/-1;height:4px;background:#eef1f5;margin:0 9px 6px;border-radius:3px;overflow:hidden}.leave-growth-meter span{display:block;height:100%;background:#5caa80}.leave-growth-meter .negative{background:#d69292}.leave-growth-formula{grid-column:1/-1;padding:0;font-size:10px;color:var(--muted)}.leave-growth-periods{padding:0 9px 8px;display:grid;gap:7px;font-size:10px}.leave-growth-period{border-top:1px solid var(--line);padding-top:6px;line-height:1.5}.leave-growth-dates{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}.leave-growth-dates span{padding:2px 4px;border-radius:4px;background:#e7f4ec;color:#25603e}.leave-growth-dates .inside{background:#fdecec;color:#9d3b3b}
 @media(max-width:520px){#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:11px}.leave-growth-explainer{font-size:10px}.leave-growth-card>summary{font-size:10.5px}}
 .leave-extension-key{display:inline-block;width:9px;height:9px;border-radius:2px;background:#63a8f5;border:1px solid #327dcf;margin-left:4px;vertical-align:middle}.leave-visual-cell.leave-extension,.leave-overlap-cell.leave-extension{background:#63a8f5;border-color:#327dcf}.year-extension-day{position:absolute;top:4px;bottom:4px;background:#63a8f5;border:1px solid #327dcf;border-radius:3px;z-index:2}
+#birthdaysGrid .birthday-line.op-department{border-color:transparent;outline:1px solid #8ea9bb;outline-offset:-1px}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.19</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.20</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -375,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.19';
+const APP_VERSION='1.11.20';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1006,7 +1007,7 @@ function renderBirthdays(){
   const parts=originalName.trim().split(/\s+/);
   const name=birthdayDisplayName(b);
   const age='исполн. '+b._n.age;
-  return '<div class="birthday-line '+(idx===0?'nearest ':'')+(aff==='Наш отдел'?'own-department':'')+'"><b class="birthday-name" title="'+esc(originalName)+'">'+esc(name)+'</b><span>'+esc(full)+'</span><strong>'+esc(when)+'</strong><span title="Исполнится '+b._n.age+' лет">'+esc(age)+'</span><span class="birthday-aff">'+esc(aff==='Наш отдел'?'3 отд.':aff)+'</span></div>';
+  return '<div class="birthday-line '+(idx===0?'nearest ':'')+(aff==='Наш отдел'?'own-department':aff==='ОП'?'op-department':'')+'"><b class="birthday-name" title="'+esc(originalName)+'">'+esc(name)+'</b><span>'+esc(full)+'</span><strong>'+esc(when)+'</strong><span title="Исполнится '+b._n.age+' лет">'+esc(age)+'</span><span class="birthday-aff">'+esc(aff==='Наш отдел'?'3 отд.':aff)+'</span></div>';
  }).join('');
 }
 function taskControlBadge(t){return '<span class="task-meta-chip'+(t.controlled===true?' task-control-active':'')+'">'+(t.controlled===true?'На контроле':'Не на контроле')+'</span>'}
