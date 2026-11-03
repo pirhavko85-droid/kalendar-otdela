@@ -318,10 +318,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .section>details>summary{font-family:inherit;font-size:var(--disclosure-size,12px);font-weight:800;line-height:1.3}.section>details>summary .disclosure-action{font-family:inherit;font-size:.84em;font-weight:700}
 .leave-growth-body{padding:9px;display:grid;gap:7px}.leave-growth-explainer{font-size:11px;line-height:1.45;color:var(--muted);margin:0 0 3px}.leave-growth-card{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}.leave-growth-card>summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;cursor:pointer;list-style:none;padding:8px 9px;font-size:11px;font-weight:700}.leave-growth-card>summary::-webkit-details-marker{display:none}.leave-growth-name{flex:1;min-width:0}.leave-growth-net{font-variant-numeric:tabular-nums;white-space:nowrap}.leave-growth-net.positive{color:#24764c}.leave-growth-net.negative{color:#b44848}.leave-growth-meter{grid-column:1/-1;height:4px;background:#eef1f5;margin:0 9px 6px;border-radius:3px;overflow:hidden}.leave-growth-meter span{display:block;height:100%;background:#5caa80}.leave-growth-meter .negative{background:#d69292}.leave-growth-formula{grid-column:1/-1;padding:0;font-size:10px;color:var(--muted)}.leave-growth-periods{padding:0 9px 8px;display:grid;gap:7px;font-size:10px}.leave-growth-period{border-top:1px solid var(--line);padding-top:6px;line-height:1.5}.leave-growth-dates{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}.leave-growth-dates span{padding:2px 4px;border-radius:4px;background:#e7f4ec;color:#25603e}.leave-growth-dates .inside{background:#fdecec;color:#9d3b3b}
 @media(max-width:520px){#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:11px}.leave-growth-explainer{font-size:10px}.leave-growth-card>summary{font-size:10.5px}}
+.leave-extension-key{display:inline-block;width:9px;height:9px;border-radius:2px;background:#63a8f5;border:1px solid #327dcf;margin-left:4px;vertical-align:middle}.leave-visual-cell.leave-extension,.leave-overlap-cell.leave-extension{background:#63a8f5;border-color:#327dcf}.year-extension-day{position:absolute;top:4px;bottom:4px;background:#63a8f5;border:1px solid #327dcf;border-radius:3px;z-index:2}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.18</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.19</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -344,7 +345,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><button class="primary" onclick="openEventModal()">+ Мероприятие</button></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><p class="exits-units">Чел.-день — один день переработки одного сотрудника. «Вых.» — количество отдельных выходов сотрудников, а не людей. Учтены фактические выходы за текущий год.</p><div id="exitsPeople" class="exit-people-overall"></div><details class="exit-history-toggle"><summary><span>История переработок</span><span class="muted">Показать</span></summary><div id="exitsMonthly" class="exits-monthly"></div></details><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
-<div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span></div>
+<div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span><span><i style="background:#63a8f5"></i>+1 день продления</span></div>
 <div id="leaveChart"></div>
 <details class="leave-visual-toggle"><summary><span>Графическая визуализация отпусков</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details><details class="leave-visual-toggle"><summary><span>Наращивание всех отпусков</span><span class="disclosure-action">Показать</span></summary><div id="leaveGrowth" class="leave-growth-body"></div></details><details class="leave-visual-toggle"><summary><span>Наращивание летних отпусков</span><span class="disclosure-action">Показать</span></summary><div id="leaveSummerGrowth" class="leave-growth-body"></div></details>
 <div id="leaveTable" style="display:none"></div></section>
@@ -374,7 +375,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.18';
+const APP_VERSION='1.11.19';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -507,7 +508,7 @@ function setupDisclosures(){
 }
 document.addEventListener('toggle',e=>{if(e.target.tagName==='DETAILS')setupDisclosures()},true);
 new MutationObserver(()=>setupDisclosures()).observe(document.querySelector('main'),{childList:true,subtree:true});
-function birthdayDisplayName(b){const original=b.name||b.person||person(b.id)?.short||'';const parts=original.trim().split(/\s+/);return b.affiliation==='ДИД'&&parts.length>1?parts[0]+' '+parts.slice(1).map(x=>x[0]+'.').join(''):original}
+function birthdayDisplayName(b){const original=b.name||b.person||person(b.id)?.short||'';const parts=original.trim().split(/\s+/);return ['ДИД','ОП'].includes(b.affiliation)&&parts.length>1?parts[0]+' '+parts.slice(1).map(x=>x[0]+'.').join(''):original}
 function nonworkBands(year,month,count){let blocks='',start=null;for(let i=0;i<=count;i++){const nonwork=i<count&&productionDayInfo(year+'-'+String(month+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0')).nonwork;if(nonwork&&start===null)start=i;if(!nonwork&&start!==null){blocks+='<span class="nonwork-band" style="grid-column:'+(start+2)+' / '+(i+2)+'"></span>';start=null}}return '<div class="nonwork-bands" aria-hidden="true" style="--days:'+count+'">'+blocks+'</div>'}
 function renderAll(){fillPeopleSelect('evPerson');fillPeopleSelect('taskPerson');fillPeopleSelect('eventEmployeeFilter','Все сотрудники');fillPeopleSelect('taskEmployeeFilter','Все исполнители');renderToday();renderEvents();renderTasks();renderCategoryViews();renderPeople();renderStats();renderCalendar();renderBirthdays()}
 function table(headers,rows){if(!rows.length)return'<div class="empty">Пока нет данных</div>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
@@ -736,6 +737,10 @@ function overlapRange(e,y,m){
  const s=es<ms?ms:es,fin=ee>me?me:ee;
  return {start:s.getDate(),end:fin.getDate()};
 }
+function leaveExtensionDates(e){return [...new Set(e?.extensionDates||[])].filter(d=>d>=e.start&&d<=(e.end||e.start))}
+function leaveDaysLabel(e){const days=eventDisplayDays(e),extra=leaveExtensionDates(e).length;return extra?(Number(days)-extra)+' + '+extra+' дн.':days+' дн.'}
+function leaveExtensionBadge(e){return leaveExtensionDates(e).length?'<span class="leave-extension-key" title="Дополнительный день отпуска" aria-label="Дополнительный день отпуска"></span>':''}
+function leaveCellClass(e,date){return leaveExtensionDates(e).includes(date)?'leave-extension':leaveClass(e.type)}
 function leaveClass(type){
  if(type==='Отпуск ВБД')return'leave-vbd';
  if(type==='Летний отпуск')return'leave-summer';
@@ -768,9 +773,9 @@ function monthMobileList(events,y,m,kind){
   if(kind==='sick')label=isChildCareSick(e)?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?(kind==='trip'?'по наст. вр.':'…'):fmtShort(e.end||e.start);
   const displayDays=eventDisplayDays(e);
-  const days=(displayDays!==''&&displayDays!=null)?(' · '+displayDays+' дн.'):'';
+  const days=(displayDays!==''&&displayDays!=null)?(' · '+(kind==='leave'?leaveDaysLabel(e):displayDays+' дн.')):'';
   const cardClass=kind==='leave'?' '+leaveClass(e.type):kind==='sick'?' '+(isChildCareSick(e)?'sick-child':'sick-self'):'';
-  return '<div class="mobile-month-card'+cardClass+'"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+esc(days)+'</span></div>';
+  return '<div class="mobile-month-card'+cardClass+'"><b>'+esc(who)+'</b><span>'+esc(label)+' · '+esc(fmtShort(e.start)+'–'+endLabel)+esc(days)+(kind==='leave'?leaveExtensionBadge(e):'')+'</span></div>';
  }).join('')+'</div>';
 }
 function renderYearLanes(events,y,m,kind){
@@ -783,8 +788,9 @@ function renderYearLanes(events,y,m,kind){
   if(kind==='leave')kindLabel=e.type.replace('Отпуск ','');
   if(kind==='sick')kindLabel=isChildCareSick(e)?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
-  const txt=who+' — '+kindLabel+' ('+fmtShort(e.start)+'–'+endLabel+')';
-  return '<div class="year-lane"><div class="year-block '+cls+'" style="left:'+left+'%;width:'+Math.max(width,4)+'%" title="'+esc(txt)+'">'+esc(txt)+'</div></div>';
+  const txt=who+' — '+kindLabel+' ('+fmtShort(e.start)+'–'+endLabel+')'+(kind==='leave'&&leaveExtensionDates(e).length?' · '+leaveDaysLabel(e):'');
+  const extra=kind==='leave'?leaveExtensionDates(e).filter(d=>d.slice(0,7)===y+'-'+String(m+1).padStart(2,'0')).map(d=>'<span class="year-extension-day" style="left:'+((Number(d.slice(-2))-1)/dim*100)+'%;width:'+(100/dim)+'%" title="'+esc(who+' · '+fmtShort(d)+' · +1 день отпуска')+'"></span>').join(''):'';
+  return '<div class="year-lane"><div class="year-block '+cls+'" style="left:'+left+'%;width:'+Math.max(width,4)+'%" title="'+esc(txt)+'">'+esc(txt)+'</div>'+extra+'</div>';
  }).join('');
 }
 function renderLeaveCompactList(){
@@ -799,8 +805,8 @@ function renderLeaveCompactList(){
   const st=effectiveEventStatus(e);
   const end=st==='Продолжается'?'по настоящее время':fmtShortYear(e.end||e.start);
   const dates=fmtShortYear(e.start)+(e.end||st==='Продолжается'?'–'+end:'');
-  const d=eventDisplayDays(e),days=(d!==''&&d!=null)?d+' '+dayWord(Number(d)):'—';
-  return '<div class="leave-compact-card '+leaveClass(e.type)+'" title="'+esc((e.comment||'')+' '+st)+'"><b>'+esc(who)+'</b><span class="leave-compact-type">'+esc(type)+'</span><span class="leave-compact-dates">'+esc(dates)+'</span><span class="leave-compact-days">'+esc(days)+'</span></div>';
+  const d=eventDisplayDays(e),days=(d!==''&&d!=null)?leaveDaysLabel(e):'—';
+  return '<div class="leave-compact-card '+leaveClass(e.type)+'" title="'+esc((e.comment||'')+' '+st)+'"><b>'+esc(who)+'</b><span class="leave-compact-type">'+esc(type)+'</span><span class="leave-compact-dates">'+esc(dates)+'</span><span class="leave-compact-days">'+esc(days)+leaveExtensionBadge(e)+'</span></div>';
  }).join('');
 }
 function leaveTypes(){
@@ -835,7 +841,7 @@ function renderLeaveVisualOverlap(){
     const cells=Array.from({length:dim},(_,i)=>{
      const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
      const ev=monthLeaves.find(e=>e.personId===pid&&e.start<=ds&&(e.end||e.start)>=ds);
-     return '<span class="leave-visual-cell '+(ev?leaveClass(ev.type):'')+'" title="'+(ev?esc((p?.short||'')+' · '+ev.type+' · '+fmtShortYear(ev.start)+'–'+fmtShortYear(ev.end||ev.start)):'')+'"></span>';
+     return '<span class="leave-visual-cell '+(ev?leaveCellClass(ev,ds):'')+'" title="'+(ev?esc((p?.short||'')+' · '+ev.type+' · '+fmtShortYear(ev.start)+'–'+fmtShortYear(ev.end||ev.start)):'')+'"></span>';
     }).join('');
     return '<div class="leave-visual-row" style="--days:'+dim+'"><span class="leave-visual-name">'+esc(p?.short||'—')+'</span>'+cells+'</div>';
    }).join('');
@@ -864,7 +870,7 @@ function renderLeaveOverlap(){
    const cells=Array.from({length:dim},(_,i)=>{
     const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
     const e=leaveForPersonDay(p.id,ds,leaves);
-    return '<span class="leave-overlap-cell '+(e?leaveClass(e.type):'')+'" title="'+(e?esc((p.short||p.full||'')+' · '+e.type+' · '+fmtShortYear(e.start)+'–'+fmtShortYear(e.end||e.start)):'')+'"></span>';
+    return '<span class="leave-overlap-cell '+(e?leaveCellClass(e,ds):'')+'" title="'+(e?esc((p.short||p.full||'')+' · '+e.type+' · '+fmtShortYear(e.start)+'–'+fmtShortYear(e.end||e.start)):'')+'"></span>';
    }).join('');
    return '<div class="leave-overlap-row" style="--days:'+dim+'"><span class="leave-overlap-name">'+esc(p.short||p.full||'—')+'</span>'+cells+'</div>';
   }).join('');
@@ -1192,7 +1198,7 @@ function birthdayItemsForDate(dateStr){
  return list.filter(b=>{
   if(!b.date)return false;const x=new Date(b.date+'T00:00:00');
   return x.getMonth()+1===m&&x.getDate()===day;
- }).map(b=>({kind:'birthday',text:birthdayDisplayName(b)+' — день рождения'+(b.affiliation==='ДИД'?' · ДИД':'')}));
+ }).map(b=>({kind:'birthday',text:birthdayDisplayName(b)+' — день рождения'+(['ДИД','ОП'].includes(b.affiliation)?' · '+b.affiliation:'')}));
 }
 function calendarWorkItems(dateStr){
  const out=[];

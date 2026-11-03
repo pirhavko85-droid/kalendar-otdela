@@ -54,10 +54,17 @@ function main() {
     birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || '')
   }));
   const oldEvents = new Map(previous.events.map(e => [e.id, e]));
+  const extensionColumn = source['События']?.[0]?.indexOf('Даты продления отпуска') ?? -1;
+  function extension(r){
+    const dates=extensionColumn<0?[]:String(r[extensionColumn]||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean).map(date);
+    if(new Set(dates).size!==dates.length || dates.some(d=>d<date(r[4])||d>date(r[5]||r[4])))fail('Invalid leave extension dates');
+    if(dates.length&&!['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'].includes(r[3]))fail('Extension on non-leave event');
+    return dates.length?{extensionDates:dates}:{};
+  }
   const events = records(source, 'События', ['ID события', 'Сотрудник ID', 'Сотрудник', 'Тип события']).map(r => ({
     id:r[0], personId:r[1] || '', type:r[3] || '', start:date(r[4]), end:date(r[5]),
     days:number(r[6]), status:r[7] || '', basis:r[8] || '', comment:r[9] || '',
-    linkedEvent:oldEvents.get(r[0])?.linkedEvent || ''
+    linkedEvent:oldEvents.get(r[0])?.linkedEvent || '', ...extension(r)
   }));
   const birthdays = records(source, 'Дни рождения', ['Сотрудник ID', 'Сотрудник', 'Дата рождения']).map(r => ({
     id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел'
