@@ -323,7 +323,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.23</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.24</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -362,7 +362,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <section id="stats" class="section"><div class="stats-head"><h2>Статистика</h2><select id="statsPeriod" class="stats-period"><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year" selected>Год</option><option value="all">Всё время</option></select></div><div id="statsTabs" class="stats-tabs"></div><div id="statsGrid" class="grid stats-kpi-grid"></div><div id="statsTable" class="stats-detail"></div></section>
 <section id="people" class="section"><div class="people-head"><h2>Сотрудники отдела по старшинству</h2><button class="primary people-add" onclick="openPersonModal()">+ Сотрудник</button></div><div id="peopleSeniorNow"></div><div id="peopleTable"></div></section>
 <section id="data" class="section"><h2>Импорт / экспорт</h2>
-<div class="card"><h3>Безопасная синхронизация</h3><p>Приложение может автоматически получать зашифрованный снимок данных. Открытый репозиторий хранит только шифротекст; приватный ключ остаётся на этом устройстве.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Обновить сейчас</button></div><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
+<div class="card"><h3>Безопасная синхронизация</h3><p>Общая Google-таблица обновляется на сайте по расписанию. Кнопка «Получить свежие данные» загружает последний опубликованный снимок на это устройство.</p><div class="toolbar"><label class="primary" style="padding:9px 10px;border-radius:9px;cursor:pointer">Подключить общий ключ отдела<input id="sharedKeyFile" type="file" accept=".json" hidden></label><button id="syncNowBtn">Получить свежие данные</button><button id="publishNowBtn" hidden>Синхронизировать с Google-таблицей</button></div><p id="publishStatus" class="muted" hidden>Запуск откроется в отдельной вкладке. Войдите под Google-аккаунтом Романа, Павла или Юлии.</p><p id="syncStatus" class="muted">Общий ключ отдела ещё не подключён.</p></div>
 </section>
 </main>
 </div>
@@ -376,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.23';
+const APP_VERSION='1.11.24';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -405,7 +405,7 @@ function productionDayInfo(date){
  return {dow:DOW_SHORT[x.getDay()],nonwork:weekend||!!special,label:special||(weekend?'Выходной':'')};
 }
 const KEY='kalendarOtdelaDataV1';
-const RETIRED_TEST_EVENTS=new Set(['SYNC-TEST-20261030-1800','MEET-TEST-1234-R','SYNC-CONTROL-20261030-1700-PRV','SYNC-TEST-20261101']);
+const RETIRED_TEST_EVENTS=new Set(['SYNC-TEST-20261030-1800','MEET-TEST-1234-R','SYNC-CONTROL-20261030-1700-PRV','SYNC-TEST-20261101','MEET-20261106-1500-TESTCOMP','MEET-20261106-1600-UNKNOWN']);
 function normalizeDisplayData(x){
  x.events=(x.events||[]).filter(e=>!RETIRED_TEST_EVENTS.has(e.id));
  (x.tasks||[]).forEach(t=>{t.controlled=t.controlled===true||(t.controlled==null&&t.status==='На контроле');if(t.status==='На контроле')t.status='В работе'});
@@ -1298,6 +1298,13 @@ tabNav.addEventListener('touchmove',e=>{if(!navTouch||e.touches.length!==1)retur
 ;['eventEmployeeFilter','eventTypeFilter','eventStatusFilter','eventSearch'].forEach(id=>document.getElementById(id).oninput=renderEvents);['taskControlFilter','taskEmployeeFilter','taskStatusFilter','taskPriorityFilter','taskSearch'].forEach(id=>document.getElementById(id).oninput=renderTasks);
 document.getElementById('prevMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()-7);else calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()+7);else calDate.setMonth(calDate.getMonth()+1);renderCalendar()};document.getElementById('calendarTodayBtn').onclick=()=>{calDate=new Date();renderCalendar()};
 const SYNC_KEY='kalendarOtdelaSharedKeyV1';
+// Public web app URL only. Never put GitHub tokens or the shared key here.
+const MANUAL_SYNC_URL='';
+if(/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(MANUAL_SYNC_URL)){
+ document.getElementById('publishNowBtn').hidden=false;
+ document.getElementById('publishStatus').hidden=false;
+ document.getElementById('publishNowBtn').onclick=()=>window.open(MANUAL_SYNC_URL,'_blank','noopener,noreferrer');
+}
 function b64ToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function syncEncrypted(){
  const status=document.getElementById('syncStatus');

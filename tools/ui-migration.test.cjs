@@ -6,7 +6,7 @@ test('retired sync tests disappear from legacy browser data without removing wor
  const html=fs.readFileSync('index.html','utf8');
  const start=html.indexOf('const RETIRED_TEST_EVENTS=');
  const end=html.indexOf('let db=normalizeDisplayData(load());',start);
- const retired=['SYNC-TEST-20261030-1800','MEET-TEST-1234-R','SYNC-CONTROL-20261030-1700-PRV','SYNC-TEST-20261101'];
+ const retired=['SYNC-TEST-20261030-1800','MEET-TEST-1234-R','SYNC-CONTROL-20261030-1700-PRV','SYNC-TEST-20261101','MEET-20261106-1500-TESTCOMP','MEET-20261106-1600-UNKNOWN'];
  const work={id:'work-event',type:'Рабочее совещание',start:'2026-11-04'};
  const context={input:{people:[],tasks:[],birthdays:[],events:[...retired.map(id=>({id,type:'Тест',start:'2026-10-30'})),work]}};
  vm.runInNewContext(html.slice(start,end)+';result=normalizeDisplayData(input)',context);
