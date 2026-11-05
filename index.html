@@ -323,7 +323,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.22</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.23</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -376,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.22';
+const APP_VERSION='1.11.23';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -562,7 +562,7 @@ function eventRows(list){return list.map(e=>{
  return '<tr><td class="nowrap">'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+esc(endText)+'</td><td>'+esc(daysText)+'</td><td><span class="pill">'+esc(st)+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>'
 })}
 function isMeetingEvent(e){
- return /совещ|мероприят|встреч|апробац|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
+ return /совещ|мероприят|встреч|апробац|поездк|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
 }
 function eventTime(e){
  const values=[e.basis,e.time,e.comment,e.note].filter(Boolean).join(' ');
