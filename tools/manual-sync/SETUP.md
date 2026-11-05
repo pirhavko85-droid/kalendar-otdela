@@ -1,6 +1,10 @@
 # Ручная синхронизация отдела
 
-Черновик от 05.11.2026. До развёртывания и проверки на действующем сайте функция не включена.
+Развёрнуто и проверено 05.11.2026. Страница запуска: https://script.google.com/macros/s/AKfycbz9QFGEA1iTFx-1j2nTtHg2prO8566pYaSjv0daCiUrMJGfjLNj9iKBvjBCvZZM4_0R9Q/exec
+
+Проверенный запуск: https://github.com/pirhavko85-droid/kalendar-otdela/actions/runs/42063357828
+
+GitHub token ограничен одним репозиторием и Actions write; срок действия до 03.02.2027. Значение хранится только в Script Properties. До этой даты владелец должен заменить его.
 
 Google Apps Script проверяет Google-аккаунт оператора и запускает только `sync-data.yml` ветки `main` репозитория `pirhavko85-droid/kalendar-otdela`. Разрешены Роман, Юлия и Павел. Редактировать код скрипта могут только владелец и назначенные им разработчики; операторам выдаётся только URL web app.
 

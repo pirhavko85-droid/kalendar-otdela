@@ -323,7 +323,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.24</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.25</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -376,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.24';
+const APP_VERSION='1.11.25';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1299,7 +1299,7 @@ tabNav.addEventListener('touchmove',e=>{if(!navTouch||e.touches.length!==1)retur
 document.getElementById('prevMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()-7);else calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()+7);else calDate.setMonth(calDate.getMonth()+1);renderCalendar()};document.getElementById('calendarTodayBtn').onclick=()=>{calDate=new Date();renderCalendar()};
 const SYNC_KEY='kalendarOtdelaSharedKeyV1';
 // Public web app URL only. Never put GitHub tokens or the shared key here.
-const MANUAL_SYNC_URL='';
+const MANUAL_SYNC_URL='https://script.google.com/macros/s/AKfycbz9QFGEA1iTFx-1j2nTtHg2prO8566pYaSjv0daCiUrMJGfjLNj9iKBvjBCvZZM4_0R9Q/exec';
 if(/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(MANUAL_SYNC_URL)){
  document.getElementById('publishNowBtn').hidden=false;
  document.getElementById('publishStatus').hidden=false;
