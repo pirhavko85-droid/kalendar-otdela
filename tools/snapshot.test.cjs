@@ -54,7 +54,13 @@ test('snapshot: stable unchanged output, metadata accuracy and deletion protecti
   assert.equal(out.meta.modifiedBy,'Operator');assert.equal(out.meta.sourceModifiedAt,'2026-11-01T09:00:00Z');
   put('baseline.json',next);r=run('second.json',['--metadata',path.join(dir,'meta.json')]);assert.equal(r.status,0,r.stderr);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir,'second.json'))),next);
-  source['Сотрудники'].pop();put('source.json',source);r=run('bad.json');assert.equal(r.status,1);assert.match(r.stderr,/Source omits/);assert.equal(fs.existsSync(path.join(dir,'bad.json')),false);
+  source['События'].push(['new-participant','p','Test','Совещание','06.11.2026','06.11.2026',1,'План','11:00','','','','','','meeting-group']);
+  put('source.json',source);r=run('participant.json');assert.equal(r.status,0,r.stderr);
+  const participantEnv=JSON.parse(fs.readFileSync(path.join(dir,'participant.json'))),participantRaw=Buffer.from(participantEnv.data,'base64');
+  const participantDecipher=crypto.createDecipheriv('aes-256-gcm',key,Buffer.from(participantEnv.iv,'base64'));participantDecipher.setAuthTag(participantRaw.subarray(-16));
+  const participantSnapshot=JSON.parse(zlib.gunzipSync(Buffer.concat([participantDecipher.update(participantRaw.subarray(0,-16)),participantDecipher.final()])));
+  assert.equal(participantSnapshot.events[0].linkedEvent,'meeting-group');
+  source['События'].pop();source['Сотрудники'].pop();put('source.json',source);r=run('bad.json');assert.equal(r.status,1);assert.match(r.stderr,/Source omits/);assert.equal(fs.existsSync(path.join(dir,'bad.json')),false);
  } finally {
   if(path.dirname(dir)!==os.tmpdir()||!path.basename(dir).startsWith('calendar-sync-test-'))throw Error('Unsafe temporary cleanup path');
   fs.rmSync(dir,{recursive:true,force:true});

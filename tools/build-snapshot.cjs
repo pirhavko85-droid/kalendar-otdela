@@ -64,7 +64,7 @@ function main() {
   const events = records(source, 'События', ['ID события', 'Сотрудник ID', 'Сотрудник', 'Тип события']).map(r => ({
     id:r[0], personId:r[1] || '', type:r[3] || '', start:date(r[4]), end:date(r[5]),
     days:number(r[6]), status:r[7] || '', basis:r[8] || '', comment:r[9] || '',
-    linkedEvent:oldEvents.get(r[0])?.linkedEvent || '', ...extension(r)
+    linkedEvent:r[14] || oldEvents.get(r[0])?.linkedEvent || '', ...extension(r)
   }));
   const birthdays = records(source, 'Дни рождения', ['Сотрудник ID', 'Сотрудник', 'Дата рождения']).map(r => ({
     id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел'
