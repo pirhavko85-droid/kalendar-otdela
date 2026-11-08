@@ -320,6 +320,9 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 @media(max-width:520px){#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:11px}.leave-growth-explainer{font-size:10px}.leave-growth-card>summary{font-size:10.5px}}
 .leave-extension-key{display:inline-block;width:9px;height:9px;border-radius:2px;background:#63a8f5;border:1px solid #327dcf;margin-left:4px;vertical-align:middle}.leave-visual-cell.leave-extension,.leave-overlap-cell.leave-extension{background:#63a8f5;border-color:#327dcf}.year-extension-day{position:absolute;top:4px;bottom:4px;background:#63a8f5;border:1px solid #327dcf;border-radius:3px;z-index:2}
 #birthdaysGrid .birthday-line.op-department{background:#cde6d4;border-color:transparent;outline:1px solid #85aa90;outline-offset:-1px}
+/* The experimental voice card stays readable on phone keyboards. */
+#voiceModal label{display:grid;gap:5px;min-width:0}#voiceModal input:not([type=checkbox]),#voiceModal textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px;font:inherit;box-sizing:border-box}#voiceModal button:not(#voiceClose){padding:9px 12px;border-radius:9px;border:1px solid var(--line);font:inherit;cursor:pointer}#voiceModal button:disabled{opacity:.55;cursor:default}#voiceModal fieldset{border:1px solid var(--line);border-radius:9px}#voiceModal .modal-box{font-size:15px;line-height:1.4}#voiceModal .toolbar{margin-top:12px}#voiceParse{margin-top:8px}.events-head .toolbar{margin:0}
+@media(max-width:520px){.events-head{flex-wrap:wrap}.events-head .toolbar{width:100%}.events-head .toolbar button{font-size:12px;padding:8px}#voiceModal{padding:10px}#voiceModal .modal-box{padding:14px;font-size:16px;max-height:90dvh}#voiceModal .form-grid{grid-template-columns:1fr}#voiceModal .modal-head h3{font-size:19px;margin:0}}
 </style>
 </head>
 <body>
