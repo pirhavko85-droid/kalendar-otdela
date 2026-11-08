@@ -26,7 +26,7 @@ function addDepartmentEvent(input,requestId){
    const all=sheet.getRange(1,1,Math.max(1,last),15).getDisplayValues();
    if(all[0][0]!=='ID события'||all[0][3]!=='Тип события'||all[0][14]!=='Связанное событие')throw new Error('Изменилась структура таблицы. Сообщите Роману.');
    const prefix='WEB-'+requestId+'-',old=all.filter(r=>r[0].indexOf(prefix)===0);
-   if(old.length)return {ok:true,duplicate:true,ids:old.map(r=>r[0])};
+   if(old.length){if(old.length!==Math.max(1,event.people.length)||old.some(r=>!r[3]||!r[4]||!r[8]))throw new Error('Обнаружена незавершённая прежняя запись. Сообщите Роману; мероприятие ещё не сохранено.');return {ok:true,duplicate:true,ids:old.map(r=>r[0])};}
    const displayDate=event.date.split('-').reverse().join('.');
    const existing=all.filter(r=>r[3].trim().toLowerCase()===event.title.toLowerCase()&&r[4]===displayDate&&r[8]===event.time&&r[7]!=='Отменена');
    if(existing.length)return {ok:true,duplicate:true,ids:existing.map(r=>r[0])};
@@ -40,11 +40,21 @@ function addDepartmentEvent(input,requestId){
    const author=EVENT_AUTHORS[event.author],comment='Мероприятие: '+event.title+'. Начало в '+event.time+' по Москве.'+(event.note?' '+event.note:'');
    const group='WEB-GRP-'+requestId,entered=Utilities.formatDate(new Date(),'Europe/Moscow','dd.MM.yyyy');
    const rows=people.map((id,i)=>[prefix+i,id,names[id]||'',safe_(event.title),displayDate,displayDate,1,'План',event.time,safe_(comment),'Указал автор: '+author,entered,'Карточка дашборда; автор выбран без проверки аккаунта','Совещание / мероприятие',group]);
-   // Append only: record the empty target range before writing; existing rows are untouched.
-   properties.setProperty('LAST_APPEND_BACKUP',JSON.stringify({requestId:requestId,createdAt:new Date().toISOString(),range:'События!A'+(last+1)+':O'+(last+rows.length),before:rows.map(()=>Array(15).fill(''))}));
-   sheet.getRange(last+1,1,rows.length,15).setValues(rows);SpreadsheetApp.flush();
-   const check=sheet.getRange(last+1,1,rows.length,1).getDisplayValues();
-   if(check.some((r,i)=>r[0]!==rows[i][0]))throw new Error('Подтверждение записи не получено. Повторите запрос без изменения карточки.');
+   const target=sheet.getRange(last+1,1,rows.length,15),before=target.getDisplayValues();
+   if(before.some(r=>r.some(v=>v!=='')))throw new Error('Целевые строки уже заняты. Повторите попытку.');
+   properties.setProperty('LAST_EVENT_REQUEST',JSON.stringify({requestId:requestId,event:event,createdAt:new Date().toISOString()}));
+   properties.setProperty('LAST_APPEND_BACKUP',JSON.stringify({requestId:requestId,createdAt:new Date().toISOString(),range:'События!A'+(last+1)+':O'+(last+rows.length),before:before}));
+   // Only these new meeting titles are free text. Existing category validation stays intact.
+   const typeRange=sheet.getRange(last+1,4,rows.length,1),validation=typeRange.getDataValidations();
+   try{
+    typeRange.clearDataValidations();
+    target.setValues(rows);SpreadsheetApp.flush();
+    const check=target.getDisplayValues(),display=v=>String(v).replace(/^'(?=[=+\-@])/,'');
+    if(check.some((r,i)=>r.some((v,j)=>v!==display(rows[i][j]))))throw new Error('Подтверждение полной записи не получено.');
+   }catch(writeError){
+    target.clearContent();typeRange.setDataValidations(validation);SpreadsheetApp.flush();
+    throw new Error('Мероприятие не сохранено; незаполненные строки убраны. '+writeError.message);
+   }
    properties.setProperty('APPEND_QUOTA',JSON.stringify({day:today,count:(quota.day===today?quota.count:0)+1}));
    return {ok:true,ids:rows.map(r=>r[0]),author:author};
   }finally{lock.releaseLock()}

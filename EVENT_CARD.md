@@ -40,4 +40,6 @@ ANYONE_ANONYMOUS. Scope spreadsheets нужен для записи; исход�
 tools/voice-draft.test.cjs. Последний файл проверяет сохранённый текстовый парсер;
 сам голосовой код удалён.
 
-Адрес развёрнутого сервиса (версия 1): https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec
+Адрес развёрнутого сервиса (версия 2): https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec
+
+Исправление 08.11.2026: для новых строк мероприятий снимается только проверка D, разрешая свободное название. Перед записью сохраняется резерв целевых ячеек; проверяются все 15 полей; частичная запись откатывается. Незавершённый прежний ID не считается успехом. Регрессионные проверки покрывают строгую проверку D и частичный сбой.
