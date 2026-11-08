@@ -22,10 +22,11 @@ function backend(){
  const grids={
   'Сотрудники':[['ID','ФИО','Краткое имя','Должность','Категория','Дата рождения'],['P','Роман','Роман П.','Инженер','Сотрудник','17.06.1985']],
   'Задачи':[['ID задачи','Исполнитель ID','Исполнитель','Задача','Описание','Дата постановки','Срок исполнения','Приоритет','Статус','Дата выполнения','Постановщик','Комментарий','Просрочена','Дней до срока','Контроль'],['T','P','Роман','Старая задача','','08.11.2026','','Обычный','Новая','','','','','','Не на контроле']]
- },props={};let writes=0;
+ , 'События':[['ID события','Сотрудник ID','Сотрудник','Тип события','Дата начала','Дата окончания','Количество дней','Статус','Основание/номер','Комментарий','Кто внёс','Дата внесения','Источник ввода','Категория учёта','Связанное событие']]
+ },props={};let writes=0,strict=true;
  const display=v=>String(v??'').replace(/^'(?=[=+\-@])/,'');
  const sheet=name=>({getDataRange:()=>({getDisplayValues:()=>grids[name].map(r=>r.map(display))}),getLastColumn:()=>Math.max(...grids[name].map(r=>r.length)),getMaxColumns:()=>50,
-  getRange:(row,col,h=1,w=1)=>{const raw=()=>Array.from({length:h},(_,i)=>Array.from({length:w},(_,j)=>grids[name][row-1+i]?.[col-1+j]??''));return{getDisplayValues:()=>raw().map(r=>r.map(display)),getValues:raw,getFormulas:()=>raw().map(r=>r.map(()=>'')),setValue:v=>{writes++;grids[name][row-1]??=[];grids[name][row-1][col-1]=v},setValues:rows=>{writes++;rows.forEach((r,i)=>{grids[name][row-1+i]??=[];r.forEach((v,j)=>grids[name][row-1+i][col-1+j]=v)})}}}
+  getRange:(row,col,h=1,w=1)=>{const raw=()=>Array.from({length:h},(_,i)=>Array.from({length:w},(_,j)=>grids[name][row-1+i]?.[col-1+j]??''));return{getDisplayValues:()=>raw().map(r=>r.map(display)),getValues:raw,getDataValidations:()=>[[strict]],clearDataValidations:()=>{strict=false},setDataValidations:v=>{strict=v[0][0]},getFormulas:()=>raw().map(r=>r.map(()=>'')),setValue:v=>{if(name==='События'&&col===4&&strict&&v!=='Наряд')throw Error('strict validation');writes++;grids[name][row-1]??=[];grids[name][row-1][col-1]=v},setValues:rows=>{writes++;rows.forEach((r,i)=>{grids[name][row-1+i]??=[];r.forEach((v,j)=>grids[name][row-1+i][col-1+j]=v)})}}}
  });
  const c={SpreadsheetApp:{openById:()=>({getSheetByName:sheet}),flush:()=>{}},PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]||null,setProperty:(k,v)=>props[k]=v})},LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock:()=>{}})},Utilities:{formatDate:()=> '2026-11-08'}};
  vm.createContext(c);vm.runInContext(fs.readFileSync('tools/event-writer/Code.gs','utf8'),c);return{c,grids,props,writes:()=>writes};
@@ -40,4 +41,10 @@ test('concurrent edits, unknown authors and deletion are rejected before any cel
 });
 test('formula-like edits stay literal and result status distinguishes unknown request',()=>{
  const s=backend(),op=operation(s);op.after.title='=IMPORTXML("https://example.com")';assert.equal(s.c.applyDepartmentChanges([op],request).ok,true);assert.ok(s.grids['Задачи'][1][3].startsWith("'="));assert.equal(s.c.getDepartmentChangeStatus('22222222-2222-2222-2222-222222222222').phase,'not_found');
+});
+
+test('shared event title accepts free text despite strict category validation',()=>{
+ const s=backend();const after={personId:'P',type:'Новое мероприятие',start:'2026-11-09',end:'2026-11-10',days:'2',status:'План',basis:'11:00',comment:'',linkedEvent:''};
+ const result=s.c.applyDepartmentChanges([{collection:'events',id:'NEW-EVENT',author:'P',before:null,after}],request);
+ assert.equal(result.ok,true);assert.equal(s.grids['События'][1][3],after.type);assert.equal(s.grids['События'][1][5],'10.11.2026');
 });

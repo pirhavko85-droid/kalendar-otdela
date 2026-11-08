@@ -140,6 +140,9 @@ function applyDepartmentChanges(operations,requestId){
   properties.setProperty('CHANGE_'+requestId,JSON.stringify({ok:false,phase:'unknown',message:'Запись начата; требуется подтверждение результата.'}));
   for(let i=0;i<prepared.length;i++){
    const p=prepared[i],backup=backups[i];done.push({p,backup});
+   if(p.op.collection==='events'&&(p.isNew||p.op.before.type!==p.values.type)){
+    p.typeRange=p.entry.sheet.getRange(p.row,4);p.typeValidation=p.typeRange.getDataValidations();p.typeRange.clearDataValidations();
+   }
    if(p.isNew)p.entry.sheet.getRange(p.row,1).setValue(safe_(p.op.id));
    Object.keys(p.schema.fields).forEach(k=>{
     if(!p.isNew&&changeEqual_(p.op.before[k],p.values[k]))return;
@@ -158,7 +161,7 @@ function applyDepartmentChanges(operations,requestId){
   properties.setProperty('CHANGE_QUOTA',JSON.stringify({day,count:(quota.day===day?quota.count:0)+operations.length}));properties.setProperty('CHANGE_'+requestId,JSON.stringify(result));return result;
  }catch(e){
   let rollback=true;
-  for(const {p,backup} of done.reverse()){try{const currentWidth=p.entry.sheet.getLastColumn(),cells=backup.values.map((v,i)=>backup.formulas[i]||v);while(cells.length<currentWidth)cells.push('');p.entry.sheet.getRange(p.row,1,1,currentWidth).setValues([cells])}catch(_){rollback=false}}
+  for(const {p,backup} of done.reverse()){try{const currentWidth=p.entry.sheet.getLastColumn(),cells=backup.values.map((v,i)=>backup.formulas[i]||(typeof v==='string'?safe_(v):v));while(cells.length<currentWidth)cells.push('');p.entry.sheet.getRange(p.row,1,1,currentWidth).setValues([cells]);if(p.typeRange)p.typeRange.setDataValidations(p.typeValidation)}catch(_){rollback=false}}
   try{SpreadsheetApp.flush()}catch(_){rollback=false}
   if(!rollback){const result={ok:false,phase:'unknown',message:'Не удалось подтвердить восстановление записи. Не повторяйте отправку до сверки таблицы.'};PropertiesService.getScriptProperties().setProperty('CHANGE_'+requestId,JSON.stringify(result));return result}
   const rejected={ok:false,phase:'rejected',message:e.message||'Изменения не сохранены.'};if(done.length)PropertiesService.getScriptProperties().setProperty('CHANGE_'+requestId,JSON.stringify(rejected));return rejected;

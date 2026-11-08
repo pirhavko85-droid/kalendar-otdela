@@ -324,10 +324,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 #eventCard [hidden]{display:none!important}#eventCard label{display:grid;gap:5px;min-width:0}#eventCard input:not([type=checkbox]),#eventCard textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px;font:inherit;box-sizing:border-box}#eventCard button:not(#cardClose){padding:9px 12px;border-radius:9px;border:1px solid var(--line);font:inherit;cursor:pointer}#eventCard button:disabled{opacity:.55;cursor:default}#eventCard fieldset{border:1px solid var(--line);border-radius:9px}#eventCard .modal-box{font-size:15px;line-height:1.4}#eventCard .toolbar{margin-top:12px}#cardParse{margin-top:8px}.events-head .toolbar{margin:0}
 @media(max-width:520px){.events-head{flex-wrap:wrap}.events-head .toolbar{width:100%}.events-head .toolbar button{font-size:12px;padding:8px}#eventCard{padding:10px}#eventCard .modal-box{padding:14px;font-size:16px;max-height:90dvh}#eventCard .form-grid{grid-template-columns:1fr}#eventCard .modal-head h3{font-size:19px;margin:0}}
 #cardPeople label{display:inline-flex;align-items:center;gap:7px;margin:5px 12px 5px 0}#cardPeople input{width:auto!important}#eventCard select{width:100%;padding:9px;font:inherit;border:1px solid var(--line);border-radius:9px}#eventCard details{margin:8px 0}#eventCard summary{cursor:pointer;padding:9px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}#cardWarning:empty{display:none}
+.shared-data .shared-author{display:flex;flex-direction:column;gap:6px;max-width:340px;margin:12px 0}.shared-data select,.shared-data button{font:inherit}.shared-data select{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fff}.shared-data details{border:1px solid var(--line);border-radius:10px;margin-top:8px;overflow:hidden}.shared-data summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:10px;font-size:12px;font-weight:700;list-style:none}.shared-data summary::-webkit-details-marker{display:none}.shared-data .shared-record-fields{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:10px}.shared-record-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}.shared-data button:disabled{opacity:.45;cursor:default}.shared-data #sharedChangeHistory{padding:0 10px}.shared-data .toolbar button{white-space:normal}#sharedEditForm label{display:flex;flex-direction:column;gap:5px;min-width:0}#sharedEditForm input,#sharedEditForm textarea,#sharedEditForm select{width:100%;box-sizing:border-box}#sharedEditForm input[type=checkbox]{width:auto;align-self:flex-start}#sharedEditForm button{grid-column:1/-1}#closeSharedEditor{margin-top:10px}@media(max-width:600px){.shared-data .shared-record-fields,#sharedEditForm{grid-template-columns:1fr}.shared-data .toolbar{display:grid;grid-template-columns:1fr}.shared-data .toolbar button{width:100%}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.33</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.35</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -380,7 +381,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.33';
+const APP_VERSION='1.11.35';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1353,9 +1354,10 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.33"></script>
-<script src="event-card.js?v=1.11.33"></script>
-<script src="collaboration.js?v=1.11.33"></script>
+<script src="event-draft.js?v=1.11.35"></script>
+<script src="event-card.js?v=1.11.35"></script>
+<script src="collaboration.js?v=1.11.35"></script>
 </body>
 </html>
+
 
