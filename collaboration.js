@@ -76,7 +76,7 @@
   const form=$('sharedEditForm');form.replaceChildren();
   fields[kind].forEach(k=>{const label=document.createElement('label');label.textContent=labels[k]||k;let input;
    if(k==='personId'){input=document.createElement('select');input.innerHTML='<option value="">Не указан</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short)+'</option>').join('')}
-   else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':k==='days'?'number':'text'}
+   else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');if(input.tagName==='INPUT')input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':k==='days'?'number':'text'}
    input.name=k;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить на этом устройстве';form.append(button);
   form.onsubmit=e=>{e.preventDefault();if(busy||unknown)return;if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
@@ -105,4 +105,5 @@
  });
  setStatus(unknown?'Есть отправка без подтверждения. Нажмите «Проверить отправку».':store.operations.length?'Ожидают загрузки изменения: '+store.operations.length:'Новых локальных изменений нет.');update();
 })();
+
 
