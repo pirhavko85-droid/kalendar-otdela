@@ -323,7 +323,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.26</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.27</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -343,7 +343,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <main>
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar calendar-toolbar"><button id="prevMonth" aria-label="Предыдущая неделя">←</button><strong id="monthTitle"></strong><button id="nextMonth" aria-label="Следующая неделя">→</button><button id="calendarTodayBtn">Сегодня</button></div><div id="calendarGrid" class="calendar"></div></section>
-<section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><button class="primary" onclick="openEventModal()">+ Мероприятие</button></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
+<section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><div class="toolbar"><button type="button" onclick="openVoiceDraft()">🎤 Голосовой черновик</button><button class="primary" onclick="openEventModal()">+ Мероприятие</button></div></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><p class="exits-units">Чел.-день — один день переработки одного сотрудника. «Вых.» — количество отдельных выходов сотрудников, а не людей. Учтены фактические выходы за текущий год.</p><div id="exitsPeople" class="exit-people-overall"></div><details class="exit-history-toggle"><summary><span>История переработок</span><span class="muted">Показать</span></summary><div id="exitsMonthly" class="exits-monthly"></div></details><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span><span><i style="background:#63a8f5"></i>+1 день продления</span></div>
@@ -376,7 +376,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.26';
+const APP_VERSION='1.11.27';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1355,5 +1355,7 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
+<script src="voice-draft.js"></script>
+<script src="voice-input.js"></script>
 </body>
 </html>

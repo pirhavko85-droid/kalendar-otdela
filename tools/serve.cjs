@@ -6,6 +6,7 @@ const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
+  ...['voice-draft.js','voice-input.js','voice-worker.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
   ['/data.enc.json', ['data.enc.json', 'application/json']],
   ['/leave-extension.js', ['leave-extension.js', 'text/javascript; charset=utf-8']],

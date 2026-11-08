@@ -1,5 +1,5 @@
-const CACHE='kalendar-otdela-v75';
-const CORE=['./','./index.html','./manifest.json','./leave-extension.js','./icons/calendar-3-64.png','./icons/calendar-3-180.png','./icons/calendar-3-192.png','./icons/calendar-3-512.png','./icons/calendar-3.svg'];
+const CACHE='kalendar-otdela-v76';
+const CORE=['./','./index.html','./manifest.json','./leave-extension.js','./voice-draft.js','./voice-input.js','./voice-worker.js','./icons/calendar-3-64.png','./icons/calendar-3-180.png','./icons/calendar-3-192.png','./icons/calendar-3-512.png','./icons/calendar-3.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
 });
@@ -13,6 +13,8 @@ self.addEventListener('fetch',event=>{
   const req=event.request;
   if(req.method!=='GET') return;
   const url=new URL(req.url);
+  // External model/runtime downloads keep their own cache; do not duplicate them.
+  if(url.origin!==self.location.origin)return;
   if(req.mode==='navigate' || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/')){
     event.respondWith(
       fetch(req,{cache:'no-store'}).then(res=>{
