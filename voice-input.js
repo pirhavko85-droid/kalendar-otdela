@@ -19,7 +19,9 @@
  function release(){clearTimeout(timer);timer=null;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null}
  function resetWorker(){clearTimeout(timeout);if(worker)worker.terminate();worker=null;ready=false;busy=false;$('voiceLoad').disabled=false;$('voiceStart').disabled=true;$('voiceAudio').disabled=true;}
  function close(){closed=true;if(recorder&&recorder.state!=='inactive')recorder.stop();release();recorder=null;if(audioContext)audioContext.close().catch(()=>{});audioContext=null;resetWorker();$('voiceStop').disabled=true;modal.classList.remove('open')}
- function parse(){const draft=VoiceDraft.parse($('voiceText').value);$('voiceTitle').value=draft.title;$('voiceDate').value=draft.date;$('voiceTime').value=draft.time;$('voiceWarning').textContent=draft.warning.join(' ')}
+ function clearCopy(){$('voiceCopyBox').hidden=true;$('voiceCopyStatus').textContent=''}
+ $('voiceForm').addEventListener('input',clearCopy);
+ function parse(){clearCopy();const draft=VoiceDraft.parse($('voiceText').value);$('voiceTitle').value=draft.title;$('voiceDate').value=draft.date;$('voiceTime').value=draft.time;$('voiceWarning').textContent=draft.warning.join(' ')}
  window.openVoiceDraft=function(){
   closed=false;modal.classList.add('open');
   const field=$('voicePeople');field.replaceChildren();const legend=document.createElement('legend');legend.textContent='Участники';field.append(legend);
