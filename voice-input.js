@@ -48,7 +48,7 @@
   }catch(_){resetWorker();status('Не удалось запустить распознавание. Можно ввести текст вручную.')}
  };
  $('voiceStart').onclick=async()=>{
-  if(!ready||busy)return;busy=true;$('voiceStart').disabled=true;status('Ожидаю разрешение на микрофон…');
+  if(!ready||busy)return;busy=true;$('voiceAudio').disabled=true;$('voiceStart').disabled=true;status('Ожидаю разрешение на микрофон…');
   try{
    const AC=window.AudioContext||window.webkitAudioContext;audioContext=new AC();await audioContext.resume();
    const acquired=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
@@ -63,7 +63,7 @@
     await processAudio(new Blob(chunks,{type:recorder.mimeType}));
    };
    recorder.start();$('voiceStop').disabled=false;status('Идёт запись. Говорите коротко, затем нажмите «Остановить».');timer=setTimeout(()=>{if(recorder?.state==='recording')recorder.stop()},45000);
-  }catch(_){release();if(audioContext)audioContext.close().catch(()=>{});audioContext=null;busy=false;$('voiceStart').disabled=!ready;status('Нет доступа к микрофону. Разрешите его в настройках браузера или введите текст вручную.')}
+  }catch(_){release();if(audioContext)audioContext.close().catch(()=>{});audioContext=null;busy=false;$('voiceAudio').disabled=!ready;$('voiceStart').disabled=!ready;status('Нет доступа к микрофону. Разрешите его в настройках браузера или введите текст вручную.')}
  };
 
  async function processAudio(blob){
