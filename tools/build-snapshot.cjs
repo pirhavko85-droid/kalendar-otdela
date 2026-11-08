@@ -48,10 +48,11 @@ function main() {
   if (keyConfig.alg !== 'A256GCM' || key.length !== 32) fail('Invalid shared key file');
   const original = read(argument('--baseline') || path.join(root, 'data.enc.json'));
   const previous = decrypt(original, key);
+  function editMetadata(sheet,row){const headers=source[sheet]?.[0]||[],author=headers.indexOf('Кто изменил'),at=headers.indexOf('Когда изменено');return {...(author>=0&&row[author]?{enteredBy:row[author]}:{}),...(at>=0&&row[at]?{modifiedAt:row[at]}:{})};}
   const previousPeople = new Map(previous.people.map(p => [p.id, p]));
   const people = records(source, 'Сотрудники', ['ID', 'ФИО', 'Краткое имя']).map(r => ({
     id:r[0], full:r[1] || r[2] || '', short:r[2] || r[1] || '', role:r[3] || '', category:r[4] || '',
-    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || '')
+    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || ''), ...editMetadata('Сотрудники',r)
   }));
   const oldEvents = new Map(previous.events.map(e => [e.id, e]));
   const extensionColumn = source['События']?.[0]?.indexOf('Даты продления отпуска') ?? -1;
@@ -64,10 +65,10 @@ function main() {
   const events = records(source, 'События', ['ID события', 'Сотрудник ID', 'Сотрудник', 'Тип события']).map(r => ({
     id:r[0], personId:r[1] || '', type:r[3] || '', start:date(r[4]), end:date(r[5]),
     days:number(r[6]), status:r[7] || '', basis:r[8] || '', comment:r[9] || '',
-    linkedEvent:r[14] || oldEvents.get(r[0])?.linkedEvent || '', ...(String(r[12]||'').startsWith('Карточка дашборда')?{enteredBy:r[10]||''}:{}), ...extension(r)
+    linkedEvent:r[14] || oldEvents.get(r[0])?.linkedEvent || '', ...(String(r[12]||'').startsWith('Карточка дашборда')?{enteredBy:r[10]||''}:{}), ...extension(r), ...editMetadata('События',r)
   }));
   const birthdays = records(source, 'Дни рождения', ['Сотрудник ID', 'Сотрудник', 'Дата рождения']).map(r => ({
-    id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел'
+    id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел', ...editMetadata('Дни рождения',r)
   }));
   const controlColumn = source['Задачи']?.[0]?.indexOf('Контроль') ?? -1;
   function taskControl(row) {
@@ -77,7 +78,7 @@ function main() {
   }
   const tasks = records(source, 'Задачи', ['ID задачи', 'Исполнитель ID', 'Исполнитель', 'Задача']).map(r => ({
     id:r[0], controlled:taskControl(r), personId:r[1] || '', title:r[3] || '', description:r[4] || '', created:date(r[5]),
-    deadline:date(r[6]), priority:r[7] || '', status:r[8] === 'На контроле' ? 'В работе' : r[8] || '', completed:date(r[9]), author:r[10] || '', comment:r[11] || ''
+    deadline:date(r[6]), priority:r[7] || '', status:r[8] === 'На контроле' ? 'В работе' : r[8] || '', completed:date(r[9]), author:r[10] || '', comment:r[11] || '', ...editMetadata('Задачи',r)
   }));
   const snapshot = {people, events, tasks, birthdays};
   const peopleIds = new Set(people.map(p => p.id));

@@ -1,8 +1,15 @@
 <!doctype html><html><head><meta charset="utf-8"></head><body><p>Подключение календаря отдела</p><script>
 const channel=__CHANNEL__,origin='https://pirhavko85-droid.github.io';
 window.addEventListener('message',event=>{
- if(event.origin!==origin||event.source!==window.top||event.data?.channel!==channel||event.data.type!=='department-add')return;
+ if(event.origin!==origin||event.source!==window.top||event.data?.channel!==channel)return;
+ if(event.data.type==='department-capabilities'){window.top.postMessage({type:'department-capabilities-result',channel,result:{version:2}},origin);return}
  const id=event.data.requestId;
+ if(['department-changes','department-change-status'].includes(event.data.type)){
+  const success=result=>window.top.postMessage({type:'department-changes-result',channel,requestId:id,result},origin);
+  const runner=google.script.run.withSuccessHandler(success).withFailureHandler(()=>success({ok:false,phase:'unknown',message:'Подтверждение общей записи не получено. Проверьте результат перед повтором.'}));
+  if(event.data.type==='department-change-status')runner.getDepartmentChangeStatus(id);else runner.applyDepartmentChanges(event.data.operations,id);return;
+ }
+ if(event.data.type!=='department-add')return;
  google.script.run.withSuccessHandler(result=>window.top.postMessage({type:'department-result',channel,requestId:id,result},origin)).withFailureHandler(()=>window.top.postMessage({type:'department-result',channel,requestId:id,result:{ok:false,message:'Сервис записи недоступен. Повторите позже.'}},origin)).addDepartmentEvent(event.data.event,id);
 });
 window.top.postMessage({type:'department-ready',channel},origin);

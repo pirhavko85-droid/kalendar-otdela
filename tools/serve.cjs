@@ -4,9 +4,11 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/preview-server-code.txt', ['tools/event-writer/Code.gs', 'text/plain; charset=utf-8']],
+  ['/preview-bridge.txt', ['tools/event-writer/Bridge.html', 'text/plain; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
-  ...['event-draft.js','event-card.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
+  ...['event-draft.js','event-card.js','collaboration.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
   ['/data.enc.json', ['data.enc.json', 'application/json']],
   ['/leave-extension.js', ['leave-extension.js', 'text/javascript; charset=utf-8']],
@@ -25,4 +27,7 @@ const server = http.createServer((req, res) => {
   });
 });
 server.on('error', err => { console.error(err.message); process.exitCode = 1; });
-server.listen(4173, '127.0.0.1', () => console.log('Dashboard: http://127.0.0.1:4173'));
+const port=Number(process.env.PORT||4173);
+server.listen(port, '127.0.0.1', () => console.log('Dashboard: http://127.0.0.1:'+port));
+
+

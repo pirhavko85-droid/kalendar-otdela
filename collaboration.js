@@ -1,0 +1,108 @@
+(function(){
+ 'use strict';
+ const STORE='departmentChangesV1',AUTHOR='departmentEditorV1';
+ const fields={people:['short','full','role','category','birthdate'],events:['personId','type','start','end','days','status','basis','comment','linkedEvent'],tasks:['personId','title','description','created','deadline','priority','status','completed','author','comment','controlled'],birthdays:['name','date','affiliation']};
+ const names={people:'Сотрудники',events:'События',tasks:'Задачи',birthdays:'Дни рождения'};
+ const clone=x=>JSON.parse(JSON.stringify(x));
+ const clean=(kind,x)=>x?Object.fromEntries(fields[kind].map(k=>[k,k==='controlled'?!!x[k]:String(x[k]??'')])):null;
+ let store;try{store=JSON.parse(localStorage.getItem(STORE))}catch(_){}
+ store=store||{operations:[],requestId:null};let previous=clone(db),busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
+ const card=document.createElement('div');card.className='card';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label>Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></details>';
+ document.querySelector('#data').insertBefore(card,document.querySelector('#data .card'));
+ const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t};
+ $('departmentEditor').value=localStorage.getItem(AUTHOR)||'';
+ $('departmentEditor').onchange=()=>{localStorage.setItem(AUTHOR,$('departmentEditor').value);update()};
+ function update(){
+  $('uploadChanges').disabled=busy||unknown||!store.operations.length||!$('departmentEditor').value;
+  $('downloadChanges').disabled=busy||!store.operations.length;
+  $('checkChanges').disabled=busy||!store.requestId;
+  $('syncNowBtn').disabled=busy||unknown;
+  $('syncDepartment').disabled=busy||unknown;
+  $('editSelected').disabled=busy||unknown;$('newSharedRecord').disabled=busy||unknown;
+ }
+ function persist(){localStorage.setItem(STORE,JSON.stringify(store));update()}
+ function capture(){
+  let changed=false;
+  for(const kind of Object.keys(fields)){
+   const old=new Map((previous[kind]||[]).map(x=>[x.id,x])),now=new Map((db[kind]||[]).map(x=>[x.id,x]));
+   for(const id of new Set([...old.keys(),...now.keys()])){
+    const before=clean(kind,old.get(id)),after=clean(kind,now.get(id));
+    if(JSON.stringify(before)===JSON.stringify(after))continue;
+    changed=true;
+    const author=$('departmentEditor').value;
+    if(!author){db=clone(previous);alert('Выберите «Кто вносит изменения» во вкладке «Импорт / экспорт». Изменение пока не сохранено.');return false}
+    let op=store.operations.find(x=>x.collection===kind&&x.id===id);
+    if(!op){op={collection:kind,id,before,after,author};store.operations.push(op)}else{op.after=after;op.author=author}
+    if(JSON.stringify(op.before)===JSON.stringify(op.after))store.operations=store.operations.filter(x=>x!==op);
+    if(now.get(id)){now.get(id).enteredBy='Указал автор: '+(person(author)?.short||author);now.get(id).modifiedAt=new Date().toISOString()}
+   }
+  }
+  if(changed){store.requestId=null;setStatus('Локальных изменений: '+store.operations.length+'. Они ещё не загружены в общую таблицу.')}
+  persist();previous=clone(db);return true;
+ }
+ const saveOriginal=save;
+ save=function(){if(busy||unknown){db=clone(previous);alert('Дождитесь подтверждения отправки изменений.');return}if(capture())saveOriginal();else{localStorage.setItem(KEY,JSON.stringify(db));renderAll()}};
+ const syncOriginal=syncEncrypted;
+ syncEncrypted=async function(){
+  if(busy||unknown)return false;
+  if(store.operations.length){setStatus('Сначала загрузите локальные изменения или сохраните их в файл. Получение снимка не должно перезаписывать ваши правки.');return false}
+  // Applying a verified incoming snapshot is not a local edit.
+  const trackedSave=save;save=saveOriginal;
+  try{await syncOriginal();
+   if(store.awaitingPublished?.length){
+    const waiting=[];
+    for(const op of store.awaitingPublished){const list=db[op.collection]||[],index=list.findIndex(x=>x.id===op.id),remote=index>=0?clean(op.collection,list[index]):null;
+     if(JSON.stringify(remote)!==JSON.stringify(op.after)){waiting.push(op);const local=(previous[op.collection]||[]).find(x=>x.id===op.id);if(local){if(index>=0)list[index]=clone(local);else list.push(clone(local))}}
+    }
+    store.awaitingPublished=waiting;persist();saveOriginal();if(waiting.length)setStatus('Правки подтверждены в таблице, но снимок ещё публикуется. На устройстве сохранены ваши новые значения.');else setStatus('Правки появились в опубликованном снимке.');
+   }
+   previous=clone(db);renderRecords();return true}finally{save=trackedSave;update()}
+ };
+ $('syncNowBtn').onclick=()=>syncEncrypted();
+ $('syncNowBtn').textContent='Получить свежие данные из общей базы';
+ document.querySelector('#data .card:nth-of-type(2) p').textContent='Google Таблица — общая база. «Получить» загружает её последний опубликованный снимок; публикация может задерживаться. «Загрузить изменения» отправляет ваши правки в таблицу. Во время отправки кнопки заблокированы, после подтверждения можно получить обновлённый снимок.';
+ function renderRecords(){const kind=$('editKind').value;$('editRecord').innerHTML=(db[kind]||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.type||x.title||x.short||x.name||x.full||x.id)+(x.start?' · '+esc(fmt(x.start)):'')+'</option>').join('')}
+ $('editKind').onchange=renderRecords;renderRecords();
+ const history=document.createElement('details');history.innerHTML='<summary>Кто внёс изменения</summary><div id="sharedChangeHistory"></div>';card.append(history);
+ function renderHistory(){const rows=Object.keys(fields).flatMap(kind=>(db[kind]||[]).filter(x=>x.enteredBy).map(x=>({kind,...x}))).sort((a,b)=>String(b.modifiedAt||'').localeCompare(String(a.modifiedAt||''))).slice(0,50);$('sharedChangeHistory').innerHTML=rows.length?rows.map(x=>'<p><b>'+esc(x.type||x.title||x.short||x.name||x.id)+'</b> · '+esc(x.enteredBy)+(x.modifiedAt?' · '+esc(new Date(x.modifiedAt).toLocaleString('ru-RU',{timeZone:'Europe/Moscow'}))+' МСК':'')+'</p>').join(''):'Авторов для этих записей ещё нет.'}
+ const oldRenderAll=renderAll;renderAll=function(){oldRenderAll();renderHistory()};renderHistory();
+ const modal=document.createElement('div');modal.className='modal';modal.id='sharedEditor';modal.innerHTML='<div class="modal-box"><h3 id="sharedEditorTitle"></h3><form id="sharedEditForm" class="form-grid"></form><button id="closeSharedEditor">Закрыть</button></div>';document.body.append(modal);
+ const labels={short:'Краткое имя',full:'ФИО',role:'Должность',category:'Категория',birthdate:'Дата рождения',personId:'Сотрудник',type:'Тип / название',start:'Начало',end:'Окончание',days:'Количество дней',status:'Статус',basis:'Основание / время',comment:'Комментарий',linkedEvent:'Общее мероприятие (ID)',title:'Задача',description:'Описание',created:'Дата постановки',deadline:'Срок',priority:'Приоритет',completed:'Дата выполнения',author:'Постановщик',controlled:'На контроле',name:'Имя',date:'Дата рождения',affiliation:'Принадлежность'};
+ $('newSharedRecord').onclick=()=>openRecord(true);
+ $('editSelected').onclick=()=>openRecord(false);
+ function openRecord(isNew){
+  const kind=$('editKind').value,id=isNew?uid('SHARED'):$('editRecord').value,item=isNew?{id,status:kind==='tasks'?'Новая':'План',created:todayISO(),affiliation:'Наш отдел'}:(db[kind]||[]).find(x=>x.id===id);if(!item)return;
+  $('sharedEditorTitle').textContent=names[kind]+' · '+(item.type||item.title||item.short||item.name||id);
+  const form=$('sharedEditForm');form.replaceChildren();
+  fields[kind].forEach(k=>{const label=document.createElement('label');label.textContent=labels[k]||k;let input;
+   if(k==='personId'){input=document.createElement('select');input.innerHTML='<option value="">Не указан</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short)+'</option>').join('')}
+   else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':k==='days'?'number':'text'}
+   input.name=k;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
+  const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить на этом устройстве';form.append(button);
+  form.onsubmit=e=>{e.preventDefault();if(busy||unknown)return;if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
+ };
+ $('syncDepartment').onclick=()=>{if(store.operations.length){store.autoPull=true;persist();$('uploadChanges').click()}else syncEncrypted()};
+ $('closeSharedEditor').onclick=()=>modal.classList.remove('open');
+ $('downloadChanges').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,operations:store.operations},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='изменения-отдела-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ function send(type,payload={}){if(peer)peer.postMessage({type,channel,...payload},origin)}
+ function connect(){if(frame)return;const match=document.querySelector('script[src^="event-card.js"]');if(!match)return;channel=crypto.randomUUID();frame=document.createElement('iframe');frame.hidden=true;frame.title='Обмен изменениями отдела';frame.src='https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec?channel='+channel;document.body.append(frame)}
+ $('checkChanges').onclick=()=>{if(busy||!store.requestId)return;busy=true;update();setStatus('Проверяю результат предыдущей отправки…');connect();send('department-change-status',{requestId:store.requestId});clearTimeout(timer);timer=setTimeout(()=>{busy=false;unknown=true;setStatus('Сверка пока недоступна. Повторная отправка заблокирована, локальные правки сохранены.');update()},45000)};
+ $('uploadChanges').onclick=()=>{
+  if(busy||unknown||!store.operations.length)return;
+  if(store.operations.some(x=>!x.after)){setStatus('Есть локальное удаление. Оно сохранено в файле изменений; массовое удаление в общую базу сейчас не отправляется.');return}
+  busy=true;update();setStatus('Проверяю сервис общей записи…');connect();send('department-capabilities');
+  timer=setTimeout(()=>{busy=false;if(store.requestId){unknown=true;setStatus('Подтверждение не получено. Изменения сохранены; повторная отправка будет доступна только после сверки результата.')}else setStatus('Сервис общего редактирования ещё не обновлён. Изменения остаются на устройстве; сохраните файл изменений.');update()},45000);
+ };
+ window.addEventListener('message',e=>{
+  if(!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(e.origin)||e.data?.channel!==channel)return;
+  if(e.data.type==='department-ready'&&!peer){peer=e.source;origin=e.origin;if(busy){if(unknown&&store.requestId)send('department-change-status',{requestId:store.requestId});else send('department-capabilities')}return}
+  if(e.source!==peer)return;
+  if(e.data.type==='department-capabilities-result'&&busy){capable=e.data.result?.version>=2;if(!capable){clearTimeout(timer);busy=false;setStatus('Требуется обновление сервиса общей записи. Локальные правки сохранены.');update();return}store.requestId=store.requestId||crypto.randomUUID();persist();setStatus('Загружаю изменения в Google Таблицу…');send('department-changes',{requestId:store.requestId,operations:store.operations});return}
+  if(e.data.type!=='department-changes-result'||e.data.requestId!==store.requestId)return;
+  clearTimeout(timer);busy=false;unknown=false;
+  if(!e.data.result?.ok){if(e.data.result?.phase==='unknown'){unknown=true;setStatus(e.data.result.message);persist();return}setStatus(e.data.result?.message||'Таблица не подтвердила запись. Локальные изменения сохранены.');store.requestId=null;persist();return}
+  const autoPull=store.autoPull;store={operations:[],requestId:null,awaitingPublished:clone(store.operations)};previous=clone(db);persist();setStatus('Изменения подтверждены в Google Таблице. После публикации нажмите «Получить свежие данные».');if(autoPull){let tries=0;const poll=setInterval(async()=>{await syncEncrypted();if(!store.awaitingPublished?.length||++tries>=30)clearInterval(poll)},10000)}
+ });
+ setStatus(unknown?'Есть отправка без подтверждения. Нажмите «Проверить отправку».':store.operations.length?'Ожидают загрузки изменения: '+store.operations.length:'Новых локальных изменений нет.');update();
+})();
+

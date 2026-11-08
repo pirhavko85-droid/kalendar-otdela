@@ -71,7 +71,7 @@ test('Google read rejects a table edited during export and reads full tab bounds
  try{
   const script=path.join(__dirname,'fetch-sheets.cjs');
   function run(drift,out){
-   const code=`process.env.GOOGLE_ACCESS_TOKEN='fake-test-token'; process.argv=[process.execPath,${JSON.stringify(script)},${JSON.stringify(out)}];let n=0;global.fetch=async(url,opts)=>{if(opts.headers.Authorization!=='Bearer fake-test-token')throw Error('Missing token');let obj;if(url.includes('/drive/')){obj={id:'1q83XSPLXRd9Fgk20gSs601SX9LZWA1yQvkZQQEQ49KU',modifiedTime:(++n===2&&${drift})?'2026-11-02T00:00:00Z':'2026-11-01T00:00:00Z'}}else if(url.includes('values:batchGet')){if(!decodeURIComponent(url).includes('N999')||!decodeURIComponent(url).includes('S999'))throw Error('Truncated range');obj={valueRanges:[{values:[['a']]},{values:[['b']]},{values:[['c']]},{values:[['d']]}]}}else{obj={sheets:['Сотрудники','События','Дни рождения','Задачи'].map(title=>({properties:{title,gridProperties:{rowCount:999,columnCount:26}}}))}}return{ok:true,json:async()=>obj}};require(${JSON.stringify(script)});`;
+   const code=`process.env.GOOGLE_ACCESS_TOKEN='fake-test-token'; process.argv=[process.execPath,${JSON.stringify(script)},${JSON.stringify(out)}];let n=0;global.fetch=async(url,opts)=>{if(opts.headers.Authorization!=='Bearer fake-test-token')throw Error('Missing token');let obj;if(url.includes('/drive/')){obj={id:'1q83XSPLXRd9Fgk20gSs601SX9LZWA1yQvkZQQEQ49KU',modifiedTime:(++n===2&&${drift})?'2026-11-02T00:00:00Z':'2026-11-01T00:00:00Z'}}else if(url.includes('values:batchGet')){if((decodeURIComponent(url).match(/Z999/g)||[]).length!==4)throw Error('Truncated range');obj={valueRanges:[{values:[['a']]},{values:[['b']]},{values:[['c']]},{values:[['d']]}]}}else{obj={sheets:['Сотрудники','События','Дни рождения','Задачи'].map(title=>({properties:{title,gridProperties:{rowCount:999,columnCount:26}}}))}}return{ok:true,json:async()=>obj}};require(${JSON.stringify(script)});`;
    return spawnSync(process.execPath,['-e',code],{encoding:'utf8'});
   }
   let r=run(false,path.join(dir,'valid'));assert.equal(r.status,0,r.stderr);assert.ok(fs.existsSync(path.join(dir,'valid','source.json')));
@@ -81,3 +81,4 @@ test('Google read rejects a table edited during export and reads full tab bounds
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+

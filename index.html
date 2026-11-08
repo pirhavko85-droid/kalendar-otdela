@@ -327,7 +327,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.31</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.33</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -380,7 +380,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.31';
+const APP_VERSION='1.11.33';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -424,8 +424,9 @@ function normalizeDisplayData(x){
   'СЕВ':{id:'СЕВ',short:'Екатерина С.',full:'Екатерина С.',role:'Советник',category:'ФГГС',birthdate:'1976-06-22'}
  };
  const old={};(x.people||[]).forEach(p=>old[p.id]=p);
- x.people=order.map(id=>Object.assign({},old[id]||{},meta[id]));
- x.birthdays=(x.birthdays||[]).map(b=>Object.assign({},b,{name:(b.id&&meta[b.id])?meta[b.id].short:(b.name||b.person||''),affiliation:b.affiliation||b.group||b.department||'Наш отдел'}));
+ x.people=order.map(id=>Object.assign({},meta[id],old[id]||{}));
+ x.people.push(...Object.values(old).filter(p=>!order.includes(p.id)));
+ x.birthdays=(x.birthdays||[]).map(b=>Object.assign({},b,{name:b.name||b.person||(b.id&&meta[b.id]?meta[b.id].short:''),affiliation:b.affiliation||b.group||b.department||'Наш отдел'}));
  const seen=new Set();
  x.events=(x.events||[]).map(e=>{
    const y=Object.assign({},e);
@@ -500,7 +501,7 @@ function fmtShort(d){if(!d)return'';const x=new Date(d+'T00:00:00');return Strin
 function todayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function person(id){return db.people.find(x=>x.id===id)}
 function effectiveEventStatus(e,date=todayISO()){return e.status==='План'&&e.start&&e.start<=date?'Факт':e.status}
-function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?todayISO():(e.end||e.start));return e.start<=date && end>=date && st!=='Замена'}
+function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?todayISO():(e.end||e.start));return e.start<=date && end>=date && !['Замена','Отменена'].includes(st)}
 function overdue(t){return t.deadline && t.deadline<todayISO()&&!['Выполнена','Отменена'].includes(t.status)}
 function fillSelect(id,arr,placeholder){const el=document.getElementById(id);el.innerHTML=(placeholder?'<option value="">'+placeholder+'</option>':'')+arr.map(x=>'<option>'+esc(x)+'</option>').join('')}
 function fillPeopleSelect(id,placeholder='Выберите сотрудника'){const el=document.getElementById(id);el.innerHTML='<option value="">'+placeholder+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+esc(p.short||p.full)+'</option>').join('')}
@@ -519,18 +520,13 @@ function renderAll(){fillPeopleSelect('evPerson');fillPeopleSelect('taskPerson')
 function table(headers,rows){if(!rows.length)return'<div class="empty">Пока нет данных</div>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
 function renderToday(){
  const today=todayISO(),ev=db.events.filter(e=>activeEvent(e,today));const od=db.tasks.filter(overdue);const due=db.tasks.filter(t=>!['Выполнена','Отменена'].includes(t.status));
- const presentIds=db.people.filter(p=>{
-   const pe=ev.filter(e=>e.personId===p.id);
-   if(pe.some(e=>['Выход на больничном','Выход в отпуске','Выход в выходной/праздничный день'].includes(e.type)))return true;
-   if(pe.some(e=>['Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул'].includes(e.type)))return false;
-   return true;
- }).map(p=>p.id);
+ const presentIds=db.people.filter(p=>peoplePresenceInfo(p,today).present).map(p=>p.id);
  const present=presentIds.length,absent=db.people.length-present;
  const seniorityOrder=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
  const seniorPresentId=seniorityOrder.find(id=>presentIds.includes(id))||'';
- const meetingLike=e=>/совещ|мероприят|встреч|апробац/i.test(String(e.type||'')+' '+String(e.comment||''));
- const todayMeetingRows=db.events.filter(e=>e.start===today&&e.status!=='Отменена'&&meetingLike(e));
- const todayMeetings=new Set(todayMeetingRows.map(e=>e.linkedEvent||e.id)).size;
+ const meetingLike=e=>/совещ|мероприят|встреч|апробац|переезд/i.test(String(e.type||'')+' '+String(e.comment||''));
+ const todayMeetingRows=db.events.filter(e=>activeEvent(e,today)&&meetingLike(e));
+ const todayMeetings=new Set(todayMeetingRows.map(meetingGroupKey)).size;
  const metrics=[
   {d:'Всего сотрудников',m:'Всего сотрудников',v:db.people.length},
   {d:'Налицо',m:'Налицо',v:present},
@@ -541,21 +537,10 @@ function renderToday(){
  document.getElementById('todayMetrics').innerHTML=metrics.map(x=>'<div class="card"><h3><span class="metric-label-desktop">'+x.d+'</span><span class="metric-label-mobile">'+x.m+'</span></h3><div class="metric">'+x.v+'</div></div>').join('')+
   '<div class="card mobile-meeting-card"><h3>Совещание (мероприятие)</h3><div class="metric">'+todayMeetings+'</div></div>';
 
- const priority=['Выход на больничном','Выход в отпуске','Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул','Зачёт по ФП','Выход в выходной/праздничный день'];
  const rows=db.people.map(p=>{
-   const pe=ev.filter(e=>e.personId===p.id).sort((a,b)=>{
-     const ai=priority.indexOf(a.type),bi=priority.indexOf(b.type);
-     return (ai<0?999:ai)-(bi<0?999:bi);
-   });
-   if(!pe.length)return '<tr class="today-present '+(p.id===seniorPresentId?'today-senior':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td><b>На месте</b></td><td>'+fmt(today)+'</td><td><span class="pill green">На службе</span></td></tr>';
-   const top=pe[0];
-   const isWork=['Выход на больничном','Выход в отпуске','Наряд','Выход в выходной/праздничный день','Зачёт по ФП'].includes(top.type);
-   const label=top.type==='Выход на больничном'?'На месте — выход на больничном':top.type==='Выход в отпуске'?'На месте — выход в отпуске':top.type;
-   const status=isWork?'На службе':effectiveEventStatus(top,today);
-   const ongoing=effectiveEventStatus(top,today)==='Продолжается';
-   const period=ongoing?(fmt(top.start)+' — по настоящее время'):(fmt(top.start)+(top.end?' — '+fmt(top.end):''));
-   const stateCell=ongoing?'':('<span class="pill '+(isWork?'green':'')+'">'+esc(status)+'</span>');
-   return '<tr class="'+(presentIds.includes(p.id)?'today-present ':'')+(p.id===seniorPresentId?'today-senior':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td>'+esc(label)+'</td><td>'+esc(period)+'</td><td>'+stateCell+'</td></tr>';
+   const info=peoplePresenceInfo(p,today),event=ev.find(e=>e.personId===p.id&&(info.label===e.type||(info.present&&['Выход на больничном','Выход в отпуске','Выход в выходной/праздничный день'].includes(e.type))));
+   const period=event?(fmt(event.start)+(effectiveEventStatus(event,today)==='Продолжается'?' — по настоящее время':event.end&&event.end!==event.start?' — '+fmt(event.end):'')):fmt(today);
+   return '<tr class="'+(info.present?'today-present ':'')+(p.id===seniorPresentId?'today-senior':'')+'"><td>'+esc(p.short||p.full||'—')+'</td><td><b>'+esc(info.label)+'</b></td><td>'+esc(period)+'</td><td><span class="pill '+(info.present?'green':'')+'">'+(info.present?'На службе':info.label==='Выходной'?'Не на службе':'Отсутствует')+'</span></td></tr>';
  });
  document.getElementById('todayEvents').innerHTML=table(['Сотрудник','Где / статус','Период','Статус'],rows);
  const list=due.sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999')).slice(0,10);
@@ -566,7 +551,7 @@ function eventRows(list){return list.map(e=>{
  return '<tr><td class="nowrap">'+esc(person(e.personId)?.short||'—')+'</td><td>'+esc(e.type)+'</td><td>'+fmt(e.start)+'</td><td>'+esc(endText)+'</td><td>'+esc(daysText)+'</td><td><span class="pill">'+esc(st)+'</span></td><td>'+esc(e.comment||'')+'</td><td><button onclick="delEvent(\''+e.id+'\')">Удалить</button></td></tr>'
 })}
 function isMeetingEvent(e){
- return /совещ|мероприят|встреч|апробац|поездк|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
+ return /совещ|мероприят|встреч|апробац|переезд|поездк|рабоч(ий|ая) выезд/i.test(String(e.type||'')+' '+String(e.comment||''));
 }
 function eventTime(e){
  const values=[e.basis,e.time,e.comment,e.note].filter(Boolean).join(' ');
@@ -588,13 +573,21 @@ function eventDateTitle(dateStr){
  const s=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',weekday:'long'});
  return s.charAt(0).toUpperCase()+s.slice(1);
 }
+function meetingGroupKey(e){
+ // These two confirmed five-day moves were historically stored as ten daily rows.
+ const legacy=String(e.id||'').match(/^(MOVE-20261109-GAG-YUG|MOVE-20261116-YUG-OPIDO-3)(?:-\d{2})?$/);
+ return e.linkedEvent||(legacy?legacy[1]:[e.start,e.end||e.start,e.type,eventTime(e)].join('|'));
+}
 function groupedMeetingEvents(list){
  const map=new Map();
- list.forEach(e=>{
-  const key=e.linkedEvent||[e.start,e.type,eventTime(e)].join('|');
-  if(!map.has(key))map.set(key,{...e,participants:[]});
+ list.filter(e=>!['Отменена','Замена'].includes(e.status)).forEach(e=>{
+  const key=meetingGroupKey(e);
+  if(!map.has(key))map.set(key,{...e,end:e.end||e.start,participants:[],occurrenceDates:[]});
   const g=map.get(key),who=person(e.personId)?.short;
+  if(e.start<g.start){g.start=e.start;g.type=e.type}
+  if((e.end||e.start)>g.end)g.end=e.end||e.start;
   if(who&&!g.participants.includes(who))g.participants.push(who);
+  if(!g.occurrenceDates.includes(e.start))g.occurrenceDates.push(e.start);
  });
  return [...map.values()];
 }
@@ -608,7 +601,8 @@ function renderEventDateGroups(list,mode){
    return '<div class="event-day-group'+(productionDayInfo(date).nonwork?' event-nonwork':'')+'"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
      const tm=eventTime(e)||'—';
      const people=e.participants.length?e.participants.join(', '):'Участник не указан';
-     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b><span>'+esc(people)+'</span>'+(e.enteredBy?'<span class="event-author">'+esc(e.enteredBy)+'</span>':'')+'</div></div>';
+     const period=e.end&&e.end!==e.start?'<span>'+esc(fmt(e.start)+' — '+fmt(e.end))+' · одно мероприятие</span>':'';
+     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b>'+period+'<span>'+esc(people)+'</span>'+(e.enteredBy?'<span class="event-author">'+esc(e.enteredBy)+'</span>':'')+'</div></div>';
    }).join('')+'</div></div>';
  }).join('');
 }
@@ -616,7 +610,7 @@ function renderEvents(){
  const q=(document.getElementById('eventSearch')?.value||'').toLowerCase();
  const raw=db.events.filter(e=>isMeetingEvent(e)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
  const list=groupedMeetingEvents(raw);
- const today=todayISO(),todayList=list.filter(e=>e.start===today),future=list.filter(e=>e.start>today),past=list.filter(e=>e.start<today);
+ const today=todayISO(),todayList=list.filter(e=>e.start<=today&&(e.end||e.start)>=today),future=list.filter(e=>e.start>today),past=list.filter(e=>(e.end||e.start)<today);
  const todayHtml='<div class="event-section event-today"><div class="event-section-title">Сегодня</div>'+(todayList.length?renderEventDateGroups(todayList,'future'):'<div class="event-empty">Сегодня мероприятий нет</div>')+'</div>';
  const futureHtml='<details class="event-history"><summary><span>Предстоящие мероприятия ('+future.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(future.length?renderEventDateGroups(future,'future'):'<div class="event-empty">Предстоящих мероприятий нет</div>')+'</div></details>';
  const pastHtml='<details class="event-history"><summary><span>Прошедшие мероприятия ('+past.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(past.length?renderEventDateGroups(past,'past'):'<div class="event-empty">История пока пуста</div>')+'</div></details>';
@@ -1036,12 +1030,12 @@ function peoplePresenceInfo(p,date=todayISO()){
  if(ev.some(e=>['Выход на больничном','Выход в отпуске','Выход в выходной/праздничный день'].includes(e.type)))return {present:true,label:'На месте'};
  const priority=['Наряд','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Отгул'];
  const top=ev.filter(e=>priority.includes(e.type)).sort((a,b)=>priority.indexOf(a.type)-priority.indexOf(b.type))[0];
- if(!top)return {present:true,label:'На месте'};
+ if(!top)return productionDayInfo(date).nonwork?{present:false,label:'Выходной'}:{present:true,label:'На месте'};
  if(top.type==='Командировка')return {present:false,label:'Командировка'};
  if(['Болен','Больна'].includes(top.type))return {present:false,label:'Болеет'};
  if(top.type==='Болезнь по уходу за ребёнком')return {present:false,label:'По уходу за ребёнком'};
  if(/отпуск/i.test(top.type))return {present:false,label:top.type};
- if(top.type==='Наряд')return {present:false,label:'Наряд'};
+ if(top.type==='Наряд')return {present:true,label:'Наряд'};
  return {present:false,label:top.type};
 }
 function renderPeople(){
@@ -1208,8 +1202,8 @@ function birthdayItemsForDate(dateStr){
 function calendarWorkItems(dateStr){
  const out=[];
  const seen=new Set();
- db.events.filter(e=>e.start===dateStr&&e.status!=='Отменена'&&isMeetingEvent(e)).forEach(e=>{
-   const key=e.linkedEvent||[e.start,e.type,eventTime(e)].join('|');
+ db.events.filter(e=>activeEvent(e,dateStr)&&isMeetingEvent(e)).forEach(e=>{
+   const key=meetingGroupKey(e);
    if(seen.has(key))return;seen.add(key);
    const tm=eventTime(e),txt=(tm?tm+' · ':'')+e.type;
    out.push({kind:'event',text:txt});
@@ -1355,11 +1349,13 @@ document.getElementById('sharedKeyFile').onchange=async e=>{
  }catch(_){alert('Неверный файл общего ключа отдела')}
 };
 document.getElementById('syncNowBtn').onclick=syncEncrypted;
-if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(syncEncrypted,600)}
+if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(()=>syncEncrypted(),600)}
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.31"></script>
-<script src="event-card.js?v=1.11.31"></script>
+<script src="event-draft.js?v=1.11.33"></script>
+<script src="event-card.js?v=1.11.33"></script>
+<script src="collaboration.js?v=1.11.33"></script>
 </body>
 </html>
+

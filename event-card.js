@@ -5,7 +5,7 @@
  const modal=document.createElement('div');modal.id='eventCard';modal.className='modal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','Новое мероприятие');
  modal.innerHTML=`<div class="modal-box"><div class="modal-head"><h3>Новое мероприятие</h3><button type="button" id="cardClose" aria-label="Закрыть карточку">×</button></div>
  <details><summary>Заполнить карточку из текста</summary><label>Текст мероприятия<textarea id="cardText" rows="3" placeholder="Совещание завтра в 11:30"></textarea></label><button type="button" id="cardParse">Заполнить карточку</button><p class="muted">Проверьте дату и время. Участников выберите ниже.</p></details>
- <form id="cardForm" class="form-grid"><label class="full">Кто внёс<select id="cardAuthor" required><option value="">Выберите автора</option><option value="roman">Роман П.</option><option value="pavel">Павел Х.</option><option value="julia">Юлия Г.</option></select></label><label class="full">Название<input id="cardTitle" maxlength="300" required placeholder="Например: получение временных пропусков"></label><label>Дата<input id="cardDate" type="date" required></label><label>Время (Москва)<input id="cardTime" type="time" required></label><fieldset class="full" id="cardPeople"><legend>Участники</legend></fieldset><label class="full">Комментарий<textarea id="cardNote" maxlength="2000" rows="2" placeholder="Необязательно"></textarea></label><p id="cardWarning" class="full muted"></p>
+ <form id="cardForm" class="form-grid"><label class="full">Кто внёс<select id="cardAuthor" required><option value="">Выберите автора</option><option value="roman">Роман П.</option><option value="pavel">Павел Х.</option><option value="julia">Юлия Г.</option></select></label><label class="full">Название<input id="cardTitle" maxlength="300" required placeholder="Например: получение временных пропусков"></label><label>Дата<input id="cardDate" type="date" required></label><label>Дата окончания<input id="cardEndDate" type="date"></label><label>Время (Москва)<input id="cardTime" type="time" required></label><fieldset class="full" id="cardPeople"><legend>Участники</legend></fieldset><label class="full">Комментарий<textarea id="cardNote" maxlength="2000" rows="2" placeholder="Необязательно"></textarea></label><p id="cardWarning" class="full muted"></p>
 
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
  <details id="cardCopy"><summary>Передать карточку через чат</summary><button type="button" id="cardCopyButton">Подготовить текст для чата</button><label id="cardCopyBox" hidden>Текст для чата<textarea id="cardCopyText" rows="6" readonly></textarea></label></details></div>`;
@@ -15,9 +15,10 @@
  const endpoint=/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(WRITE_URL);
  function clearCopy(){$('cardCopyBox').hidden=true}
  $('cardForm').addEventListener('input',clearCopy);
- function draft(){return {title:$('cardTitle').value.trim(),date:$('cardDate').value,time:$('cardTime').value,people:[...$('cardPeople').querySelectorAll('input:checked')].map(x=>({id:x.value,name:x.dataset.name})),note:$('cardNote').value.trim(),author:$('cardAuthor').value}}
+ function draft(){return {title:$('cardTitle').value.trim(),date:$('cardDate').value,endDate:$('cardEndDate').value||$('cardDate').value,time:$('cardTime').value,people:[...$('cardPeople').querySelectorAll('input:checked')].map(x=>({id:x.value,name:x.dataset.name})),note:$('cardNote').value.trim(),author:$('cardAuthor').value}}
  function open(){
   const selected=new Set([...$('cardPeople').querySelectorAll('input:checked')].map(x=>x.value));
+  const author=$('cardAuthor'),saved=author.value;author.innerHTML='<option value="">Выберите автора</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('');author.value=saved||localStorage.getItem('departmentEditorV1')||'';
   const field=$('cardPeople');field.replaceChildren();const legend=document.createElement('legend');legend.textContent='Участники';field.append(legend);
   for(const p of db.people){const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=p.id;box.dataset.name=p.short;box.checked=selected.has(p.id);label.append(box,document.createTextNode(p.short));field.append(label)}
   if(!$('cardDate').value)$('cardDate').value=EventDraft.moscowToday();
@@ -54,7 +55,7 @@
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
  $('cardForm').onsubmit=e=>{
   e.preventDefault();if(!endpoint||pending)return;
-  const d=draft(),payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
+  const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
   try{localStorage.setItem('departmentEventAuthorV1',d.author)}catch(_){}
   setBusy(true);status('Сохраняю в общей Google-таблице…');
   pending={event:d,requestId,timer:setTimeout(()=>{pending=null;setBusy(false);if(!peer&&frame){frame.remove();frame=null;channel=''}status('Не удалось получить подтверждение. Проверьте связь и повторите: повторный запрос не создаст дубль.')},45000)};
