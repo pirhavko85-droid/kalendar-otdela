@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const {parse,format,moscowToday}=require('../voice-draft.js');
+const {parse,format,moscowToday}=require('../event-draft.js');
 test('relative dates follow Moscow including year boundary',()=>{
  assert.equal(moscowToday(new Date('2026-12-31T22:00:00Z')),'2027-01-01');
  assert.equal(parse('Совещание послезавтра в 11:30','2026-12-31').date,'2027-01-02');

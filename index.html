@@ -320,13 +320,14 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 @media(max-width:520px){#leave,#trips,#sick,#duty,#exits,#events,#people,#tasks{--disclosure-size:11px}.leave-growth-explainer{font-size:10px}.leave-growth-card>summary{font-size:10.5px}}
 .leave-extension-key{display:inline-block;width:9px;height:9px;border-radius:2px;background:#63a8f5;border:1px solid #327dcf;margin-left:4px;vertical-align:middle}.leave-visual-cell.leave-extension,.leave-overlap-cell.leave-extension{background:#63a8f5;border-color:#327dcf}.year-extension-day{position:absolute;top:4px;bottom:4px;background:#63a8f5;border:1px solid #327dcf;border-radius:3px;z-index:2}
 #birthdaysGrid .birthday-line.op-department{background:#cde6d4;border-color:transparent;outline:1px solid #85aa90;outline-offset:-1px}
-/* The experimental voice card stays readable on phone keyboards. */
-#voiceModal [hidden]{display:none!important}#voiceModal label{display:grid;gap:5px;min-width:0}#voiceModal input:not([type=checkbox]),#voiceModal textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px;font:inherit;box-sizing:border-box}#voiceModal button:not(#voiceClose){padding:9px 12px;border-radius:9px;border:1px solid var(--line);font:inherit;cursor:pointer}#voiceModal button:disabled{opacity:.55;cursor:default}#voiceModal fieldset{border:1px solid var(--line);border-radius:9px}#voiceModal .modal-box{font-size:15px;line-height:1.4}#voiceModal .toolbar{margin-top:12px}#voiceParse{margin-top:8px}.events-head .toolbar{margin:0}
-@media(max-width:520px){.events-head{flex-wrap:wrap}.events-head .toolbar{width:100%}.events-head .toolbar button{font-size:12px;padding:8px}#voiceModal{padding:10px}#voiceModal .modal-box{padding:14px;font-size:16px;max-height:90dvh}#voiceModal .form-grid{grid-template-columns:1fr}#voiceModal .modal-head h3{font-size:19px;margin:0}}
+/* The event card stays readable on phone keyboards. */
+#eventCard [hidden]{display:none!important}#eventCard label{display:grid;gap:5px;min-width:0}#eventCard input:not([type=checkbox]),#eventCard textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px;font:inherit;box-sizing:border-box}#eventCard button:not(#cardClose){padding:9px 12px;border-radius:9px;border:1px solid var(--line);font:inherit;cursor:pointer}#eventCard button:disabled{opacity:.55;cursor:default}#eventCard fieldset{border:1px solid var(--line);border-radius:9px}#eventCard .modal-box{font-size:15px;line-height:1.4}#eventCard .toolbar{margin-top:12px}#cardParse{margin-top:8px}.events-head .toolbar{margin:0}
+@media(max-width:520px){.events-head{flex-wrap:wrap}.events-head .toolbar{width:100%}.events-head .toolbar button{font-size:12px;padding:8px}#eventCard{padding:10px}#eventCard .modal-box{padding:14px;font-size:16px;max-height:90dvh}#eventCard .form-grid{grid-template-columns:1fr}#eventCard .modal-head h3{font-size:19px;margin:0}}
+#cardPeople label{display:inline-flex;align-items:center;gap:7px;margin:5px 12px 5px 0}#cardPeople input{width:auto!important}#eventCard select{width:100%;padding:9px;font:inherit;border:1px solid var(--line);border-radius:9px}#eventCard details{margin:8px 0}#eventCard summary{cursor:pointer;padding:9px 0}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.29</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.30</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -346,7 +347,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <main>
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
 <section id="calendar" class="section"><div class="toolbar calendar-toolbar"><button id="prevMonth" aria-label="Предыдущая неделя">←</button><strong id="monthTitle"></strong><button id="nextMonth" aria-label="Следующая неделя">→</button><button id="calendarTodayBtn">Сегодня</button></div><div id="calendarGrid" class="calendar"></div></section>
-<section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><div class="toolbar"><button type="button" onclick="openVoiceDraft()">🎤 Голосовой черновик</button><button class="primary" onclick="openEventModal()">+ Мероприятие</button></div></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
+<section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><div class="toolbar"><button class="primary" onclick="openEventCard()">+ Мероприятие</button></div></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><p class="exits-units">Чел.-день — один день переработки одного сотрудника. «Вых.» — количество отдельных выходов сотрудников, а не людей. Учтены фактические выходы за текущий год.</p><div id="exitsPeople" class="exit-people-overall"></div><details class="exit-history-toggle"><summary><span>История переработок</span><span class="muted">Показать</span></summary><div id="exitsMonthly" class="exits-monthly"></div></details><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
 <div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span><span><i style="background:#63a8f5"></i>+1 день продления</span></div>
@@ -379,7 +380,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.29';
+const APP_VERSION='1.11.30';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -607,7 +608,7 @@ function renderEventDateGroups(list,mode){
    return '<div class="event-day-group'+(productionDayInfo(date).nonwork?' event-nonwork':'')+'"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
      const tm=eventTime(e)||'—';
      const people=e.participants.length?e.participants.join(', '):'Участник не указан';
-     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b><span>'+esc(people)+'</span></div></div>';
+     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b><span>'+esc(people)+'</span>'+(e.enteredBy?'<span class="event-author">'+esc(e.enteredBy)+'</span>':'')+'</div></div>';
    }).join('')+'</div></div>';
  }).join('');
 }
@@ -1278,7 +1279,7 @@ function renderCalendar(){
  }
  document.getElementById('calendarGrid').innerHTML=html;
 }
-function openEventModal(){document.getElementById('evStart').value=todayISO();document.getElementById('eventModal').classList.add('open')}
+function openEventModal(){window.openEventCard()}
 function openTaskModal(){document.getElementById('taskControl').value='false';document.getElementById('taskCreated').value=todayISO();document.getElementById('taskModal').classList.add('open')}
 function openPersonModal(){document.getElementById('personModal').classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
@@ -1358,7 +1359,7 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="voice-draft.js?v=1.11.29"></script>
-<script src="voice-input.js?v=1.11.29"></script>
+<script src="event-draft.js?v=1.11.30"></script>
+<script src="event-card.js?v=1.11.30"></script>
 </body>
 </html>

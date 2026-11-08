@@ -39,5 +39,5 @@
   return 'Добавь мероприятие в Google-таблицу календаря отдела.\nНазвание: '+draft.title.trim()+'\nДата: '+d+'\nВремя: '+draft.time+' (Москва)\nУчастники: '+(draft.people.length?draft.people.join(', '):'не указаны')+(draft.note.trim()?'\nКомментарий: '+draft.note.trim():'')+'\nПроверь отсутствие дубля, сохрани в общей таблице и проверь публикацию в дашборде.';
  }
  const api={parse,format,moscowToday};
- if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.VoiceDraft=api;
+ if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.EventDraft=api;
 })(typeof window==='undefined'?this:window);
