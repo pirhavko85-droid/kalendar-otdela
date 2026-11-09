@@ -14,7 +14,8 @@
  const notice=document.createElement('p');notice.id='eventSaveNotice';notice.className='card';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.hidden=true;document.getElementById('eventsTable').before(notice);
  const status=(t,showOutside=false)=>{$('cardStatus').textContent=t;if(showOutside){notice.textContent=t;notice.hidden=false}if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
  const retry=document.createElement('button');retry.id='eventRetrySync';retry.type='button';retry.textContent='Повторить проверку';retry.hidden=true;notice.after(retry);retry.onclick=()=>window.retryDepartmentSync?.();
- window.addEventListener('department-sync-state',e=>{if(e.detail.active||!notice.hidden)status(e.detail.message,true);retry.hidden=!e.detail.retry});
+ const accept=document.createElement('button');accept.id='eventAcceptShared';accept.type='button';accept.textContent='Принять общую версию';accept.hidden=true;retry.after(accept);accept.onclick=()=>window.acceptDepartmentVersion?.();
+ window.addEventListener('department-sync-state',e=>{if(e.detail.active||!notice.hidden)status(e.detail.message,true);retry.hidden=!e.detail.retry;accept.hidden=!e.detail.conflict;retry.textContent=e.detail.conflict?'Проверить свежие данные':'Повторить проверку'});
  const publicationHint='По расписанию: проверки каждые 5 минут круглосуточно, включая выходные. Запуск может задерживаться. Повторно добавлять мероприятие не нужно.';
  function setBusy(active){$('cardForm').querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=active)}
  const endpoint=/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(WRITE_URL);

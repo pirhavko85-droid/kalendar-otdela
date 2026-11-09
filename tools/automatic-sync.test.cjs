@@ -73,3 +73,28 @@ test('an append resumes after reload with its original idempotency key',async()=
  const timer=s.timeouts.findLast(t=>t.ms===45000&&!t.cancelled);timer.fn();s.windowListeners.online();s.receive('department-ready');const again=s.messages.filter(m=>m.type==='department-add');assert.equal(again.length,2);assert.equal(again[1].requestId,requestId);
  s.receive('department-result',{requestId,result:{ok:true,ids:['saved-id']}});assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(s.store().receipts[0].ids[0],'saved-id');
 });
+
+test('an already applied cancellation resolves from the published snapshot without resending',async()=>{
+ const s=setup();s.c.db.events[0].status='Отменена';s.c.save();await flush(s);s.receive('department-ready');s.receive('department-capabilities-result',{result:{version:2}});
+ const sent=s.messages.find(m=>m.type==='department-changes');s.receive('department-changes-result',{requestId:sent.requestId,result:{ok:false,phase:'rejected',message:'Конфликт'}});
+ s.remote.events[0].status='Отменена';s.remote.events[0].comment='Более позднее уточнение другого автора';
+ const n=s.messages.length;await s.c.window.retryDepartmentSync();await new Promise(r=>setImmediate(r));
+ assert.equal(s.store().operations.length,0);assert.equal(s.store().autoPaused,false);assert.equal(s.messages.length,n);assert.equal(s.c.db.events[0].comment,s.remote.events[0].comment);assert.match(s.elements.get('changeStatus').textContent,/уже сохранены/);
+});
+
+test('a true conflict refreshes without overwriting local edits or resending the rejected write',async()=>{
+ const s=setup();s.c.db.events[0].basis='17:00';s.c.save();await flush(s);s.receive('department-ready');s.receive('department-capabilities-result',{result:{version:2}});
+ const sent=s.messages.find(m=>m.type==='department-changes');s.receive('department-changes-result',{requestId:sent.requestId,result:{ok:false,phase:'rejected',message:'Конфликт'}});
+ s.remote.events[0].basis='18:00';const n=s.messages.length;await s.c.syncEncrypted();
+ assert.equal(s.c.db.events[0].basis,'17:00');assert.equal(s.store().operations.length,1);assert.equal(s.messages.length,n);
+ s.c.confirm=()=>false;await s.c.window.acceptDepartmentVersion();assert.equal(s.store().operations.length,1);
+ s.c.confirm=()=>true;await s.c.window.acceptDepartmentVersion();assert.equal(s.store().operations.length,0);assert.equal(s.c.db.events[0].basis,'18:00');
+ const backup=JSON.parse(s.storage.get('departmentConflictBackupV1'));assert.equal(backup.db.events[0].basis,'17:00');assert.equal(backup.changes.operations.length,1);assert.equal(s.messages.length,n);
+});
+
+test('paused conflict reconciliation survives reload and does not infer success from stale data',async()=>{
+ const first=setup();first.c.db.events[0].status='Отменена';first.c.save();const state=first.store();state.autoPaused=true;
+ const s=setup({db:JSON.stringify(first.c.db),departmentChangesV1:JSON.stringify(state)});await flush(s);
+ assert.equal(s.store().operations.length,1);assert.equal(s.c.db.events[0].status,'Отменена');assert.equal(s.messages.length,0);
+ s.remote.events[0].status='Отменена';await s.c.syncEncrypted();assert.equal(s.store().operations.length,0);assert.equal(s.messages.length,0);
+});

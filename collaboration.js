@@ -5,15 +5,20 @@
  const names={people:'Сотрудники',events:'События',tasks:'Задачи',birthdays:'Дни рождения'};
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clean=(kind,x)=>x?Object.fromEntries(fields[kind].map(k=>[k,k==='controlled'?!!x[k]:String(x[k]??'')])):null;
+ // Compare the user's intended fields, not unrelated edits made meanwhile.
+ function alreadyApplied(op,remote){const current=clean(op.collection,remote);if(!current||!op.after)return false;return fields[op.collection].filter(k=>!op.before||op.before[k]!==op.after[k]).every(k=>current[k]===op.after[k])}
+ let conflictRemote=null;
  let store;try{store=JSON.parse(localStorage.getItem(STORE))}catch(_){}
  store=store||{operations:[],requestId:null};let previous=clone(db),pulling=false,lastPullAt=0,busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
  const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><details class="manual-sync-tools"><summary>Ручные действия и резервная копия</summary><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div></details><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
  document.querySelector('#data').insertBefore(card,document.querySelector('#data .card'));
  let removalFeedback=null;
- const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t);window.dispatchEvent(new CustomEvent('department-sync-state',{detail:{message:t,retry:unknown||!!store.autoPaused,active:busy||unknown||!!store.operations.length||waitingPublication()}}))};
+ const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t);window.dispatchEvent(new CustomEvent('department-sync-state',{detail:{message:t,retry:unknown||!!store.autoPaused,conflict:!!store.autoPaused&&!!store.operations.length,active:busy||unknown||!!store.operations.length||waitingPublication()}}))};
+ const resolve=document.createElement('button');resolve.textContent='Принять общую версию';resolve.hidden=true;card.append(resolve);resolve.onclick=()=>window.acceptDepartmentVersion();
  $('departmentEditor').value=localStorage.getItem(AUTHOR)||'';
  $('departmentEditor').onchange=()=>{localStorage.setItem(AUTHOR,$('departmentEditor').value);update()};
  function update(){
+  resolve.hidden=!store.autoPaused||!store.operations.length;resolve.disabled=busy||pulling||unknown;
   $('uploadChanges').disabled=busy||pulling||unknown||!store.operations.length||!$('departmentEditor').value;
   $('downloadChanges').disabled=busy||!store.operations.length;
   $('checkChanges').disabled=busy||!store.requestId;
@@ -46,12 +51,23 @@
  const syncOriginal=syncEncrypted;
  function waitingPublication(){return !!(store.awaitingPublished?.length||store.receipts?.length)}
  syncEncrypted=async function(){
-  if(busy||pulling||unknown||store.operations.length)return false;
+  if(busy||pulling||unknown||(store.operations.length&&!store.autoPaused))return false;
   pulling=true;update();let published=null;
   try{
    const ok=await syncOriginal({apply:(incoming,actual)=>{published=actual;db=incoming;saveOriginal()}});
    lastPullAt=Date.now();if(!ok||!published){if(waitingPublication())setStatus('В таблице сохранено. Свежий снимок пока недоступен; повторяю получение автоматически.');return false}
    const hadPending=waitingPublication();
+   const hadConflict=store.autoPaused&&!!store.operations.length;
+   if(hadConflict){
+    conflictRemote=clone(published);const remaining=[];
+    for(const op of store.operations){
+     const remote=(published[op.collection]||[]).find(x=>x.id===op.id);
+     if(alreadyApplied(op,remote))continue;
+     remaining.push(op);const list=db[op.collection],at=list.findIndex(x=>x.id===op.id),local=(previous[op.collection]||[]).find(x=>x.id===op.id);
+     if(local){if(at>=0)list[at]=clone(local);else list.push(clone(local))}
+    }
+    store.operations=remaining;if(!remaining.length){store.autoPaused=false;store.requestId=null;conflictRemote=null}
+   }
    if(store.awaitingPublished?.length){
     const waiting=[];
     for(const op of store.awaitingPublished){
@@ -66,7 +82,8 @@
    const ids=new Set((published.events||[]).map(e=>e.id));
    store.receipts=(store.receipts||[]).filter(receipt=>!receipt.ids.every(id=>ids.has(id)));
    persist();saveOriginal();previous=clone(db);renderRecords();
-   if(hadPending)setStatus(waitingPublication()?'Сохранено в общей таблице. Дожидаюсь публикации и подгружаю результат автоматически. Можно закрыть карточку.':'Изменения опубликованы в общем календаре. Данные обновлены автоматически.');
+   if(hadConflict)setStatus(store.operations.length?'Свежие данные проверены. Локальные правки отличаются от общей версии. Можно принять общую версию с резервной копией правок, затем открыть мероприятие заново.':'Эти изменения уже сохранены в общей базе. Данные обновлены, повторная отправка не требуется.');
+   else if(hadPending)setStatus(waitingPublication()?'Сохранено в общей таблице. Дожидаюсь публикации и подгружаю результат автоматически. Можно закрыть карточку.':'Изменения опубликованы в общем календаре. Данные обновлены автоматически.');
    return true;
   }finally{pulling=false;update()}
  };
@@ -153,10 +170,18 @@
  async function autoTick(force=false){
   if(document.hidden||navigator.onLine===false||busy||pulling)return;
   if(unknown){$('checkChanges').click();return}
-  if(store.operations.length){if(!store.autoPaused&&$('departmentEditor').value)$('uploadChanges').click();return}
+  if(store.operations.length){if(store.autoPaused){if(localStorage.getItem(SYNC_KEY)&&(force||Date.now()-lastPullAt>=60000))await syncEncrypted()}else if($('departmentEditor').value)$('uploadChanges').click();return}
   if(localStorage.getItem(SYNC_KEY)&&(force||waitingPublication()||Date.now()-lastPullAt>=60000))await syncEncrypted();
  }
- window.retryDepartmentSync=function(){if(unknown){$('checkChanges').click();return}store.autoPaused=false;persist();autoTick(true)};
+ window.retryDepartmentSync=function(){if(unknown){$('checkChanges').click();return}if(store.autoPaused){syncEncrypted();return}autoTick(true)};
+ window.acceptDepartmentVersion=async function(){
+  if(!store.autoPaused||busy||pulling||unknown)return;
+  if(!await syncEncrypted()||!store.operations.length||!conflictRemote)return;
+  if(!confirm('Принять общую версию вместо несохранённых локальных правок? Резервная копия правок останется на этом устройстве.'))return;
+  try{localStorage.setItem('departmentConflictBackupV1',JSON.stringify({at:new Date().toISOString(),db,changes:store}))}catch(_){setStatus('Не удалось сохранить резерв. Локальные правки оставлены без изменений.');return}
+  for(const op of store.operations){const list=db[op.collection],at=list.findIndex(x=>x.id===op.id),remote=(conflictRemote[op.collection]||[]).find(x=>x.id===op.id);if(remote){if(at>=0)list[at]=clone(remote);else list.push(clone(remote))}else if(at>=0)list.splice(at,1)}
+  store.operations=[];store.requestId=null;store.autoPaused=false;conflictRemote=null;persist();saveOriginal();previous=clone(db);renderRecords();setStatus('Загружена общая версия. Резерв локальных правок сохранён на устройстве. Теперь можно открыть мероприятие и изменить его заново.');
+ };
  window.addEventListener('online',()=>autoTick(true));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoTick(true)});
  window.addEventListener('focus',()=>autoTick(true));
