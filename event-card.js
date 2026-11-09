@@ -5,12 +5,12 @@
  const modal=document.createElement('div');modal.id='eventCard';modal.className='modal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','Новое мероприятие');
  modal.innerHTML=`<div class="modal-box"><div class="modal-head"><h3>Новое мероприятие</h3><button type="button" id="cardClose" aria-label="Закрыть карточку">×</button></div>
  <details id="cardParsePanel"><summary>Заполнить карточку из текста</summary><label>Текст мероприятия<textarea id="cardText" rows="3" placeholder="Совещание завтра в 11:30"></textarea></label><button type="button" id="cardParse">Заполнить карточку</button><p class="muted">Проверьте дату и время. Участников выберите ниже.</p></details>
- <details id="cardDeletePanel"><summary>Удалить мероприятие по названию</summary><label>Кто удаляет<select id="cardDeleteAuthor"></select></label><label>Найти мероприятие<input id="cardDeleteSearch" placeholder="Например: Тест" autocomplete="off"></label><p class="muted">Выберите точную запись по названию, дате и времени. Она исчезнет из календаря у всех после публикации; в таблице останется отменённая запись для восстановления.</p><div id="cardDeleteResults"></div></details>
+ <details id="cardDeletePanel"><summary>Удалить / изменить мероприятие по названию</summary><label>Кто вносит изменения<select id="cardDeleteAuthor"></select></label><label>Найти мероприятие<input id="cardDeleteSearch" placeholder="Например: Тест" autocomplete="off"></label><p class="muted">Выберите запись и действие: изменить её поля или удалить из календаря. Изменения станут общими после публикации. Удалённая запись сохраняется в таблице как отменённая для восстановления.</p><div id="cardDeleteResults"></div></details>
  <form id="cardForm" class="form-grid"><label class="full">Кто внёс<select id="cardAuthor" required><option value="">Выберите автора</option><option value="roman">Роман П.</option><option value="pavel">Павел Х.</option><option value="julia">Юлия Г.</option></select></label><label class="full">Название<input id="cardTitle" maxlength="300" required placeholder="Например: получение временных пропусков"></label><label>Дата<input id="cardDate" type="date" required></label><label>Дата окончания<input id="cardEndDate" type="date"></label><label>Время (Москва)<input id="cardTime" type="time" required></label><fieldset class="full" id="cardPeople"><legend>Участники</legend></fieldset><label class="full">Комментарий<textarea id="cardNote" maxlength="2000" rows="2" placeholder="Необязательно"></textarea></label><p id="cardWarning" class="full muted"></p>
 
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
  <details id="cardCopy"><summary>Передать карточку через чат</summary><button type="button" id="cardCopyButton">Подготовить текст для чата</button><label id="cardCopyBox" hidden>Текст для чата<textarea id="cardCopyText" rows="6" readonly></textarea></label></details></div>`;
- document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',poll=null;
+ document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',poll=null,editingId=null,editingBaseline=[],editingAutoNote=false;
  const notice=document.createElement('p');notice.id='eventSaveNotice';notice.className='card';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.hidden=true;document.getElementById('eventsTable').before(notice);
  const status=(t,showOutside=false)=>{$('cardStatus').textContent=t;if(showOutside){notice.textContent=t;notice.hidden=false}if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
  const publicationHint='По расписанию: проверки каждые 5 минут круглосуточно, включая выходные. Запуск может задерживаться. Повторно добавлять мероприятие не нужно.';
@@ -20,6 +20,8 @@
  $('cardForm').addEventListener('input',clearCopy);
  function draft(){return {title:$('cardTitle').value.trim(),date:$('cardDate').value,endDate:$('cardEndDate').value||$('cardDate').value,time:$('cardTime').value,people:[...$('cardPeople').querySelectorAll('input:checked')].map(x=>({id:x.value,name:x.dataset.name})),note:$('cardNote').value.trim(),author:$('cardAuthor').value}}
  function open(){
+  if(editingId){$('cardTitle').value='';$('cardDate').value=EventDraft.moscowToday();$('cardEndDate').value='';$('cardTime').value='';$('cardNote').value='';$('cardPeople').querySelectorAll('input').forEach(box=>box.checked=false)}
+  editingAutoNote=false;editingId=null;editingBaseline=[];$('cardSubmit').textContent='Добавить в общий календарь';
   modal.setAttribute('aria-label','Новое мероприятие');$('cardCopy').hidden=false;modal.querySelector('h3').textContent='Новое мероприятие';$('cardForm').style.display='';$('cardParsePanel').hidden=false;$('cardDeletePanel').open=false;
   const selected=new Set([...$('cardPeople').querySelectorAll('input:checked')].map(x=>x.value));
   const author=$('cardAuthor'),saved=author.value;author.innerHTML='<option value="">Выберите автора</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('');author.value=saved||localStorage.getItem('departmentEditorV1')||'';
@@ -44,13 +46,23 @@
     const author=$('cardDeleteAuthor').value;if(!author){status('Выберите, кто удаляет мероприятие.',true);return}
     if(!confirm('Удалить «'+e.type+'» · '+dates.textContent+' из общего календаря для всех участников?'))return;
     if(window.removeDepartmentMeeting?.(e.id,author,t=>status(t,true))){renderRemovalResults();$('cardDeletePanel').open=false}
-   };row.append(label,button);host.append(row);
+   };const edit=document.createElement('button');edit.type='button';edit.textContent='Изменить';edit.className='event-remove';edit.onclick=()=>openEdit(e.id);const actions=document.createElement('div');actions.className='meeting-actions';actions.append(edit,button);row.append(label,actions);host.append(row);
   }
   if(groups.length>30){const hint=document.createElement('p');hint.textContent='Показаны первые 30 записей. Уточните название в поиске.';host.append(hint)}
  }
  function openRemoval(id,query=''){
-  open();modal.setAttribute('aria-label','Удалить мероприятие');$('cardCopy').hidden=true;modal.querySelector('h3').textContent='Удалить мероприятие';$('cardForm').style.display='none';$('cardParsePanel').hidden=true;
+  open();modal.setAttribute('aria-label','Удалить / изменить мероприятие');$('cardCopy').hidden=true;modal.querySelector('h3').textContent='Удалить / изменить мероприятие';$('cardForm').style.display='none';$('cardParsePanel').hidden=true;
   const item=db.events.find(e=>e.id===id);$('cardDeleteSearch').value=item?item.type:query;$('cardDeletePanel').open=true;renderRemovalResults();$('cardDeleteSearch').focus();
+ }
+ function openEdit(id){
+  const rows=meetingRowsForRemoval(id);if(!rows.length){status('Мероприятие не найдено.',true);return}
+  const group=groupedMeetingEvents(rows)[0],selectedAuthor=$('cardDeleteAuthor').value;open();if(selectedAuthor)$('cardAuthor').value=selectedAuthor;editingId=id;editingBaseline=JSON.parse(JSON.stringify(rows));
+  modal.setAttribute('aria-label','Изменить мероприятие');modal.querySelector('h3').textContent='Изменить мероприятие';$('cardDeletePanel').open=false;$('cardCopy').hidden=true;
+  $('cardTitle').value=group.type;$('cardDate').value=group.start;$('cardEndDate').value=group.end||group.start;$('cardTime').value=eventTime(group);
+  editingAutoNote=/^Мероприятие: .*?\. Начало в \d{2}:\d{2} по Москве\./.test(String(group.comment||''));
+  $('cardNote').value=String(group.comment||'').replace(/^Мероприятие: .*?\. Начало в \d{2}:\d{2} по Москве\.\s*/, '');
+  const people=new Set(rows.map(r=>r.personId));$('cardPeople').querySelectorAll('input').forEach(box=>box.checked=people.has(box.value));
+  $('cardSubmit').textContent='Сохранить изменения в общем календаре';clearCopy();$('cardTitle').focus();
  }
  $('cardDeleteSearch').oninput=renderRemovalResults;
  $('cardDeletePanel').addEventListener('toggle',()=>{if($('cardDeletePanel').open)renderRemovalResults()});
@@ -84,7 +96,7 @@
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
  $('cardForm').onsubmit=e=>{
   e.preventDefault();if(!endpoint||pending)return;
-  const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
+  const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}if(editingId){if(editingAutoNote)d.note='Мероприятие: '+d.title+'. Начало в '+d.time+' по Москве.'+(d.note?' '+d.note:'');if(window.changeDepartmentMeeting?.(editingId,d,editingBaseline,t=>status(t,true))){$('cardForm').style.display='none';editingId=null}return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
   try{localStorage.setItem('departmentEventAuthorV1',d.author)}catch(_){}
   setBusy(true);status('Сохраняю в общей Google-таблице…',true);
   pending={event:d,requestId,timer:setTimeout(()=>{pending=null;setBusy(false);if(!peer&&frame){frame.remove();frame=null;channel=''}status('Не удалось получить подтверждение. Проверьте связь и повторите: повторный запрос не создаст дубль.',true)},45000)};

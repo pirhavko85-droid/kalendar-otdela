@@ -14,3 +14,10 @@ test('retired sync tests disappear from legacy browser data without removing wor
  assert.equal(context.result.events.find(e=>e.id===work.id).type,work.type);
  assert.equal(context.result.events.filter(e=>e.id===work.id).length,1);
 });
+
+test('legacy migrations preserve an explicitly edited or cancelled shared event',()=>{
+ const html=fs.readFileSync('index.html','utf8'),start=html.indexOf('const RETIRED_TEST_EVENTS='),end=html.indexOf('let db=normalizeDisplayData(load());',start);
+ const edited={id:'MEET-004-P',personId:'ПРВ',type:'Исправленное название',start:'2026-11-12',end:'2026-11-13',basis:'16:00',status:'Отменена',modifiedAt:'2026-11-09T00:00:00Z'};
+ const c={input:{people:[],tasks:[],birthdays:[],events:[edited]}};vm.runInNewContext(html.slice(start,end)+';result=normalizeDisplayData(input)',c);
+ const actual=c.result.events.find(e=>e.id===edited.id);for(const k of Object.keys(edited))assert.equal(actual[k],edited[k]);
+});

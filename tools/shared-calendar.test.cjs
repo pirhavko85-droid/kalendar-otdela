@@ -46,7 +46,7 @@ test('formula-like edits stay literal and result status distinguishes unknown re
 test('shared event title accepts free text despite strict category validation',()=>{
  const s=backend();const after={personId:'P',type:'Новое мероприятие',start:'2026-11-09',end:'2026-11-10',days:'2',status:'План',basis:'11:00',comment:'',linkedEvent:''};
  const result=s.c.applyDepartmentChanges([{collection:'events',id:'NEW-EVENT',author:'P',before:null,after}],request);
- assert.equal(result.ok,true);assert.equal(s.grids['События'][1][3],after.type);assert.equal(s.grids['События'][1][5],'10.11.2026');
+ assert.equal(result.ok,true);assert.equal(s.grids['События'][1][3],after.type);assert.equal(s.grids['События'][1][2],'Роман П.');assert.equal(s.grids['События'][1][5],'10.11.2026');
 });
 
 test('removal targets every participant of exactly one meeting and keeps recoverable rows',()=>{
@@ -67,4 +67,14 @@ test('cancelling a participant group is conflict checked before any write',()=>{
   if(conflict)ops[1].before.type='Старая версия';const result=s.c.applyDepartmentChanges(ops,request);
   assert.equal(result.ok,!conflict);if(conflict){assert.equal(s.writes(),0);assert.equal(s.grids['События'][1][7],'План')}else{assert.equal(result.count,2);assert.equal(s.grids['События'][1][7],'Отменена');assert.equal(s.grids['События'][2][7],'Отменена')}
  }
+});
+
+test('meeting edits preserve existing IDs and group while updating every participant',()=>{
+ const c=context();vm.runInContext(fn('planMeetingEdit'),c);let seq=0;
+ const rows=[{id:'a',personId:'P',type:'Старое название',start:'2026-11-09',end:'2026-11-09',status:'План',linkedEvent:'G'},{id:'b',personId:'Q',type:'Старое название',start:'2026-11-09',end:'2026-11-09',status:'План',linkedEvent:'G'}];
+ const before=JSON.stringify(rows),input={title:'Новое название',date:'2026-11-10',endDate:'2026-11-12',time:'16:30',note:'Новый комментарий',people:[{id:'P'},{id:'Q'},{id:'R'}]};
+ const planned=c.planMeetingEdit(rows,input,()=> 'new-'+(++seq));assert.equal(JSON.stringify(rows),before);assert.deepEqual(Array.from(planned,r=>r.id),['a','b','new-1']);assert.equal(new Set(planned.map(r=>r.linkedEvent)).size,1);
+ for(const row of planned){assert.equal(row.type,input.title);assert.equal(row.start,input.date);assert.equal(row.end,input.endDate);assert.equal(row.days,3);assert.equal(row.basis,'16:30');assert.equal(row.comment,input.note)}
+ const reduced=c.planMeetingEdit(rows,{...input,people:[{id:'Q'}]},()=> 'unused');assert.equal(reduced.find(r=>r.id==='a').status,'Отменена');assert.equal(reduced.find(r=>r.id==='b').status,'План');assert.equal(reduced.length,2);
+ const noPeople=c.planMeetingEdit(rows,{...input,people:[]},()=> 'unused');assert.equal(noPeople.filter(r=>r.status!=='Отменена').length,1);assert.equal(noPeople[0].personId,'');
 });

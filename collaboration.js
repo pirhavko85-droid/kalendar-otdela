@@ -82,6 +82,19 @@
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить на этом устройстве';form.append(button);
   form.onsubmit=e=>{e.preventDefault();if(busy||unknown)return;if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
  };
+ window.changeDepartmentMeeting=function(id,input,baseline,feedback){
+  if(busy||unknown){feedback('Дождитесь подтверждения предыдущей отправки.');return false}
+  if(store.operations.length){feedback('Сначала отправьте другие локальные изменения во вкладке «Импорт / экспорт».');return false}
+  if(!db.people.some(p=>p.id===input.author)){feedback('Выберите автора изменения.');return false}
+  const rows=meetingRowsForRemoval(id);
+  if(rows.length!==baseline.length||rows.some(r=>!baseline.some(b=>b.id===r.id&&JSON.stringify(clean('events',b))===JSON.stringify(clean('events',r))))){feedback('Мероприятие обновилось. Закройте карточку, получите свежие данные и откройте его снова.');return false}
+  const planned=planMeetingEdit(rows,input,()=>uid('MEETING'));
+  $('departmentEditor').value=input.author;localStorage.setItem(AUTHOR,input.author);removalFeedback=feedback;
+  planned.forEach(item=>{const at=db.events.findIndex(e=>e.id===item.id);if(at>=0)db.events[at]=item;else db.events.push(item)});
+  save();renderRecords();
+  if(!store.operations.length){feedback('Изменений нет.');return true}
+  store.autoPull=true;persist();$('uploadChanges').click();return true;
+ };
  window.removeDepartmentMeeting=function(id,author,feedback){
   if(busy||unknown){feedback('Дождитесь подтверждения предыдущей отправки.');return false}
   if(store.operations.length){feedback('Сначала отправьте другие локальные изменения во вкладке «Импорт / экспорт».');return false}

@@ -326,10 +326,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 #cardPeople label{display:inline-flex;align-items:center;gap:7px;margin:5px 12px 5px 0}#cardPeople input{width:auto!important}#eventCard select{width:100%;padding:9px;font:inherit;border:1px solid var(--line);border-radius:9px}#eventCard details{margin:8px 0}#eventCard summary{cursor:pointer;padding:9px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}#cardWarning:empty{display:none}
 .shared-data .shared-author{display:flex;flex-direction:column;gap:6px;max-width:340px;margin:12px 0}.shared-data select,.shared-data button{font:inherit}.shared-data select{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fff}.shared-data details{border:1px solid var(--line);border-radius:10px;margin-top:8px;overflow:hidden}.shared-data summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:10px;font-size:12px;font-weight:700;list-style:none}.shared-data summary::-webkit-details-marker{display:none}.shared-data .shared-record-fields{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:10px}.shared-record-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}.shared-data button:disabled{opacity:.45;cursor:default}.shared-data #sharedChangeHistory{padding:0 10px}.shared-data .toolbar button{white-space:normal}#sharedEditForm label{display:flex;flex-direction:column;gap:5px;min-width:0}#sharedEditForm input,#sharedEditForm textarea,#sharedEditForm select{width:100%;box-sizing:border-box}#sharedEditForm input[type=checkbox]{width:auto;align-self:flex-start}#sharedEditForm button{grid-column:1/-1}#closeSharedEditor{margin-top:10px}@media(max-width:600px){.shared-data .shared-record-fields,#sharedEditForm{grid-template-columns:1fr}.shared-data .toolbar{display:grid;grid-template-columns:1fr}.shared-data .toolbar button{width:100%}}
 .event-compact-card{grid-template-columns:48px minmax(0,1fr) auto}.event-remove{font:inherit;font-size:9px;padding:4px 6px;border:1px solid #e3b7b7;border-radius:7px;background:#fff8f8;color:#9e3030;cursor:pointer}.event-delete-result{padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.event-delete-result span{min-width:0}.event-delete-result button{flex-shrink:0}.event-delete-result small{display:block;color:var(--muted)}#cardDeletePanel label{display:flex;flex-direction:column;gap:5px;margin:8px 0}#cardDeletePanel input,#cardDeletePanel select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit}#cardDeletePanel .muted{font-size:11px}@media(max-width:900px){.event-compact-card{grid-template-columns:43px minmax(0,1fr) auto}.event-remove{font-size:8px;padding:4px}}
+.meeting-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.event-compact-card>.event-remove{max-width:78px;white-space:normal;line-height:1.15}#cardDeleteResults .meeting-actions{flex-shrink:0}@media(max-width:520px){.event-delete-result{align-items:flex-start}.meeting-actions{flex-direction:column}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.38</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.39</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -382,7 +383,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.38';
+const APP_VERSION='1.11.39';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -435,7 +436,7 @@ function normalizeDisplayData(x){
    // Migration: an older encrypted/local snapshot may still contain the preliminary
    // record for Юлия Г. as a generic sick leave from 26.10. The confirmed record is
    // child-care sick leave 24–30.10.2026.
-   if(y.id==='MEET-004'||y.id==='MEET-004-P'){
+   if((y.id==='MEET-004'||y.id==='MEET-004-P')&&!y.modifiedAt){
      y.id='MEET-004-P';
      y.personId='ХПН';
      y.type='Совещание по ТТТ под руководством БПС';
@@ -447,7 +448,7 @@ function normalizeDisplayData(x){
      y.linkedEvent='MEET-GRP-TTT-BPS-20261106-1100';
      y.comment='Совещание по ТТТ под руководством БПС. Начало в 11:00, продолжительность около 5 часов. Участники от отдела: Павел Х., Роман П.';
    }
-   if(y.id==='SICK-003'){
+   if(y.id==='SICK-003'&&!y.modifiedAt){
      y.personId='ГЮК';
      y.type='Болезнь по уходу за ребёнком';
      y.start='2026-10-24';
@@ -599,6 +600,18 @@ function meetingRowsForRemoval(id,list=db.events){
  const key=meetingGroupKey(target);
  return list.filter(e=>isMeetingEvent(e)&&meetingGroupKey(e)===key&&!['Отменена','Замена'].includes(e.status));
 }
+function planMeetingEdit(rows,input,newId){
+ if(!rows.length)throw new Error('Мероприятие не найдено.');
+ const selected=[...new Set(input.people.map(p=>p.id))];if(!selected.length)selected.push('');
+ const used=new Set(),base=rows[0],group=base.linkedEvent||'EDIT-GRP-'+base.id;
+ const days=Math.round((Date.parse(input.endDate)-Date.parse(input.date))/86400000)+1;
+ const result=selected.map(personId=>{
+  const source=rows.find(r=>r.personId===personId&&!used.has(r.id))||rows.find(r=>!used.has(r.id));
+  if(source)used.add(source.id);
+  return {...(source||base),id:source?source.id:newId(),personId,type:input.title,start:input.date,end:input.endDate,days,status:source?source.status:'План',basis:input.time,comment:input.note,linkedEvent:group};
+ });
+ return result.concat(rows.filter(r=>!used.has(r.id)).map(r=>({...r,status:'Отменена'})));
+}
 function meetingPeopleLine(e){
  const people=e.participants.length?e.participants.join(', '):'Участник не указан';
  const author=String(e.enteredBy||'').replace(/^Указал автор:\s*/i,'').trim();
@@ -615,7 +628,7 @@ function renderEventDateGroups(list,mode){
      const tm=eventTime(e)||'—';
      const people=meetingPeopleLine(e);
      const period=e.end&&e.end!==e.start?'<span>'+esc(fmt(e.start)+' — '+fmt(e.end))+' · одно мероприятие</span>':'';
-     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b>'+period+'<span>'+esc(people)+'</span>'+'</div><button type="button" class="event-remove" data-remove-meeting="'+esc(e.id)+'" aria-label="Удалить мероприятие '+esc(e.type)+'">Удалить</button></div>';
+     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b>'+period+'<span>'+esc(people)+'</span>'+'</div><button type="button" class="event-remove" data-remove-meeting="'+esc(e.id)+'" aria-label="Удалить / изменить мероприятие '+esc(e.type)+'">Удалить / изменить</button></div>';
    }).join('')+'</div></div>';
  }).join('');
 }
@@ -1366,9 +1379,9 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.38"></script>
-<script src="event-card.js?v=1.11.38"></script>
-<script src="collaboration.js?v=1.11.38"></script>
+<script src="event-draft.js?v=1.11.39"></script>
+<script src="event-card.js?v=1.11.39"></script>
+<script src="collaboration.js?v=1.11.39"></script>
 </body>
 </html>
 

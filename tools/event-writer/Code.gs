@@ -149,6 +149,7 @@ function applyDepartmentChanges(operations,requestId){
     let value=p.values[k];if(k==='controlled')value=value?'На контроле':'Не на контроле';else if(p.schema.dates.indexOf(k)>=0&&value)value=value.split('-').reverse().join('.');
     p.entry.sheet.getRange(p.row,p.schema.fields[k]+1).setValue(typeof value==='string'?safe_(value):value);
    });
+   if(['events','tasks'].includes(p.op.collection)&&(p.isNew||p.op.before.personId!==p.values.personId))p.entry.sheet.getRange(p.row,3).setValue(safe_(authors[p.values.personId]||''));
    const headers=p.entry.sheet.getRange(1,1,1,p.entry.sheet.getLastColumn()).getDisplayValues()[0];
    for(const pair of [['Кто изменил','Указал автор: '+p.author],['Когда изменено',new Date().toISOString()]]){
     let col=headers.indexOf(pair[0])+1;if(!col){col=headers.length+1;if(col>p.entry.sheet.getMaxColumns())p.entry.sheet.insertColumnsAfter(p.entry.sheet.getMaxColumns(),1);p.entry.sheet.getRange(1,col).setValue(pair[0]);headers.push(pair[0])}
