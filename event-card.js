@@ -10,9 +10,11 @@
 
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
  <details id="cardCopy"><summary>Передать карточку через чат</summary><button type="button" id="cardCopyButton">Подготовить текст для чата</button><label id="cardCopyBox" hidden>Текст для чата<textarea id="cardCopyText" rows="6" readonly></textarea></label></details></div>`;
- document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',poll=null,editingId=null,editingBaseline=[],editingAutoNote=false;
+ document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',editingId=null,editingBaseline=[],editingAutoNote=false;
  const notice=document.createElement('p');notice.id='eventSaveNotice';notice.className='card';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.hidden=true;document.getElementById('eventsTable').before(notice);
  const status=(t,showOutside=false)=>{$('cardStatus').textContent=t;if(showOutside){notice.textContent=t;notice.hidden=false}if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
+ const retry=document.createElement('button');retry.id='eventRetrySync';retry.type='button';retry.textContent='Повторить проверку';retry.hidden=true;notice.after(retry);retry.onclick=()=>window.retryDepartmentSync?.();
+ window.addEventListener('department-sync-state',e=>{if(e.detail.active||!notice.hidden)status(e.detail.message,true);retry.hidden=!e.detail.retry});
  const publicationHint='По расписанию: проверки каждые 5 минут круглосуточно, включая выходные. Запуск может задерживаться. Повторно добавлять мероприятие не нужно.';
  function setBusy(active){$('cardForm').querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=active)}
  const endpoint=/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(WRITE_URL);
@@ -32,6 +34,7 @@
   $('cardSubmit').disabled=!endpoint||!!pending;
   if(!endpoint)status('Карточка готова. Прямое сохранение в Google Sheets ещё подключается. Сейчас её можно передать через чат.');
   $('cardDeleteAuthor').innerHTML=author.innerHTML;$('cardDeleteAuthor').value=author.value;renderRemovalResults();
+  if(pending){const d=pending.event;$('cardTitle').value=d.title;$('cardDate').value=d.date;$('cardEndDate').value=d.endDate||d.date;$('cardTime').value=d.time;$('cardNote').value=d.note;$('cardAuthor').value=d.author;const ids=new Set((d.people||[]).map(p=>p.id));field.querySelectorAll('input').forEach(box=>box.checked=ids.has(box.value))}
   modal.classList.add('open');$('cardTitle').focus();
  }
  window.openEventCard=open;
@@ -85,21 +88,30 @@
   if(!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(event.origin)||event.data?.channel!==channel)return;
   if(event.data.type==='department-ready'&&!peer){peer=event.source;peerOrigin=event.origin;if(pending)send();return}
   if(event.source!==peer||!pending||event.data.requestId!==pending.requestId)return;
-  if(event.data.type==='department-result'){clearTimeout(pending.timer);pending=null;setBusy(false);const result=event.data.result;
+  if(event.data.type==='department-result'){clearTimeout(pending.timer);const accepted=pending.event;pending=null;setBusy(false);const result=event.data.result;localStorage.removeItem('departmentPendingEventV1');
    if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.',true);return}
    status((result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…')+' '+publicationHint,true);
-   if(result.ids?.length&&localStorage.getItem(SYNC_KEY)){
-    clearInterval(poll);let tries=0;poll=setInterval(async()=>{tries++;await syncEncrypted();if(result.ids.every(id=>db.events.some(e=>e.id===id))){clearInterval(poll);status('Мероприятие опубликовано и появилось в общем календаре.',true)}else if(tries>=30){clearInterval(poll);status('В Google Sheets запись сохранена. '+publicationHint+' Позже нажмите «Получить свежие данные».',true)}},10000);
-   }else status('Сохранено в Google Sheets. '+publicationHint+' После публикации нажмите «Получить свежие данные».',true);
+   if(result.ids?.length)window.watchDepartmentEvent?.(result.ids,accepted.author);
   }
  });
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
+ function beginPendingEvent(event,id){
+  pending={event,requestId:id,timer:setTimeout(()=>{
+   if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';
+   if(pending){clearTimeout(pending.timer);pending.timer=null;pending.retryAt=Date.now()+15000;status('Ответ таблицы задержался. Продолжу сохранение автоматически; повторную запись не создам.',true)}
+  },45000)};
+  setBusy(true);bridge();send();
+ }
+ setInterval(()=>{if(pending?.retryAt&&Date.now()>=pending.retryAt&&navigator.onLine!==false&&!document.hidden){const saved=pending;beginPendingEvent(saved.event,saved.requestId)}},15000);
+ window.addEventListener('online',()=>{if(pending){clearTimeout(pending.timer);beginPendingEvent(pending.event,pending.requestId)}});
+ try{const saved=JSON.parse(localStorage.getItem('departmentPendingEventV1'));if(saved?.event&&/^[a-f0-9-]{36}$/i.test(saved.requestId||'')){
+  setBusy(true);status('Продолжаю сохранение ранее отправленного мероприятия автоматически.',true);pending={...saved,retryAt:Date.now()};
+ }}catch(_){}
  $('cardForm').onsubmit=e=>{
   e.preventDefault();if(!endpoint||pending)return;
   const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}if(editingId){if(editingAutoNote)d.note='Мероприятие: '+d.title+'. Начало в '+d.time+' по Москве.'+(d.note?' '+d.note:'');if(window.changeDepartmentMeeting?.(editingId,d,editingBaseline,t=>status(t,true))){$('cardForm').style.display='none';editingId=null}return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
   try{localStorage.setItem('departmentEventAuthorV1',d.author)}catch(_){}
   setBusy(true);status('Сохраняю в общей Google-таблице…',true);
-  pending={event:d,requestId,timer:setTimeout(()=>{pending=null;setBusy(false);if(!peer&&frame){frame.remove();frame=null;channel=''}status('Не удалось получить подтверждение. Проверьте связь и повторите: повторный запрос не создаст дубль.',true)},45000)};
-  bridge();send();
+  localStorage.setItem('departmentPendingEventV1',JSON.stringify({event:d,requestId}));beginPendingEvent(d,requestId);
  };
 })();

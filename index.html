@@ -327,12 +327,14 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .shared-data .shared-author{display:flex;flex-direction:column;gap:6px;max-width:340px;margin:12px 0}.shared-data select,.shared-data button{font:inherit}.shared-data select{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fff}.shared-data details{border:1px solid var(--line);border-radius:10px;margin-top:8px;overflow:hidden}.shared-data summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:10px;font-size:12px;font-weight:700;list-style:none}.shared-data summary::-webkit-details-marker{display:none}.shared-data .shared-record-fields{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:10px}.shared-record-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}.shared-data button:disabled{opacity:.45;cursor:default}.shared-data #sharedChangeHistory{padding:0 10px}.shared-data .toolbar button{white-space:normal}#sharedEditForm label{display:flex;flex-direction:column;gap:5px;min-width:0}#sharedEditForm input,#sharedEditForm textarea,#sharedEditForm select{width:100%;box-sizing:border-box}#sharedEditForm input[type=checkbox]{width:auto;align-self:flex-start}#sharedEditForm button{grid-column:1/-1}#closeSharedEditor{margin-top:10px}@media(max-width:600px){.shared-data .shared-record-fields,#sharedEditForm{grid-template-columns:1fr}.shared-data .toolbar{display:grid;grid-template-columns:1fr}.shared-data .toolbar button{width:100%}}
 .event-compact-card{grid-template-columns:48px minmax(0,1fr) auto}.event-remove{font:inherit;font-size:9px;padding:4px 6px;border:1px solid #e3b7b7;border-radius:7px;background:#fff8f8;color:#9e3030;cursor:pointer}.event-delete-result{padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.event-delete-result span{min-width:0}.event-delete-result button{flex-shrink:0}.event-delete-result small{display:block;color:var(--muted)}#cardDeletePanel label{display:flex;flex-direction:column;gap:5px;margin:8px 0}#cardDeletePanel input,#cardDeletePanel select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit}#cardDeletePanel .muted{font-size:11px}@media(max-width:900px){.event-compact-card{grid-template-columns:43px minmax(0,1fr) auto}.event-remove{font-size:8px;padding:4px}}
 .meeting-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.event-compact-card>.event-remove{max-width:78px;white-space:normal;line-height:1.15}#cardDeleteResults .meeting-actions{flex-shrink:0}@media(max-width:520px){.event-delete-result{align-items:flex-start}.meeting-actions{flex-direction:column}}
+.event-compact-card>.event-remove{width:max-content;max-width:54px;padding:3px 4px;justify-self:end}@media(max-width:900px){.event-compact-card>.event-remove{max-width:48px;padding:3px}}#eventRetrySync{margin:0 0 10px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff;font:inherit}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.39</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.40</span></header>
 <div class="layout">
 <nav id="nav">
+<button data-page="data">Импорт / экспорт</button>
 <button data-page="today" class="active">Сегодня / Кто где</button>
 <button data-page="calendar">Календарь</button>
 <button data-page="events">Мероприятия</button>
@@ -345,7 +347,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <button data-page="tasks">Задачи</button>
 <button data-page="stats">Статистика</button>
 <button data-page="people">Сотрудники</button>
-<button data-page="data">Импорт / экспорт</button>
+
 </nav>
 <main>
 <section id="today" class="section active"><h2>Сегодня</h2><div id="todayMetrics" class="grid today-metrics"></div><h3>Кто где сегодня</h3><div id="todayEvents"></div><h3>Актуальные задачи</h3><div id="todayTasks"></div></section>
@@ -383,7 +385,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.39';
+const APP_VERSION='1.11.40';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1323,14 +1325,15 @@ tabNav.addEventListener('touchmove',e=>{if(!navTouch||e.touches.length!==1)retur
 document.getElementById('prevMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()-7);else calDate.setMonth(calDate.getMonth()-1);renderCalendar()};document.getElementById('nextMonth').onclick=()=>{if(window.matchMedia('(max-width:900px)').matches)calDate.setDate(calDate.getDate()+7);else calDate.setMonth(calDate.getMonth()+1);renderCalendar()};document.getElementById('calendarTodayBtn').onclick=()=>{calDate=new Date();renderCalendar()};
 const SYNC_KEY='kalendarOtdelaSharedKeyV1';
 function b64ToBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);return Uint8Array.from(b,c=>c.charCodeAt(0))}
-async function syncEncrypted(){
+async function syncEncrypted(options={}){
  const status=document.getElementById('syncStatus');
  const rawKey=localStorage.getItem(SYNC_KEY);
- if(!rawKey){status.textContent='Подключите общий ключ отдела.';return}
+ if(!rawKey){status.textContent='Подключите общий ключ отдела.';return false}
  try{
   status.textContent='Проверяю обновление…';
-  const r=await fetch('./data.enc.json?ts='+Date.now(),{cache:'no-store'});
-  if(!r.ok){status.textContent='Зашифрованный снимок ещё не опубликован.';return}
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);let r;
+  try{r=await fetch('./data.enc.json?ts='+Date.now(),{cache:'no-store',signal:controller.signal})}finally{clearTimeout(timeout)}
+  if(!r.ok){status.textContent='Зашифрованный снимок ещё не опубликован.';return false}
   const env=await r.json();
   const keyBytes=b64ToBytes(rawKey);
   const key=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
@@ -1347,7 +1350,7 @@ async function syncEncrypted(){
   // Keep a recoverable copy of the local state before applying a remote snapshot.
   const previous=JSON.stringify(db);
   try{localStorage.setItem('kalendarOtdelaPreSyncBackupV1',previous)}catch(_){}
-  const incoming=normalizeDisplayData(x);
+  const incoming=normalizeDisplayData(x),published=JSON.parse(JSON.stringify(incoming));
   const localOnly={people:0,events:0,tasks:0};
   for(const collection of ['people','events','tasks']){
     const known=new Set(incoming[collection].map(item=>String(item.id)));
@@ -1359,10 +1362,11 @@ async function syncEncrypted(){
       }
     }
   }
-  db=incoming;save();
+  if(options.apply)options.apply(incoming,published);else{db=incoming;save()}
   const kept=localOnly.people+localOnly.events+localOnly.tasks;
   status.textContent='Данные обновлены: '+new Date().toLocaleString('ru-RU')+(kept?' · Сохранено локальных записей: '+kept:'');
- }catch(e){status.textContent='Не удалось обновить данные. Проверьте общий ключ отдела.'}
+  return true;
+ }catch(e){status.textContent='Не удалось получить свежие данные. Повторим автоматически при восстановлении связи.';return false}
 }
 document.getElementById('sharedKeyFile').onchange=async e=>{
  try{
@@ -1379,9 +1383,9 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.39"></script>
-<script src="event-card.js?v=1.11.39"></script>
-<script src="collaboration.js?v=1.11.39"></script>
+<script src="event-draft.js?v=1.11.40"></script>
+<script src="event-card.js?v=1.11.40"></script>
+<script src="collaboration.js?v=1.11.40"></script>
 </body>
 </html>
 

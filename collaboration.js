@@ -6,20 +6,20 @@
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clean=(kind,x)=>x?Object.fromEntries(fields[kind].map(k=>[k,k==='controlled'?!!x[k]:String(x[k]??'')])):null;
  let store;try{store=JSON.parse(localStorage.getItem(STORE))}catch(_){}
- store=store||{operations:[],requestId:null};let previous=clone(db),busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
- const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
+ store=store||{operations:[],requestId:null};let previous=clone(db),pulling=false,lastPullAt=0,busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
+ const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><details class="manual-sync-tools"><summary>Ручные действия и резервная копия</summary><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div></details><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
  document.querySelector('#data').insertBefore(card,document.querySelector('#data .card'));
  let removalFeedback=null;
- const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t)};
+ const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t);window.dispatchEvent(new CustomEvent('department-sync-state',{detail:{message:t,retry:unknown||!!store.autoPaused,active:busy||unknown||!!store.operations.length||waitingPublication()}}))};
  $('departmentEditor').value=localStorage.getItem(AUTHOR)||'';
  $('departmentEditor').onchange=()=>{localStorage.setItem(AUTHOR,$('departmentEditor').value);update()};
  function update(){
-  $('uploadChanges').disabled=busy||unknown||!store.operations.length||!$('departmentEditor').value;
+  $('uploadChanges').disabled=busy||pulling||unknown||!store.operations.length||!$('departmentEditor').value;
   $('downloadChanges').disabled=busy||!store.operations.length;
   $('checkChanges').disabled=busy||!store.requestId;
-  $('syncNowBtn').disabled=busy||unknown;
-  $('syncDepartment').disabled=busy||unknown;
-  $('editSelected').disabled=busy||unknown;$('newSharedRecord').disabled=busy||unknown;
+  $('syncNowBtn').disabled=busy||pulling||unknown;
+  $('syncDepartment').disabled=busy||pulling||unknown;
+  $('editSelected').disabled=busy||pulling||unknown;$('newSharedRecord').disabled=busy||pulling||unknown;
  }
  function persist(){localStorage.setItem(STORE,JSON.stringify(store));update()}
  function capture(){
@@ -38,30 +38,48 @@
     if(now.get(id)){now.get(id).enteredBy='Указал автор: '+(person(author)?.short||author);now.get(id).modifiedAt=new Date().toISOString()}
    }
   }
-  if(changed){store.requestId=null;setStatus('Локальных изменений: '+store.operations.length+'. Они ещё не загружены в общую таблицу.')}
-  persist();previous=clone(db);return true;
+  if(changed){store.requestId=null;store.autoPaused=false;setStatus('Сохраняю изменения автоматически…')}
+  persist();previous=clone(db);if(changed)setTimeout(()=>autoTick(true),500);return true;
  }
  const saveOriginal=save;
- save=function(){if(busy||unknown){db=clone(previous);alert('Дождитесь подтверждения отправки изменений.');return}if(capture())saveOriginal();else{localStorage.setItem(KEY,JSON.stringify(db));renderAll()}};
+ save=function(){if(busy||pulling||unknown){db=clone(previous);alert('Дождитесь подтверждения отправки изменений.');return}if(capture())saveOriginal();else{localStorage.setItem(KEY,JSON.stringify(db));renderAll()}};
  const syncOriginal=syncEncrypted;
+ function waitingPublication(){return !!(store.awaitingPublished?.length||store.receipts?.length)}
  syncEncrypted=async function(){
-  if(busy||unknown)return false;
-  if(store.operations.length){setStatus('Сначала загрузите локальные изменения или сохраните их в файл. Получение снимка не должно перезаписывать ваши правки.');return false}
-  // Applying a verified incoming snapshot is not a local edit.
-  const trackedSave=save;save=saveOriginal;
-  try{await syncOriginal();
+  if(busy||pulling||unknown||store.operations.length)return false;
+  pulling=true;update();let published=null;
+  try{
+   const ok=await syncOriginal({apply:(incoming,actual)=>{published=actual;db=incoming;saveOriginal()}});
+   lastPullAt=Date.now();if(!ok||!published){if(waitingPublication())setStatus('В таблице сохранено. Свежий снимок пока недоступен; повторяю получение автоматически.');return false}
+   const hadPending=waitingPublication();
    if(store.awaitingPublished?.length){
     const waiting=[];
-    for(const op of store.awaitingPublished){const list=db[op.collection]||[],index=list.findIndex(x=>x.id===op.id),remote=index>=0?clean(op.collection,list[index]):null;
-     if(JSON.stringify(remote)!==JSON.stringify(op.after)){waiting.push(op);const local=(previous[op.collection]||[]).find(x=>x.id===op.id);if(local){if(index>=0)list[index]=clone(local);else list.push(clone(local))}}
+    for(const op of store.awaitingPublished){
+     const list=db[op.collection]||[],index=list.findIndex(x=>x.id===op.id),remote=(published[op.collection]||[]).find(x=>x.id===op.id),local=(previous[op.collection]||[]).find(x=>x.id===op.id);
+     if(JSON.stringify(clean(op.collection,remote))!==JSON.stringify(op.after)){
+      if(remote?.modifiedAt&&local?.modifiedAt&&remote.modifiedAt>local.modifiedAt)continue;
+      waiting.push(op);if(local){if(index>=0)list[index]=clone(local);else list.push(clone(local))}
+     }
     }
-    store.awaitingPublished=waiting;persist();saveOriginal();if(waiting.length)setStatus('Правки подтверждены в таблице, но снимок ещё публикуется. На устройстве сохранены ваши новые значения.');else setStatus('Правки появились в опубликованном снимке.');
+    store.awaitingPublished=waiting;
    }
-   previous=clone(db);renderRecords();return true}finally{save=trackedSave;update()}
+   const ids=new Set((published.events||[]).map(e=>e.id));
+   store.receipts=(store.receipts||[]).filter(receipt=>!receipt.ids.every(id=>ids.has(id)));
+   persist();saveOriginal();previous=clone(db);renderRecords();
+   if(hadPending)setStatus(waitingPublication()?'Сохранено в общей таблице. Дожидаюсь публикации и подгружаю результат автоматически. Можно закрыть карточку.':'Изменения опубликованы в общем календаре. Данные обновлены автоматически.');
+   return true;
+  }finally{pulling=false;update()}
+ };
+ window.watchDepartmentEvent=function(ids,author){
+  if(author&&db.people.some(p=>p.id===author)){$('departmentEditor').value=author;localStorage.setItem(AUTHOR,author)}
+  if(!Array.isArray(ids)||!ids.length)return;
+  store.receipts=store.receipts||[];const key=[...ids].sort().join('|');
+  if(!store.receipts.some(r=>[...r.ids].sort().join('|')===key))store.receipts.push({ids:[...ids],at:new Date().toISOString()});
+  persist();setStatus('Мероприятие сохранено в общей таблице. Публикация и получение свежих данных проверяются автоматически.');autoTick(true);
  };
  $('syncNowBtn').onclick=()=>syncEncrypted();
  $('syncNowBtn').textContent='Получить свежие данные из общей базы';
- document.querySelector('#data .card:nth-of-type(2) p').textContent='Google Таблица — общая база. «Получить» загружает её последний опубликованный снимок; публикация может задерживаться. «Загрузить изменения» отправляет ваши правки в таблицу. Во время отправки кнопки заблокированы, после подтверждения можно получить обновлённый снимок.';
+ document.querySelector('#data .card:nth-of-type(2) p').textContent='Обмен работает автоматически: сохранение → общая Google Таблица → публикация → получение свежих данных. Держать эту вкладку открытой не нужно. Кнопки ниже оставлены для ручной проверки и резервной копии.';
  function renderRecords(){const kind=$('editKind').value;$('editRecord').innerHTML=(db[kind]||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.type||x.title||x.short||x.name||x.full||x.id)+(x.start?' · '+esc(fmt(x.start)):'')+'</option>').join('')}
  $('editKind').onchange=renderRecords;renderRecords();
  const history=document.createElement('details');history.innerHTML='<summary>Кто внёс изменения</summary><div id="sharedChangeHistory"></div>';card.append(history);
@@ -79,12 +97,12 @@
    if(k==='personId'){input=document.createElement('select');input.innerHTML='<option value="">Не указан</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short)+'</option>').join('')}
    else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');if(input.tagName==='INPUT')input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':k==='days'?'number':'text'}
    input.name=k;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
-  const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить на этом устройстве';form.append(button);
-  form.onsubmit=e=>{e.preventDefault();if(busy||unknown)return;if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
+  const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить в общей таблице';form.append(button);
+  form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
  };
  window.changeDepartmentMeeting=function(id,input,baseline,feedback){
-  if(busy||unknown){feedback('Дождитесь подтверждения предыдущей отправки.');return false}
-  if(store.operations.length){feedback('Сначала отправьте другие локальные изменения во вкладке «Импорт / экспорт».');return false}
+  if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}
+  if(store.operations.length){feedback('Дождитесь автоматической отправки предыдущих изменений.');return false}
   if(!db.people.some(p=>p.id===input.author)){feedback('Выберите автора изменения.');return false}
   const rows=meetingRowsForRemoval(id);
   if(rows.length!==baseline.length||rows.some(r=>!baseline.some(b=>b.id===r.id&&JSON.stringify(clean('events',b))===JSON.stringify(clean('events',r))))){feedback('Мероприятие обновилось. Закройте карточку, получите свежие данные и откройте его снова.');return false}
@@ -96,8 +114,8 @@
   store.autoPull=true;persist();$('uploadChanges').click();return true;
  };
  window.removeDepartmentMeeting=function(id,author,feedback){
-  if(busy||unknown){feedback('Дождитесь подтверждения предыдущей отправки.');return false}
-  if(store.operations.length){feedback('Сначала отправьте другие локальные изменения во вкладке «Импорт / экспорт».');return false}
+  if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}
+  if(store.operations.length){feedback('Дождитесь автоматической отправки предыдущих изменений.');return false}
   if(!db.people.some(p=>p.id===author)){feedback('Выберите автора удаления.');return false}
   const target=db.events.find(e=>e.id===id&&isMeetingEvent(e));
   if(!target){feedback('Мероприятие не найдено. Получите свежие данные.');return false}
@@ -110,14 +128,15 @@
  $('syncDepartment').onclick=()=>{if(store.operations.length){store.autoPull=true;persist();$('uploadChanges').click()}else syncEncrypted()};
  $('closeSharedEditor').onclick=()=>modal.classList.remove('open');
  $('downloadChanges').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,operations:store.operations},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='изменения-отдела-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ function resetBridge(){if(frame)frame.remove();frame=null;peer=null;origin='';channel=''}
  function send(type,payload={}){if(peer)peer.postMessage({type,channel,...payload},origin)}
  function connect(){if(frame)return;const match=document.querySelector('script[src^="event-card.js"]');if(!match)return;channel=crypto.randomUUID();frame=document.createElement('iframe');frame.hidden=true;frame.title='Обмен изменениями отдела';frame.src='https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec?channel='+channel;document.body.append(frame)}
- $('checkChanges').onclick=()=>{if(busy||!store.requestId)return;busy=true;update();setStatus('Проверяю результат предыдущей отправки…');connect();send('department-change-status',{requestId:store.requestId});clearTimeout(timer);timer=setTimeout(()=>{busy=false;unknown=true;setStatus('Сверка пока недоступна. Повторная отправка заблокирована, локальные правки сохранены.');update()},45000)};
+ $('checkChanges').onclick=()=>{if(busy||pulling||!store.requestId)return;busy=true;update();setStatus('Проверяю результат предыдущей отправки…');connect();send('department-change-status',{requestId:store.requestId});clearTimeout(timer);timer=setTimeout(()=>{busy=false;resetBridge();unknown=true;setStatus('Сверка пока недоступна. Повторная отправка заблокирована, локальные правки сохранены.');update()},45000)};
  $('uploadChanges').onclick=()=>{
-  if(busy||unknown||!store.operations.length)return;
-  if(store.operations.some(x=>!x.after)){setStatus('Есть локальное удаление. Оно сохранено в файле изменений; массовое удаление в общую базу сейчас не отправляется.');return}
-  busy=true;update();setStatus('Проверяю сервис общей записи…');connect();send('department-capabilities');
-  timer=setTimeout(()=>{busy=false;if(store.requestId){unknown=true;setStatus('Подтверждение не получено. Изменения сохранены; повторная отправка будет доступна только после сверки результата.')}else setStatus('Сервис общего редактирования ещё не обновлён. Изменения остаются на устройстве; сохраните файл изменений.');update()},45000);
+  if(busy||pulling||unknown||!store.operations.length)return;
+  if(store.operations.some(x=>!x.after)){store.autoPaused=true;persist();setStatus('Есть локальное удаление. Оно сохранено в файле изменений; массовое удаление в общую базу сейчас не отправляется.');return}
+  busy=true;update();setStatus('Сохраняю изменения в общей таблице…');clearTimeout(timer);connect();send('department-capabilities');
+  timer=setTimeout(()=>{busy=false;resetBridge();if(store.requestId){unknown=true;setStatus('Ответ таблицы задержался. Проверяю результат автоматически; повторную запись не создаю.')}else setStatus('Связь с таблицей пока недоступна. Изменения сохранены на устройстве; отправлю автоматически после восстановления связи.');update()},45000);
  };
  window.addEventListener('message',e=>{
   if(!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(e.origin)||e.data?.channel!==channel)return;
@@ -126,10 +145,21 @@
   if(e.data.type==='department-capabilities-result'&&busy){capable=e.data.result?.version>=2;if(!capable){clearTimeout(timer);busy=false;setStatus('Требуется обновление сервиса общей записи. Локальные правки сохранены.');update();return}store.requestId=store.requestId||crypto.randomUUID();persist();setStatus('Загружаю изменения в Google Таблицу…');send('department-changes',{requestId:store.requestId,operations:store.operations});return}
   if(e.data.type!=='department-changes-result'||e.data.requestId!==store.requestId)return;
   clearTimeout(timer);busy=false;unknown=false;
-  if(!e.data.result?.ok){if(e.data.result?.phase==='unknown'){unknown=true;setStatus(e.data.result.message);persist();return}setStatus(e.data.result?.message||'Таблица не подтвердила запись. Локальные изменения сохранены.');store.requestId=null;persist();return}
-  const autoPull=store.autoPull;store={operations:[],requestId:null,awaitingPublished:clone(store.operations)};previous=clone(db);persist();setStatus('Изменения подтверждены в Google Таблице. После публикации нажмите «Получить свежие данные».');if(autoPull){let tries=0;const poll=setInterval(async()=>{await syncEncrypted();if(!store.awaitingPublished?.length||++tries>=30)clearInterval(poll)},10000)}
+  if(!e.data.result?.ok){if(e.data.result?.phase==='unknown'){unknown=true;setStatus(e.data.result.message);persist();return}store.autoPaused=e.data.result?.phase!=='not_found';store.requestId=null;setStatus(e.data.result?.message||'Таблица не подтвердила запись. Ваши изменения сохранены на устройстве.');persist();return}
+  const waiting=new Map([...(store.awaitingPublished||[]),...store.operations].map(op=>[op.collection+':'+op.id,op]));
+  store={operations:[],requestId:null,awaitingPublished:[...waiting.values()],receipts:store.receipts||[]};previous=clone(db);persist();
+  setStatus('Сохранено в общей таблице. Дожидаюсь публикации и получаю обновления автоматически. Можно закрыть карточку.');setTimeout(()=>autoTick(true),0);
  });
- setStatus(unknown?'Есть отправка без подтверждения. Нажмите «Проверить отправку».':store.operations.length?'Ожидают загрузки изменения: '+store.operations.length:'Новых локальных изменений нет.');update();
+ async function autoTick(force=false){
+  if(document.hidden||navigator.onLine===false||busy||pulling)return;
+  if(unknown){$('checkChanges').click();return}
+  if(store.operations.length){if(!store.autoPaused&&$('departmentEditor').value)$('uploadChanges').click();return}
+  if(localStorage.getItem(SYNC_KEY)&&(force||waitingPublication()||Date.now()-lastPullAt>=60000))await syncEncrypted();
+ }
+ window.retryDepartmentSync=function(){if(unknown){$('checkChanges').click();return}store.autoPaused=false;persist();autoTick(true)};
+ window.addEventListener('online',()=>autoTick(true));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoTick(true)});
+ window.addEventListener('focus',()=>autoTick(true));
+ setInterval(()=>autoTick(),15000);setTimeout(()=>autoTick(true),700);
+ setStatus(unknown?'Проверяю результат предыдущей отправки автоматически.':store.operations.length?'Продолжаю автоматическую отправку сохранённых изменений.':waitingPublication()?'Продолжаю проверку публикации и автоматическое обновление данных.':'Автоматический обмен включён. Новых локальных изменений нет.');update();
 })();
-
-
