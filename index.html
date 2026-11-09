@@ -328,7 +328,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.35</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.36</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -381,7 +381,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.35';
+const APP_VERSION='1.11.36';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1354,9 +1354,9 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.35"></script>
-<script src="event-card.js?v=1.11.35"></script>
-<script src="collaboration.js?v=1.11.35"></script>
+<script src="event-draft.js?v=1.11.36"></script>
+<script src="event-card.js?v=1.11.36"></script>
+<script src="collaboration.js?v=1.11.36"></script>
 </body>
 </html>
 

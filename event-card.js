@@ -10,7 +10,9 @@
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
  <details id="cardCopy"><summary>Передать карточку через чат</summary><button type="button" id="cardCopyButton">Подготовить текст для чата</button><label id="cardCopyBox" hidden>Текст для чата<textarea id="cardCopyText" rows="6" readonly></textarea></label></details></div>`;
  document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',poll=null;
- const status=t=>{$('cardStatus').textContent=t;if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
+ const notice=document.createElement('p');notice.id='eventSaveNotice';notice.className='card';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.hidden=true;document.getElementById('eventsTable').before(notice);
+ const status=(t,showOutside=false)=>{$('cardStatus').textContent=t;if(showOutside){notice.textContent=t;notice.hidden=false}if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
+ const publicationHint='По расписанию: с 08:00 до 21:00 проверки каждые 5 минут, ночью — каждые 30 минут. Запуск может задерживаться. Повторно добавлять мероприятие не нужно.';
  function setBusy(active){$('cardForm').querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=active)}
  const endpoint=/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(WRITE_URL);
  function clearCopy(){$('cardCopyBox').hidden=true}
@@ -45,11 +47,11 @@
   if(event.data.type==='department-ready'&&!peer){peer=event.source;peerOrigin=event.origin;if(pending)send();return}
   if(event.source!==peer||!pending||event.data.requestId!==pending.requestId)return;
   if(event.data.type==='department-result'){clearTimeout(pending.timer);pending=null;setBusy(false);const result=event.data.result;
-   if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.');return}
-   status(result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…');
+   if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.',true);return}
+   status((result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…')+' '+publicationHint,true);
    if(result.ids?.length&&localStorage.getItem(SYNC_KEY)){
-    clearInterval(poll);let tries=0;poll=setInterval(async()=>{tries++;await syncEncrypted();if(result.ids.every(id=>db.events.some(e=>e.id===id))){clearInterval(poll);status('Мероприятие опубликовано и появилось в общем календаре.')}else if(tries>=30){clearInterval(poll);status('В Google Sheets запись сохранена. Публикация задерживается; позже нажмите «Получить свежие данные».')}},10000);
-   }else status('Сохранено в Google Sheets. После автоматической синхронизации нажмите «Получить свежие данные».');
+    clearInterval(poll);let tries=0;poll=setInterval(async()=>{tries++;await syncEncrypted();if(result.ids.every(id=>db.events.some(e=>e.id===id))){clearInterval(poll);status('Мероприятие опубликовано и появилось в общем календаре.',true)}else if(tries>=30){clearInterval(poll);status('В Google Sheets запись сохранена. '+publicationHint+' Позже нажмите «Получить свежие данные».',true)}},10000);
+   }else status('Сохранено в Google Sheets. '+publicationHint+' После публикации нажмите «Получить свежие данные».',true);
   }
  });
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
@@ -57,8 +59,8 @@
   e.preventDefault();if(!endpoint||pending)return;
   const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
   try{localStorage.setItem('departmentEventAuthorV1',d.author)}catch(_){}
-  setBusy(true);status('Сохраняю в общей Google-таблице…');
-  pending={event:d,requestId,timer:setTimeout(()=>{pending=null;setBusy(false);if(!peer&&frame){frame.remove();frame=null;channel=''}status('Не удалось получить подтверждение. Проверьте связь и повторите: повторный запрос не создаст дубль.')},45000)};
+  setBusy(true);status('Сохраняю в общей Google-таблице…',true);
+  pending={event:d,requestId,timer:setTimeout(()=>{pending=null;setBusy(false);if(!peer&&frame){frame.remove();frame=null;channel=''}status('Не удалось получить подтверждение. Проверьте связь и повторите: повторный запрос не создаст дубль.',true)},45000)};
   bridge();send();
  };
 })();
