@@ -92,7 +92,7 @@
   if(event.data.type==='department-result'){clearTimeout(pending.timer);const accepted=pending.event;pending=null;setBusy(false);const result=event.data.result;localStorage.removeItem('departmentPendingEventV1');
    if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.',true);return}
    status((result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…')+' '+publicationHint,true);
-   if(result.ids?.length)window.watchDepartmentEvent?.(result.ids,accepted.author);
+   if(result.ids?.length)window.watchDepartmentEvent?.(result.ids,accepted.author,result.publication);
   }
  });
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}

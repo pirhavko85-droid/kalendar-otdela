@@ -328,10 +328,14 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .event-compact-card{grid-template-columns:48px minmax(0,1fr) auto}.event-remove{font:inherit;font-size:9px;padding:4px 6px;border:1px solid #e3b7b7;border-radius:7px;background:#fff8f8;color:#9e3030;cursor:pointer}.event-delete-result{padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.event-delete-result span{min-width:0}.event-delete-result button{flex-shrink:0}.event-delete-result small{display:block;color:var(--muted)}#cardDeletePanel label{display:flex;flex-direction:column;gap:5px;margin:8px 0}#cardDeletePanel input,#cardDeletePanel select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit}#cardDeletePanel .muted{font-size:11px}@media(max-width:900px){.event-compact-card{grid-template-columns:43px minmax(0,1fr) auto}.event-remove{font-size:8px;padding:4px}}
 .meeting-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.event-compact-card>.event-remove{max-width:78px;white-space:normal;line-height:1.15}#cardDeleteResults .meeting-actions{flex-shrink:0}@media(max-width:520px){.event-delete-result{align-items:flex-start}.meeting-actions{flex-direction:column}}
 .event-compact-card>.event-remove{width:max-content;max-width:54px;padding:3px 4px;justify-self:end}@media(max-width:900px){.event-compact-card>.event-remove{max-width:48px;padding:3px}}#eventRetrySync,#eventAcceptShared{margin:0 0 10px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff;font:inherit}
+
+/* Compact navigation and exchange panel. */
+@media(max-width:900px){nav{gap:2px;padding:4px 5px;padding-bottom:max(4px,env(safe-area-inset-bottom))}nav button{font-size:12px;padding:7px 7px;margin:0;border-radius:8px;line-height:1.2}}
+#data>.card{padding:12px;margin-bottom:10px}#data h2{margin-bottom:10px}#data>.card h3{margin:0 0 6px;font-size:15px}#data>.card p{font-size:12px;line-height:1.4;margin:7px 0}#data>.card .toolbar{display:flex;flex-wrap:wrap;gap:6px}#data>.card .toolbar>*{font-size:12px;padding:7px 9px!important}#data .exchange-advanced{border:1px solid var(--line);border-radius:10px;background:white}#data .exchange-advanced>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:700}#data .exchange-advanced>.card{margin:0;border:0;box-shadow:none;padding:10px}#data .shared-author{margin:7px 0}#data .shared-data p{font-size:12px;line-height:1.4;margin:6px 0}#data .shared-data h3{font-size:14px;margin:0 0 6px}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.41</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.42</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -385,7 +389,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.41';
+const APP_VERSION='1.11.42';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1312,7 +1316,17 @@ function setTaskStatus(id,status){const t=db.tasks.find(x=>x.id===id);if(t){t.st
 document.getElementById('eventForm').onsubmit=e=>{e.preventDefault();const s=evStart.value,en=evEnd.value;db.events.push({id:uid('EV'),personId:evPerson.value,type:evType.value,start:s,end:en,days:evDays.value?Number(evDays.value):'',status:evStatus.value,comment:evComment.value});e.target.reset();closeModal('eventModal');save()}
 document.getElementById('taskForm').onsubmit=e=>{e.preventDefault();db.tasks.push({id:uid('TASK'),controlled:taskControl.value==='true',personId:taskPerson.value,title:taskTitle.value,description:taskDesc.value,created:taskCreated.value,deadline:taskDeadline.value,priority:taskPriority.value,status:taskStatus.value,author:taskAuthor.value,comment:taskComment.value});e.target.reset();closeModal('taskModal');save()}
 document.getElementById('personForm').onsubmit=e=>{e.preventDefault();db.people.push({id:uid('P'),short:personShort.value,full:personFull.value,role:personRole.value,category:personCategory.value});e.target.reset();closeModal('personModal');save()}
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active')})
+const ACTIVE_PAGE_KEY='departmentActivePageV1';
+function selectDashboardPage(page){
+ const buttons=[...document.querySelectorAll('#nav button')],button=buttons.find(b=>b.dataset.page===page)||buttons.find(b=>b.dataset.page==='today');
+ if(!button)return;
+ buttons.forEach(b=>b.classList.toggle('active',b===button));
+ document.querySelectorAll('.section').forEach(section=>section.classList.toggle('active',section.id===button.dataset.page));
+ try{localStorage.setItem(ACTIVE_PAGE_KEY,button.dataset.page)}catch(_){}
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>selectDashboardPage(b.dataset.page));
+try{selectDashboardPage(localStorage.getItem(ACTIVE_PAGE_KEY))}catch(_){selectDashboardPage('today')}
+requestAnimationFrame(()=>{const nav=document.getElementById('nav'),button=nav.querySelector('.active');if(button&&nav.scrollWidth>nav.clientWidth)nav.scrollLeft=Math.max(0,button.offsetLeft-(nav.clientWidth-button.offsetWidth)/2)});
 document.getElementById('statsPeriod').onchange=renderStats;
 document.getElementById('leaveYearSelect').onchange=renderLeaveChart;
 document.getElementById('tripVisualYear').onchange=renderTripCompactList;
@@ -1383,9 +1397,9 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.41"></script>
-<script src="event-card.js?v=1.11.41"></script>
-<script src="collaboration.js?v=1.11.41"></script>
+<script src="event-draft.js?v=1.11.42"></script>
+<script src="event-card.js?v=1.11.42"></script>
+<script src="collaboration.js?v=1.11.42"></script>
 </body>
 </html>
 

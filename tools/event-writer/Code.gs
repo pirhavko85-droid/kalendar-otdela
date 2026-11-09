@@ -27,10 +27,10 @@ function addDepartmentEvent(input,requestId){
    const all=sheet.getRange(1,1,Math.max(1,last),15).getDisplayValues();
    if(all[0][0]!=='ID события'||all[0][3]!=='Тип события'||all[0][14]!=='Связанное событие')throw new Error('Изменилась структура таблицы. Сообщите Роману.');
    const prefix='WEB-'+requestId+'-',old=all.filter(r=>r[0].indexOf(prefix)===0);
-   if(old.length){if(old.length!==Math.max(1,event.people.length)||old.some(r=>!r[3]||!r[4]||!r[8]))throw new Error('Обнаружена незавершённая прежняя запись. Сообщите Роману; мероприятие ещё не сохранено.');return {ok:true,duplicate:true,ids:old.map(r=>r[0])};}
+   if(old.length){if(old.length!==Math.max(1,event.people.length)||old.some(r=>!r[3]||!r[4]||!r[8]))throw new Error('Обнаружена незавершённая прежняя запись. Сообщите Роману; мероприятие ещё не сохранено.');return {ok:true,duplicate:true,ids:old.map(r=>r[0]),publication:requestPublication_(requestId)};}
    const displayDate=event.date.split('-').reverse().join('.');
    const existing=all.filter(r=>r[3].trim().toLowerCase()===event.title.toLowerCase()&&r[4]===displayDate&&(r[5]||r[4])===event.endDate.split('-').reverse().join('.')&&r[8]===event.time&&r[7]!=='Отменена');
-   if(existing.length)return {ok:true,duplicate:true,ids:existing.map(r=>r[0])};
+   if(existing.length)return {ok:true,duplicate:true,ids:existing.map(r=>r[0]),publication:requestPublication_(requestId)};
    const roster=book.getSheetByName('Сотрудники').getDataRange().getDisplayValues();
    const names={};roster.slice(1).filter(r=>r[0]).forEach(r=>{names[r[0]]=r[2]||r[1]});
    if(event.people.some(id=>!Object.prototype.hasOwnProperty.call(names,id)))throw new Error('Состав сотрудников изменился. Обновите дашборд.');
@@ -57,7 +57,7 @@ function addDepartmentEvent(input,requestId){
     throw new Error('Мероприятие не сохранено; незаполненные строки убраны. '+writeError.message);
    }
    properties.setProperty('APPEND_QUOTA',JSON.stringify({day:today,count:(quota.day===today?quota.count:0)+1}));
-   return {ok:true,ids:rows.map(r=>r[0]),author:author};
+   return {ok:true,ids:rows.map(r=>r[0]),author:author,publication:requestPublication_(requestId)};
   }finally{lock.releaseLock()}
  }catch(e){return {ok:false,message:e.message||'Не удалось сохранить мероприятие.'}}
 }
@@ -99,7 +99,7 @@ function applyDepartmentChanges(operations,requestId){
  const lock=LockService.getScriptLock();if(!lock.tryLock(10000))return {ok:false,message:'Другой участник сохраняет изменения. Повторите позже.'};
  const prepared=[],done=[];
  try{
-  const prior=changeStatus_(requestId);if(prior)return prior;
+  const prior=changeStatus_(requestId);if(prior)return prior.ok?Object.assign({},prior,{publication:requestPublication_(requestId)}):prior;
   const book=SpreadsheetApp.openById(EVENT_SHEET_ID),cache={},seen=new Set();
   const roster=book.getSheetByName('Сотрудники').getDataRange().getDisplayValues();
   const authors={};roster.slice(1).filter(r=>r[0]).forEach(r=>authors[r[0]]=r[2]||r[1]);
@@ -159,7 +159,7 @@ function applyDepartmentChanges(operations,requestId){
   SpreadsheetApp.flush();
   for(const p of prepared){const row=p.entry.sheet.getRange(p.row,1,1,p.entry.sheet.getLastColumn()).getDisplayValues()[0],actual=changeRecord_(p.schema,row);if(Object.keys(p.schema.fields).some(k=>!changeEqual_(actual[k],p.values[k])))throw new Error('Полная запись не подтверждена.');}
   const result={ok:true,phase:'saved',requestId,count:prepared.length};
-  properties.setProperty('CHANGE_QUOTA',JSON.stringify({day,count:(quota.day===day?quota.count:0)+operations.length}));properties.setProperty('CHANGE_'+requestId,JSON.stringify(result));return result;
+  properties.setProperty('CHANGE_QUOTA',JSON.stringify({day,count:(quota.day===day?quota.count:0)+operations.length}));properties.setProperty('CHANGE_'+requestId,JSON.stringify(result));result.publication=requestPublication_(requestId);return result;
  }catch(e){
   let rollback=true;
   for(const {p,backup} of done.reverse()){try{const currentWidth=p.entry.sheet.getLastColumn(),cells=backup.values.map((v,i)=>backup.formulas[i]||(typeof v==='string'?safe_(v):v));while(cells.length<currentWidth)cells.push('');p.entry.sheet.getRange(p.row,1,1,currentWidth).setValues([cells]);if(p.typeRange)p.typeRange.setDataValidations(p.typeValidation)}catch(_){rollback=false}}
@@ -168,4 +168,25 @@ function applyDepartmentChanges(operations,requestId){
   const rejected={ok:false,phase:'rejected',message:e.message||'Изменения не сохранены.'};if(done.length)PropertiesService.getScriptProperties().setProperty('CHANGE_'+requestId,JSON.stringify(rejected));return rejected;
  }finally{lock.releaseLock()}
 }
+
+// Only the existing fixed workflow can be dispatched. The token is server-side.
+// A publication failure never rolls back a successfully verified Sheets write.
+function requestPublication_(requestId){
+ try{
+  if(!/^[a-f0-9-]{36}$/i.test(requestId||''))return {phase:'failed'};
+  const properties=PropertiesService.getScriptProperties(),key='PUBLICATION_'+requestId;
+  if(properties.getProperty(key))return {phase:'queued'};
+  const token=properties.getProperty('GITHUB_ACTIONS_TOKEN');if(!token)return {phase:'unconfigured'};
+  const response=UrlFetchApp.fetch('https://api.github.com/repos/pirhavko85-droid/kalendar-otdela/actions/workflows/sync-data.yml/dispatches',{
+   method:'post',muteHttpExceptions:true,followRedirects:false,contentType:'application/json',
+   headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
+   payload:JSON.stringify({ref:'main',inputs:{request_id:requestId}})
+  });
+  if(response.getResponseCode()!==204)return {phase:'failed',httpStatus:response.getResponseCode()};
+  properties.setProperty(key,new Date().toISOString());return {phase:'queued'};
+ }catch(error){return {phase:'failed',reason:/permission|authorization|разрешен/i.test(String(error.message))?'permission':'transport'}}
+}
+function checkPublicationConnection(){ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);const result=requestPublication_(Utilities.getUuid());console.log('Publication connection: '+JSON.stringify(result));return result}
+
+
 

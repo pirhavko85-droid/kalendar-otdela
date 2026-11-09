@@ -11,7 +11,7 @@
  let store;try{store=JSON.parse(localStorage.getItem(STORE))}catch(_){}
  store=store||{operations:[],requestId:null};let previous=clone(db),pulling=false,lastPullAt=0,busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
  const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><details class="manual-sync-tools"><summary>Ручные действия и резервная копия</summary><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div></details><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
- document.querySelector('#data').insertBefore(card,document.querySelector('#data .card'));
+ const advanced=document.createElement('details');advanced.className='exchange-advanced';advanced.innerHTML='<summary>Дополнительные инструменты</summary>';advanced.append(card);document.querySelector('#data').append(advanced);
  let removalFeedback=null;
  const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t);window.dispatchEvent(new CustomEvent('department-sync-state',{detail:{message:t,retry:unknown||!!store.autoPaused,conflict:!!store.autoPaused&&!!store.operations.length,active:busy||unknown||!!store.operations.length||waitingPublication()}}))};
  const resolve=document.createElement('button');resolve.textContent='Принять общую версию';resolve.hidden=true;card.append(resolve);resolve.onclick=()=>window.acceptDepartmentVersion();
@@ -87,16 +87,16 @@
    return true;
   }finally{pulling=false;update()}
  };
- window.watchDepartmentEvent=function(ids,author){
+ window.watchDepartmentEvent=function(ids,author,publication){
   if(author&&db.people.some(p=>p.id===author)){$('departmentEditor').value=author;localStorage.setItem(AUTHOR,author)}
   if(!Array.isArray(ids)||!ids.length)return;
   store.receipts=store.receipts||[];const key=[...ids].sort().join('|');
   if(!store.receipts.some(r=>[...r.ids].sort().join('|')===key))store.receipts.push({ids:[...ids],at:new Date().toISOString()});
-  persist();setStatus('Мероприятие сохранено в общей таблице. Публикация и получение свежих данных проверяются автоматически.');autoTick(true);
+  persist();setStatus('Мероприятие сохранено в общей таблице. '+(publication?.phase==='queued'?'Публикация GitHub запрошена.':publication&&publication.phase!=='queued'?'Ускоренный запуск пока недоступен; ожидаю фоновую публикацию.':'Ожидаю публикацию сайта.')+' Свежие данные загрузятся автоматически.');autoTick(true);
  };
  $('syncNowBtn').onclick=()=>syncEncrypted();
  $('syncNowBtn').textContent='Получить свежие данные из общей базы';
- document.querySelector('#data .card:nth-of-type(2) p').textContent='Обмен работает автоматически: сохранение → общая Google Таблица → публикация → получение свежих данных. Держать эту вкладку открытой не нужно. Кнопки ниже оставлены для ручной проверки и резервной копии.';
+ document.querySelector('#data>.card p').textContent='Изменения отправляются автоматически. «Получить свежие данные» проверяет опубликованную версию сайта. Для добавления мероприятий используйте вкладку «Мероприятия». Дополнительные инструменты нужны для других записей и резервной копии.';
  function renderRecords(){const kind=$('editKind').value;$('editRecord').innerHTML=(db[kind]||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.type||x.title||x.short||x.name||x.full||x.id)+(x.start?' · '+esc(fmt(x.start)):'')+'</option>').join('')}
  $('editKind').onchange=renderRecords;renderRecords();
  const history=document.createElement('details');history.innerHTML='<summary>Кто внёс изменения</summary><div id="sharedChangeHistory"></div>';card.append(history);
@@ -165,7 +165,7 @@
   if(!e.data.result?.ok){if(e.data.result?.phase==='unknown'){unknown=true;setStatus(e.data.result.message);persist();return}store.autoPaused=e.data.result?.phase!=='not_found';store.requestId=null;setStatus(e.data.result?.message||'Таблица не подтвердила запись. Ваши изменения сохранены на устройстве.');persist();return}
   const waiting=new Map([...(store.awaitingPublished||[]),...store.operations].map(op=>[op.collection+':'+op.id,op]));
   store={operations:[],requestId:null,awaitingPublished:[...waiting.values()],receipts:store.receipts||[]};previous=clone(db);persist();
-  setStatus('Сохранено в общей таблице. Дожидаюсь публикации и получаю обновления автоматически. Можно закрыть карточку.');setTimeout(()=>autoTick(true),0);
+  setStatus('Сохранено в общей таблице. '+(e.data.result.publication?.phase==='queued'?'Публикация GitHub запрошена. ':e.data.result.publication?'Ускоренный запуск пока недоступен; ожидаю фоновую публикацию. ':'')+'Получаю обновления автоматически. Можно закрыть карточку.');setTimeout(()=>autoTick(true),0);
  });
  async function autoTick(force=false){
   if(document.hidden||navigator.onLine===false||busy||pulling)return;
