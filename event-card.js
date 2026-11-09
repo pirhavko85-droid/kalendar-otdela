@@ -4,7 +4,8 @@
  const WRITE_URL='https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec';
  const modal=document.createElement('div');modal.id='eventCard';modal.className='modal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','Новое мероприятие');
  modal.innerHTML=`<div class="modal-box"><div class="modal-head"><h3>Новое мероприятие</h3><button type="button" id="cardClose" aria-label="Закрыть карточку">×</button></div>
- <details><summary>Заполнить карточку из текста</summary><label>Текст мероприятия<textarea id="cardText" rows="3" placeholder="Совещание завтра в 11:30"></textarea></label><button type="button" id="cardParse">Заполнить карточку</button><p class="muted">Проверьте дату и время. Участников выберите ниже.</p></details>
+ <details id="cardParsePanel"><summary>Заполнить карточку из текста</summary><label>Текст мероприятия<textarea id="cardText" rows="3" placeholder="Совещание завтра в 11:30"></textarea></label><button type="button" id="cardParse">Заполнить карточку</button><p class="muted">Проверьте дату и время. Участников выберите ниже.</p></details>
+ <details id="cardDeletePanel"><summary>Удалить мероприятие по названию</summary><label>Кто удаляет<select id="cardDeleteAuthor"></select></label><label>Найти мероприятие<input id="cardDeleteSearch" placeholder="Например: Тест" autocomplete="off"></label><p class="muted">Выберите точную запись по названию, дате и времени. Она исчезнет из календаря у всех после публикации; в таблице останется отменённая запись для восстановления.</p><div id="cardDeleteResults"></div></details>
  <form id="cardForm" class="form-grid"><label class="full">Кто внёс<select id="cardAuthor" required><option value="">Выберите автора</option><option value="roman">Роман П.</option><option value="pavel">Павел Х.</option><option value="julia">Юлия Г.</option></select></label><label class="full">Название<input id="cardTitle" maxlength="300" required placeholder="Например: получение временных пропусков"></label><label>Дата<input id="cardDate" type="date" required></label><label>Дата окончания<input id="cardEndDate" type="date"></label><label>Время (Москва)<input id="cardTime" type="time" required></label><fieldset class="full" id="cardPeople"><legend>Участники</legend></fieldset><label class="full">Комментарий<textarea id="cardNote" maxlength="2000" rows="2" placeholder="Необязательно"></textarea></label><p id="cardWarning" class="full muted"></p>
 
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
@@ -19,6 +20,7 @@
  $('cardForm').addEventListener('input',clearCopy);
  function draft(){return {title:$('cardTitle').value.trim(),date:$('cardDate').value,endDate:$('cardEndDate').value||$('cardDate').value,time:$('cardTime').value,people:[...$('cardPeople').querySelectorAll('input:checked')].map(x=>({id:x.value,name:x.dataset.name})),note:$('cardNote').value.trim(),author:$('cardAuthor').value}}
  function open(){
+  modal.setAttribute('aria-label','Новое мероприятие');$('cardCopy').hidden=false;modal.querySelector('h3').textContent='Новое мероприятие';$('cardForm').style.display='';$('cardParsePanel').hidden=false;$('cardDeletePanel').open=false;
   const selected=new Set([...$('cardPeople').querySelectorAll('input:checked')].map(x=>x.value));
   const author=$('cardAuthor'),saved=author.value;author.innerHTML='<option value="">Выберите автора</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('');author.value=saved||localStorage.getItem('departmentEditorV1')||'';
   const field=$('cardPeople');field.replaceChildren();const legend=document.createElement('legend');legend.textContent='Участники';field.append(legend);
@@ -27,13 +29,38 @@
   try{if(!$('cardAuthor').value)$('cardAuthor').value=localStorage.getItem('departmentEventAuthorV1')||''}catch(_){}
   $('cardSubmit').disabled=!endpoint||!!pending;
   if(!endpoint)status('Карточка готова. Прямое сохранение в Google Sheets ещё подключается. Сейчас её можно передать через чат.');
+  $('cardDeleteAuthor').innerHTML=author.innerHTML;$('cardDeleteAuthor').value=author.value;renderRemovalResults();
   modal.classList.add('open');$('cardTitle').focus();
  }
  window.openEventCard=open;
+ function renderRemovalResults(){
+  const q=$('cardDeleteSearch').value.trim().toLowerCase();
+  const groups=groupedMeetingEvents(db.events.filter(isMeetingEvent)).filter(e=>!q||(e.type+' '+fmt(e.start)+' '+eventTime(e)).toLowerCase().includes(q)).sort((a,b)=>b.start.localeCompare(a.start));
+  const host=$('cardDeleteResults');host.replaceChildren();
+  if(!groups.length){host.textContent='Мероприятий не найдено.';return}
+  for(const e of groups.slice(0,30)){
+   const row=document.createElement('div');row.className='event-delete-result';const label=document.createElement('span'),title=document.createElement('b'),dates=document.createElement('small');title.textContent=e.type;dates.textContent=fmt(e.start)+(e.end&&e.end!==e.start?' — '+fmt(e.end):'')+' · '+(eventTime(e)||'без времени');label.append(title,dates);
+   const button=document.createElement('button');button.type='button';button.className='event-remove';button.textContent='Удалить';button.onclick=()=>{
+    const author=$('cardDeleteAuthor').value;if(!author){status('Выберите, кто удаляет мероприятие.',true);return}
+    if(!confirm('Удалить «'+e.type+'» · '+dates.textContent+' из общего календаря для всех участников?'))return;
+    if(window.removeDepartmentMeeting?.(e.id,author,t=>status(t,true))){renderRemovalResults();$('cardDeletePanel').open=false}
+   };row.append(label,button);host.append(row);
+  }
+  if(groups.length>30){const hint=document.createElement('p');hint.textContent='Показаны первые 30 записей. Уточните название в поиске.';host.append(hint)}
+ }
+ function openRemoval(id,query=''){
+  open();modal.setAttribute('aria-label','Удалить мероприятие');$('cardCopy').hidden=true;modal.querySelector('h3').textContent='Удалить мероприятие';$('cardForm').style.display='none';$('cardParsePanel').hidden=true;
+  const item=db.events.find(e=>e.id===id);$('cardDeleteSearch').value=item?item.type:query;$('cardDeletePanel').open=true;renderRemovalResults();$('cardDeleteSearch').focus();
+ }
+ $('cardDeleteSearch').oninput=renderRemovalResults;
+ $('cardDeletePanel').addEventListener('toggle',()=>{if($('cardDeletePanel').open)renderRemovalResults()});
+ document.getElementById('eventsTable').addEventListener('click',e=>{const button=e.target.closest('[data-remove-meeting]');if(button)openRemoval(button.dataset.removeMeeting)});
+ window.openMeetingRemoval=openRemoval;
+
  $('cardClose').onclick=()=>modal.classList.remove('open');
  document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.classList.remove('open')});
  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});
- $('cardParse').onclick=()=>{const d=EventDraft.parse($('cardText').value);$('cardTitle').value=d.title;$('cardDate').value=d.date;$('cardTime').value=d.time;$('cardWarning').textContent=d.warning.join(' ');clearCopy()};
+ $('cardParse').onclick=()=>{const text=$('cardText').value;if(/^\s*удали(?:ть)?\s+/i.test(text)){openRemoval(null,text.replace(/^\s*удали(?:ть)?\s+/i,'').trim());return}const d=EventDraft.parse(text);$('cardTitle').value=d.title;$('cardDate').value=d.date;$('cardTime').value=d.time;$('cardWarning').textContent=d.warning.join(' ');clearCopy()};
  $('cardCopyButton').onclick=async()=>{
   if(!$('cardForm').reportValidity())return;const d=draft();const text=EventDraft.format({...d,people:d.people.map(p=>p.name)});$('cardCopyBox').hidden=false;$('cardCopyText').value=text;
   try{await Promise.race([navigator.clipboard.writeText(text),new Promise((_,reject)=>setTimeout(reject,2000))]);status('Карточка скопирована для рабочего чата. В Google Sheets пока ничего не записано.')}

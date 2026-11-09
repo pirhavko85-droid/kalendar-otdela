@@ -48,3 +48,23 @@ test('shared event title accepts free text despite strict category validation',(
  const result=s.c.applyDepartmentChanges([{collection:'events',id:'NEW-EVENT',author:'P',before:null,after}],request);
  assert.equal(result.ok,true);assert.equal(s.grids['События'][1][3],after.type);assert.equal(s.grids['События'][1][5],'10.11.2026');
 });
+
+test('removal targets every participant of exactly one meeting and keeps recoverable rows',()=>{
+ const rows=[{id:'a',type:'Тест',linkedEvent:'g1',start:'2026-11-09',status:'План'},{id:'b',type:'Тест',linkedEvent:'g1',start:'2026-11-09',status:'План'},{id:'c',type:'Тест',linkedEvent:'g2',start:'2026-11-10',status:'План'}];
+ const c=context(rows);c.isMeetingEvent=()=>true;vm.runInContext(fn('meetingRowsForRemoval'),c);
+ const selected=c.meetingRowsForRemoval('a');assert.deepEqual(Array.from(selected,e=>e.id),['a','b']);selected.forEach(e=>e.status='Отменена');
+ assert.equal(c.groupedMeetingEvents(rows).length,1);assert.equal(rows.length,3);assert.equal(rows[2].status,'План');assert.equal(c.activeEvent(rows[0],'2026-11-09'),false);assert.equal(c.meetingRowsForRemoval('missing').length,0);
+});
+test('author is parenthesized in the same participant text',()=>{
+ const c=context();vm.runInContext(fn('meetingPeopleLine'),c);assert.equal(c.meetingPeopleLine({participants:['Павел Х.','Роман П.'],enteredBy:'Указал автор: Роман П.'}),'Павел Х., Роман П. (автор: Роман П.)');
+ assert.equal(c.meetingPeopleLine({participants:[]}), 'Участник не указан');
+});
+
+test('cancelling a participant group is conflict checked before any write',()=>{
+ for(const conflict of [false,true]){
+  const s=backend();for(const id of ['E1','E2'])s.grids['События'].push([id,'P','Роман','Тест','09.11.2026','09.11.2026','1','План','15:00','','','','','','GROUP']);
+  const schema=vm.runInContext('CHANGE_SCHEMAS.events',s.c),ops=s.grids['События'].slice(1).map(r=>{const before=s.c.changeRecord_(schema,r);return{collection:'events',id:r[0],author:'P',before,after:{...before,status:'Отменена'}}});
+  if(conflict)ops[1].before.type='Старая версия';const result=s.c.applyDepartmentChanges(ops,request);
+  assert.equal(result.ok,!conflict);if(conflict){assert.equal(s.writes(),0);assert.equal(s.grids['События'][1][7],'План')}else{assert.equal(result.count,2);assert.equal(s.grids['События'][1][7],'Отменена');assert.equal(s.grids['События'][2][7],'Отменена')}
+ }
+});

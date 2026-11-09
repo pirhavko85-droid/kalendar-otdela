@@ -9,7 +9,8 @@
  store=store||{operations:[],requestId:null};let previous=clone(db),busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
  const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
  document.querySelector('#data').insertBefore(card,document.querySelector('#data .card'));
- const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t};
+ let removalFeedback=null;
+ const $=id=>document.getElementById(id),setStatus=t=>{$('changeStatus').textContent=t;if(removalFeedback)removalFeedback(t)};
  $('departmentEditor').value=localStorage.getItem(AUTHOR)||'';
  $('departmentEditor').onchange=()=>{localStorage.setItem(AUTHOR,$('departmentEditor').value);update()};
  function update(){
@@ -80,6 +81,18 @@
    input.name=k;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить на этом устройстве';form.append(button);
   form.onsubmit=e=>{e.preventDefault();if(busy||unknown)return;if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
+ };
+ window.removeDepartmentMeeting=function(id,author,feedback){
+  if(busy||unknown){feedback('Дождитесь подтверждения предыдущей отправки.');return false}
+  if(store.operations.length){feedback('Сначала отправьте другие локальные изменения во вкладке «Импорт / экспорт».');return false}
+  if(!db.people.some(p=>p.id===author)){feedback('Выберите автора удаления.');return false}
+  const target=db.events.find(e=>e.id===id&&isMeetingEvent(e));
+  if(!target){feedback('Мероприятие не найдено. Получите свежие данные.');return false}
+  const rows=meetingRowsForRemoval(id);
+  if(!rows.length){feedback('Мероприятие уже удалено из календаря.');return false}
+  $('departmentEditor').value=author;localStorage.setItem(AUTHOR,author);removalFeedback=feedback;
+  rows.forEach(e=>e.status='Отменена');save();renderRecords();
+  store.autoPull=true;persist();$('uploadChanges').click();return true;
  };
  $('syncDepartment').onclick=()=>{if(store.operations.length){store.autoPull=true;persist();$('uploadChanges').click()}else syncEncrypted()};
  $('closeSharedEditor').onclick=()=>modal.classList.remove('open');

@@ -325,10 +325,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 @media(max-width:520px){.events-head{flex-wrap:wrap}.events-head .toolbar{width:100%}.events-head .toolbar button{font-size:12px;padding:8px}#eventCard{padding:10px}#eventCard .modal-box{padding:14px;font-size:16px;max-height:90dvh}#eventCard .form-grid{grid-template-columns:1fr}#eventCard .modal-head h3{font-size:19px;margin:0}}
 #cardPeople label{display:inline-flex;align-items:center;gap:7px;margin:5px 12px 5px 0}#cardPeople input{width:auto!important}#eventCard select{width:100%;padding:9px;font:inherit;border:1px solid var(--line);border-radius:9px}#eventCard details{margin:8px 0}#eventCard summary{cursor:pointer;padding:9px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}#cardWarning:empty{display:none}
 .shared-data .shared-author{display:flex;flex-direction:column;gap:6px;max-width:340px;margin:12px 0}.shared-data select,.shared-data button{font:inherit}.shared-data select{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fff}.shared-data details{border:1px solid var(--line);border-radius:10px;margin-top:8px;overflow:hidden}.shared-data summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:10px;font-size:12px;font-weight:700;list-style:none}.shared-data summary::-webkit-details-marker{display:none}.shared-data .shared-record-fields{display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:10px}.shared-record-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}.shared-data button:disabled{opacity:.45;cursor:default}.shared-data #sharedChangeHistory{padding:0 10px}.shared-data .toolbar button{white-space:normal}#sharedEditForm label{display:flex;flex-direction:column;gap:5px;min-width:0}#sharedEditForm input,#sharedEditForm textarea,#sharedEditForm select{width:100%;box-sizing:border-box}#sharedEditForm input[type=checkbox]{width:auto;align-self:flex-start}#sharedEditForm button{grid-column:1/-1}#closeSharedEditor{margin-top:10px}@media(max-width:600px){.shared-data .shared-record-fields,#sharedEditForm{grid-template-columns:1fr}.shared-data .toolbar{display:grid;grid-template-columns:1fr}.shared-data .toolbar button{width:100%}}
+.event-compact-card{grid-template-columns:48px minmax(0,1fr) auto}.event-remove{font:inherit;font-size:9px;padding:4px 6px;border:1px solid #e3b7b7;border-radius:7px;background:#fff8f8;color:#9e3030;cursor:pointer}.event-delete-result{padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.event-delete-result span{min-width:0}.event-delete-result button{flex-shrink:0}.event-delete-result small{display:block;color:var(--muted)}#cardDeletePanel label{display:flex;flex-direction:column;gap:5px;margin:8px 0}#cardDeletePanel input,#cardDeletePanel select{width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit}#cardDeletePanel .muted{font-size:11px}@media(max-width:900px){.event-compact-card{grid-template-columns:43px minmax(0,1fr) auto}.event-remove{font-size:8px;padding:4px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.36</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.37</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="today" class="active">Сегодня / Кто где</button>
@@ -381,7 +382,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.36';
+const APP_VERSION='1.11.37';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -592,6 +593,17 @@ function groupedMeetingEvents(list){
  });
  return [...map.values()];
 }
+function meetingRowsForRemoval(id,list=db.events){
+ const target=list.find(e=>e.id===id&&isMeetingEvent(e));
+ if(!target)return [];
+ const key=meetingGroupKey(target);
+ return list.filter(e=>isMeetingEvent(e)&&meetingGroupKey(e)===key&&!['Отменена','Замена'].includes(e.status));
+}
+function meetingPeopleLine(e){
+ const people=e.participants.length?e.participants.join(', '):'Участник не указан';
+ const author=String(e.enteredBy||'').replace(/^Указал автор:\s*/i,'').trim();
+ return people+(author?' (автор: '+author+')':'');
+}
 function renderEventDateGroups(list,mode){
  const byDate=new Map();
  list.forEach(e=>{if(!byDate.has(e.start))byDate.set(e.start,[]);byDate.get(e.start).push(e)});
@@ -601,9 +613,9 @@ function renderEventDateGroups(list,mode){
    const rel=eventRelative(date);
    return '<div class="event-day-group'+(productionDayInfo(date).nonwork?' event-nonwork':'')+'"><div class="event-day-head"><b>'+esc(eventDateTitle(date))+'</b><span>'+esc(rel)+'</span></div><div class="event-day-items">'+items.map(e=>{
      const tm=eventTime(e)||'—';
-     const people=e.participants.length?e.participants.join(', '):'Участник не указан';
+     const people=meetingPeopleLine(e);
      const period=e.end&&e.end!==e.start?'<span>'+esc(fmt(e.start)+' — '+fmt(e.end))+' · одно мероприятие</span>':'';
-     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b>'+period+'<span>'+esc(people)+'</span>'+(e.enteredBy?'<span class="event-author">'+esc(e.enteredBy)+'</span>':'')+'</div></div>';
+     return '<div class="event-compact-card"><div class="event-time">'+esc(tm)+'</div><div class="event-main"><b>'+esc(e.type)+'</b>'+period+'<span>'+esc(people)+'</span>'+'</div><button type="button" class="event-remove" data-remove-meeting="'+esc(e.id)+'" aria-label="Удалить мероприятие '+esc(e.type)+'">Удалить</button></div>';
    }).join('')+'</div></div>';
  }).join('');
 }
@@ -1354,9 +1366,9 @@ if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textCon
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
-<script src="event-draft.js?v=1.11.36"></script>
-<script src="event-card.js?v=1.11.36"></script>
-<script src="collaboration.js?v=1.11.36"></script>
+<script src="event-draft.js?v=1.11.37"></script>
+<script src="event-card.js?v=1.11.37"></script>
+<script src="collaboration.js?v=1.11.37"></script>
 </body>
 </html>
 
