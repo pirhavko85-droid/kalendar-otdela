@@ -50,9 +50,20 @@ function main() {
   const previous = decrypt(original, key);
   function editMetadata(sheet,row){const headers=source[sheet]?.[0]||[],author=headers.indexOf('Кто изменил'),at=headers.indexOf('Когда изменено');return {...(author>=0&&row[author]?{enteredBy:row[author]}:{}),...(at>=0&&row[at]?{modifiedAt:row[at]}:{})};}
   const previousPeople = new Map(previous.people.map(p => [p.id, p]));
+  function leaveBalances(row){
+    const balances={};
+    source['Сотрудники'][0].forEach((header,i)=>{
+      const m=String(header).match(/^(Остаток основного|Остаток ВБД|Отгуляно основного) (\d{4})$/);
+      if(!m||row[i]==null||row[i]==='')return;
+      const n=number(row[i]);if(!Number.isInteger(n))fail('Invalid leave balance');
+      const key={'Остаток основного':'main','Остаток ВБД':'vbd','Отгуляно основного':'takenMain'}[m[1]];
+      (balances[m[2]]??={})[key]=n;
+    });
+    return Object.keys(balances).length?{leaveBalances:balances}:{};
+  }
   const people = records(source, 'Сотрудники', ['ID', 'ФИО', 'Краткое имя']).map(r => ({
     id:r[0], full:r[1] || r[2] || '', short:r[2] || r[1] || '', role:r[3] || '', category:r[4] || '',
-    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || ''), ...editMetadata('Сотрудники',r)
+    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || ''), ...leaveBalances(r), ...editMetadata('Сотрудники',r)
   }));
   const oldEvents = new Map(previous.events.map(e => [e.id, e]));
   const extensionColumn = source['События']?.[0]?.indexOf('Даты продления отпуска') ?? -1;
