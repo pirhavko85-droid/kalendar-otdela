@@ -333,11 +333,11 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 @media(max-width:900px){nav{gap:2px;padding:4px 5px;padding-bottom:max(4px,env(safe-area-inset-bottom))}nav button{font-size:12px;padding:7px 7px;margin:0;border-radius:8px;line-height:1.2}}
 #data>.card{padding:12px;margin-bottom:10px}#data h2{margin-bottom:10px}#data>.card h3{margin:0 0 6px;font-size:15px}#data>.card p{font-size:12px;line-height:1.4;margin:7px 0}#data>.card .toolbar{display:flex;flex-wrap:wrap;gap:6px}#data>.card .toolbar>*{font-size:12px;padding:7px 9px!important}#data .exchange-advanced{border:1px solid var(--line);border-radius:10px;background:white}#data .exchange-advanced>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:700}#data .exchange-advanced>.card{margin:0;border:0;box-shadow:none;padding:10px}#data .shared-author{margin:7px 0}#data .shared-data p{font-size:12px;line-height:1.4;margin:6px 0}#data .shared-data h3{font-size:14px;margin:0 0 6px}
 
-.leave-remaining-body{padding:10px}.leave-remaining-note{font-size:12px;color:var(--muted);line-height:1.4;margin:0 0 10px}.leave-remaining-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.leave-remaining-row{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 10px;margin:6px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center}.leave-remaining-name{font-size:13px}.leave-remaining-total{font-size:15px;font-weight:800;white-space:nowrap}.leave-remaining-parts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px}.leave-balance-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #e9cc72;background:#fff0b3;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:600}.leave-balance-chip.vbd{background:#f7bbbb;border-color:#db8585;color:#7f2020}.leave-balance-chip.done{background:#e2f4e8;border-color:#a8d3b4;color:#24643a}.leave-balance-chip.other{background:#e5efff;border-color:#b7cdeb;color:#264c7a}.leave-remaining-taken{grid-column:1/-1;font-size:11px;color:var(--muted)}
+.leave-remaining-body{padding:10px}.leave-remaining-note{font-size:12px;color:var(--muted);line-height:1.4;margin:0 0 10px}.leave-remaining-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.leave-remaining-row{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 10px;margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.leave-remaining-name{font-size:13px;flex:1;white-space:nowrap}.leave-remaining-total{font-size:14px;font-weight:800;white-space:nowrap;order:3}.leave-remaining-parts{display:flex;flex-wrap:nowrap;gap:5px;order:1;white-space:nowrap}.leave-balance-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #e9cc72;background:#fff0b3;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:600}.leave-balance-chip.vbd{background:#f7bbbb;border-color:#db8585;color:#7f2020}.leave-balance-chip.done{background:#e2f4e8;border-color:#a8d3b4;color:#24643a}.leave-balance-chip.other{background:#e5efff;border-color:#b7cdeb;color:#264c7a}.leave-remaining-taken{font-size:10px;color:var(--muted);white-space:nowrap;order:2}@media(max-width:600px){.leave-remaining-body{padding:7px}.leave-remaining-row{padding:7px;gap:5px;margin:4px 0}.leave-remaining-name{font-size:11px}.leave-remaining-total{font-size:12px}.leave-remaining-parts{gap:3px}.leave-remaining-row .leave-balance-chip{font-size:10px;padding:3px 4px}.leave-remaining-taken{font-size:9px}}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.44</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.45</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -391,7 +391,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.44';
+const APP_VERSION='1.11.45';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -928,7 +928,7 @@ function renderLeaveRemaining(){
  const rows=db.people.map(p=>({p,b:leaveRemainingForPerson(p,year,db.events)}));
  const totals=rows.reduce((a,{b})=>{if(b.total!=null){a.main+=b.main;a.vbd+=b.vbd;a.total+=b.total}return a},{main:0,vbd:0,total:0});
  const chip=(text,cls='')=>'<span class="leave-balance-chip '+cls+'">'+esc(text)+'</span>';
- target.innerHTML='<p class="leave-remaining-note">'+year+' год · '+(year===2027?'Остаток равен запланированным отпускам за 2027 год; по мере использования будем уточнять. Летний отпуск включён в основной. Переходящие остатки за 2026 год сюда не добавляются.':'Подтверждённые остатки по данным Романа. Запланированные даты не вычитаются повторно.')+'</p><div class="leave-remaining-summary">'+chip('Всего: '+totals.total+' сут.')+chip('Основной: '+totals.main+' сут.')+chip('ВБД: '+totals.vbd+' сут.','vbd')+'</div>'+rows.map(({p,b})=>'<div class="leave-remaining-row"><b class="leave-remaining-name">'+esc(p.short||p.full)+'</b><span class="leave-remaining-total">'+(b.total==null?'—':b.total+' сут.')+'</span><div class="leave-remaining-parts">'+(b.total==null?chip('Данные не внесены','other'):b.total===0?chip(b.source==='plan'?'Отпуска не запланированы':'Всё отгуляно','done'):(b.main?chip('Основной · '+b.main+' сут.'):'')+(b.vbd?chip('ВБД · '+b.vbd+' сут.','vbd'):'')+(b.other?chip('Другие виды · '+b.other+' сут.','other'):''))+'</div>'+(b.takenMain!=null?'<span class="leave-remaining-taken">Отгуляно основного: '+b.takenMain+' сут.</span>':'')+'</div>').join('');
+ target.innerHTML='<p class="leave-remaining-note">'+year+' год · '+(year===2027?'Остаток равен запланированным отпускам за 2027 год; по мере использования будем уточнять. Летний отпуск включён в основной. Переходящие остатки за 2026 год сюда не добавляются.':'Подтверждённые остатки по данным Романа. Запланированные даты не вычитаются повторно.')+'</p><div class="leave-remaining-summary">'+chip('Всего: '+totals.total+' сут.')+chip('Основной: '+totals.main+' сут.')+chip('ВБД: '+totals.vbd+' сут.','vbd')+'</div>'+rows.map(({p,b})=>'<div class="leave-remaining-row"><b class="leave-remaining-name">'+esc(p.short||p.full)+'</b><span class="leave-remaining-total">'+(b.total==null?'—':b.total+' сут.')+'</span><div class="leave-remaining-parts">'+(b.total==null?chip('Данные не внесены','other'):b.total===0?chip(b.source==='plan'?'Отпуска не запланированы':'Всё отгуляно','done'):(b.main?chip('Основной '+b.main):'')+(b.vbd?chip('ВБД '+b.vbd,'vbd'):'')+(b.other?chip('Другие '+b.other,'other'):''))+'</div>'+(b.takenMain!=null?'<span class="leave-remaining-taken" title="Отгуляно основного отпуска">Исп. '+b.takenMain+' сут.</span>':'')+'</div>').join('');
 }
 function renderLeaveGrowth(){renderLeaveGrowthView('leaveGrowth',false);renderLeaveGrowthView('leaveSummerGrowth',true)}
 function renderLeaveGrowthView(targetId,summer){
@@ -1422,9 +1422,9 @@ setInterval(refreshCurrentDay,30000);
 window.addEventListener('focus',refreshCurrentDay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.44"></script>
-<script src="event-card.js?v=1.11.44"></script>
-<script src="collaboration.js?v=1.11.44"></script>
+<script src="event-draft.js?v=1.11.45"></script>
+<script src="event-card.js?v=1.11.45"></script>
+<script src="collaboration.js?v=1.11.45"></script>
 </body>
 </html>
 
