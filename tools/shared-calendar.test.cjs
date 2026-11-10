@@ -78,3 +78,14 @@ test('meeting edits preserve existing IDs and group while updating every partici
  const reduced=c.planMeetingEdit(rows,{...input,people:[{id:'Q'}]},()=> 'unused');assert.equal(reduced.find(r=>r.id==='a').status,'Отменена');assert.equal(reduced.find(r=>r.id==='b').status,'План');assert.equal(reduced.length,2);
  const noPeople=c.planMeetingEdit(rows,{...input,people:[]},()=> 'unused');assert.equal(noPeople.filter(r=>r.status!=='Отменена').length,1);assert.equal(noPeople[0].personId,'');
 });
+
+test('today uses the current day for a multiday event heading and preserves the original period',()=>{
+ const c=context([{id:'move',type:'Переезд',start:'2026-11-09',end:'2026-11-13',status:'План',basis:'09:00'}]);let out='';
+ Object.assign(c,{todayISO:()=> '2026-11-10',esc:String,fmt:String,isMeetingEvent:()=>true,eventRelative:d=>d==='2026-11-10'?'сегодня':'вчера',eventDateTitle:d=>d==='2026-11-10'?'Вторник, 10 ноября':'Понедельник, 9 ноября',document:{getElementById:id=>id==='eventsTable'?{set innerHTML(v){out=v}}:{value:''}}});
+ for(const name of ['meetingPeopleLine','renderEventDateGroups','renderEvents'])vm.runInContext(fn(name),c);
+ c.renderEvents();const today=out.split('<details')[0];assert.match(today,/Вторник, 10 ноября/);assert.doesNotMatch(today,/Понедельник/);assert.match(today,/2026-11-09 — 2026-11-13/);assert.equal(c.db.events[0].start,'2026-11-09');
+ assert.match(c.renderEventDateGroups(c.groupedMeetingEvents(c.db.events),'past'),/Понедельник, 9 ноября/);
+});
+test('today date follows Moscow at midnight regardless of the device timezone',()=>{
+ const c={Intl,Date:class extends Date{constructor(){super('2026-11-09T21:01:00Z')}}};vm.createContext(c);vm.runInContext(fn('todayISO'),c);assert.equal(c.todayISO(),'2026-11-10');
+});

@@ -335,7 +335,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.42</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.43</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -389,7 +389,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.42';
+const APP_VERSION='1.11.43';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -507,7 +507,7 @@ function uid(p='ID'){return p+'-'+Date.now().toString(36)+'-'+Math.random().toSt
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(d){if(!d)return'';const x=new Date(d+'T00:00:00');return x.toLocaleDateString('ru-RU')}
 function fmtShort(d){if(!d)return'';const x=new Date(d+'T00:00:00');return String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0')}
-function todayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function todayISO(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const value=type=>parts.find(p=>p.type===type).value;return [value('year'),value('month'),value('day')].join('-')}
 function person(id){return db.people.find(x=>x.id===id)}
 function effectiveEventStatus(e,date=todayISO()){return e.status==='План'&&e.start&&e.start<=date?'Факт':e.status}
 function activeEvent(e,date=todayISO()){const st=effectiveEventStatus(e,date),end=(st==='Продолжается'?todayISO():(e.end||e.start));return e.start<=date && end>=date && !['Замена','Отменена'].includes(st)}
@@ -623,9 +623,9 @@ function meetingPeopleLine(e){
  const author=String(e.enteredBy||'').replace(/^Указал автор:\s*/i,'').trim();
  return people+(author?' (автор: '+author+')':'');
 }
-function renderEventDateGroups(list,mode){
+function renderEventDateGroups(list,mode,displayDate){
  const byDate=new Map();
- list.forEach(e=>{if(!byDate.has(e.start))byDate.set(e.start,[]);byDate.get(e.start).push(e)});
+ list.forEach(e=>{const date=displayDate||e.start;if(!byDate.has(date))byDate.set(date,[]);byDate.get(date).push(e)});
  const dates=[...byDate.keys()].sort((a,b)=>mode==='past'?b.localeCompare(a):a.localeCompare(b));
  return dates.map(date=>{
    const items=byDate.get(date).sort((a,b)=>eventTime(a).localeCompare(eventTime(b)));
@@ -643,7 +643,7 @@ function renderEvents(){
  const raw=db.events.filter(e=>isMeetingEvent(e)&&(!q||JSON.stringify(e).toLowerCase().includes(q)));
  const list=groupedMeetingEvents(raw);
  const today=todayISO(),todayList=list.filter(e=>e.start<=today&&(e.end||e.start)>=today),future=list.filter(e=>e.start>today),past=list.filter(e=>(e.end||e.start)<today);
- const todayHtml='<div class="event-section event-today"><div class="event-section-title">Сегодня</div>'+(todayList.length?renderEventDateGroups(todayList,'future'):'<div class="event-empty">Сегодня мероприятий нет</div>')+'</div>';
+ const todayHtml='<div class="event-section event-today"><div class="event-section-title">Сегодня</div>'+(todayList.length?renderEventDateGroups(todayList,'future',today):'<div class="event-empty">Сегодня мероприятий нет</div>')+'</div>';
  const futureHtml='<details class="event-history"><summary><span>Предстоящие мероприятия ('+future.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(future.length?renderEventDateGroups(future,'future'):'<div class="event-empty">Предстоящих мероприятий нет</div>')+'</div></details>';
  const pastHtml='<details class="event-history"><summary><span>Прошедшие мероприятия ('+past.length+')</span><span class="disclosure-action">Показать</span></summary><div class="event-history-body">'+(past.length?renderEventDateGroups(past,'past'):'<div class="event-empty">История пока пуста</div>')+'</div></details>';
  document.getElementById('eventsTable').innerHTML=todayHtml+futureHtml+pastHtml;
@@ -1396,10 +1396,15 @@ document.getElementById('syncNowBtn').onclick=syncEncrypted;
 if(localStorage.getItem(SYNC_KEY)){document.getElementById('syncStatus').textContent='Общий ключ отдела подключён.';setTimeout(()=>syncEncrypted(),600)}
 
 setupStatic();renderAll();renderDataRevision();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+let displayedDay=todayISO();
+function refreshCurrentDay(){const next=todayISO();if(next!==displayedDay){displayedDay=next;renderAll()}}
+setInterval(refreshCurrentDay,30000);
+window.addEventListener('focus',refreshCurrentDay);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.42"></script>
-<script src="event-card.js?v=1.11.42"></script>
-<script src="collaboration.js?v=1.11.42"></script>
+<script src="event-draft.js?v=1.11.43"></script>
+<script src="event-card.js?v=1.11.43"></script>
+<script src="collaboration.js?v=1.11.43"></script>
 </body>
 </html>
 
