@@ -334,10 +334,12 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 #data>.card{padding:12px;margin-bottom:10px}#data h2{margin-bottom:10px}#data>.card h3{margin:0 0 6px;font-size:15px}#data>.card p{font-size:12px;line-height:1.4;margin:7px 0}#data>.card .toolbar{display:flex;flex-wrap:wrap;gap:6px}#data>.card .toolbar>*{font-size:12px;padding:7px 9px!important}#data .exchange-advanced{border:1px solid var(--line);border-radius:10px;background:white}#data .exchange-advanced>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:700}#data .exchange-advanced>.card{margin:0;border:0;box-shadow:none;padding:10px}#data .shared-author{margin:7px 0}#data .shared-data p{font-size:12px;line-height:1.4;margin:6px 0}#data .shared-data h3{font-size:14px;margin:0 0 6px}
 
 .leave-remaining-body{padding:10px}.leave-remaining-note{font-size:12px;color:var(--muted);line-height:1.4;margin:0 0 10px}.leave-remaining-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.leave-remaining-row{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 10px;margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.leave-remaining-name{font-size:13px;flex:1;white-space:nowrap}.leave-remaining-total{font-size:14px;font-weight:800;white-space:nowrap;order:3}.leave-remaining-parts{display:flex;flex-wrap:nowrap;gap:5px;order:1;white-space:nowrap}.leave-balance-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #e9cc72;background:#fff0b3;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:600}.leave-balance-chip.vbd{background:#f7bbbb;border-color:#db8585;color:#7f2020}.leave-balance-chip.done{background:#e2f4e8;border-color:#a8d3b4;color:#24643a}.leave-balance-chip.other{background:#e5efff;border-color:#b7cdeb;color:#264c7a}.leave-remaining-taken{font-size:10px;color:var(--muted);white-space:nowrap;order:2}@media(max-width:600px){.leave-remaining-body{padding:7px}.leave-remaining-row{padding:7px;gap:5px;margin:4px 0}.leave-remaining-name{font-size:11px}.leave-remaining-total{font-size:12px}.leave-remaining-parts{gap:3px}.leave-remaining-row .leave-balance-chip{font-size:10px;padding:3px 4px}.leave-remaining-taken{font-size:9px}}
+
+.leave-carry-month{border-color:#a8bfd7}.leave-carry-month .leave-visual-month-head{background:#eaf2fb}.leave-carry-note{font-size:10px;line-height:1.4;color:#455d74;margin-top:6px}.leave-visual-cell.leave-return{background:#edf8f0;border:2px solid #3e8656}
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.45</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Локальные данные • v1.11.46</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -391,7 +393,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.45';
+const APP_VERSION='1.11.46';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -856,13 +858,17 @@ function leaveDayHeaders(year,month,count,baseClass){
 function renderLeaveVisualOverlap(){
  const target=document.getElementById('leaveVisualOverlap'); if(!target)return;
  const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
- const leaves=db.events.filter(e=>leaveTypes().includes(e.type));
+ const leaves=db.events.filter(e=>leaveTypes().includes(e.type)&&!['Отменена','Замена'].includes(e.status));
+ const carry=leaves.filter(e=>String(e.start).slice(0,4)===String(year)&&(e.end||e.start)>year+'-12-31');
+ const months=Array.from({length:12},(_,m)=>({year,m,continuation:false}));
+ if(carry.length){const lastMonth=Math.max(...carry.map(e=>Number((e.end||e.start).slice(0,4))>year+1?11:Number((e.end||e.start).slice(5,7))-1));for(let m=0;m<=lastMonth;m++)months.push({year:year+1,m,continuation:true})}
  const seniority=['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ'];
  const rank=new Map(seniority.map((id,i)=>[id,i]));
- target.innerHTML=Array.from({length:12},(_,m)=>{
+ target.innerHTML=months.map(({year:displayYear,m,continuation})=>{
+  const year=displayYear;
   const dim=daysInMonth(year,m);
   const monthName=new Date(year,m,1).toLocaleDateString('ru-RU',{month:'long'});
-  const monthLeaves=leaves.filter(e=>overlapRange(e,year,m));
+  const monthLeaves=(continuation?carry:leaves).filter(e=>overlapRange(e,year,m));
   const personIds=[...new Set(monthLeaves.map(e=>e.personId))].sort((a,b)=>(rank.get(a)??999)-(rank.get(b)??999));
   const head=leaveDayHeaders(year,m,dim,'leave-visual-dayhead');
   let body='';
@@ -874,15 +880,18 @@ function renderLeaveVisualOverlap(){
     const cells=Array.from({length:dim},(_,i)=>{
      const ds=year+'-'+String(m+1).padStart(2,'0')+'-'+String(i+1).padStart(2,'0');
      const ev=monthLeaves.find(e=>e.personId===pid&&e.start<=ds&&(e.end||e.start)>=ds);
-     return '<span class="leave-visual-cell '+(ev?leaveCellClass(ev,ds):'')+'" title="'+(ev?esc((p?.short||'')+' · '+ev.type+' · '+fmtShortYear(ev.start)+'–'+fmtShortYear(ev.end||ev.start)):'')+'"></span>';
+     const returning=continuation&&!ev&&monthLeaves.some(e=>e.personId===pid&&dayAfterLeave(e.end||e.start)===ds);
+     return '<span class="leave-visual-cell '+(ev?leaveCellClass(ev,ds):returning?'leave-return':'')+'" title="'+(ev?esc((p?.short||'')+' · '+ev.type+' · '+fmtShortYear(ev.start)+'–'+fmtShortYear(ev.end||ev.start)):returning?esc((p?.short||'')+' · первый день после отпуска '+fmtShortYear(ds)):'')+'"></span>';
     }).join('');
     return '<div class="leave-visual-row" style="--days:'+dim+'"><span class="leave-visual-name">'+esc(p?.short||'—')+'</span>'+cells+'</div>';
    }).join('');
    body='<div class="leave-visual-grid"><div class="leave-visual-row" style="--days:'+dim+'"><span></span>'+head+'</div>'+rows+nonworkBands(year,m,dim)+'</div>';
   }
-  return '<div class="leave-visual-month"><div class="leave-visual-month-head"><b>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1)+' '+year+' года')+'</b><span>'+personIds.length+' '+(personIds.length===1?'сотрудник':personIds.length>=2&&personIds.length<=4?'сотрудника':'сотрудников')+'</span></div><div class="leave-visual-body">'+body+'</div></div>';
+  const note=continuation?'<div class="leave-carry-note">Продолжение отпусков за '+(year-1)+' год. '+monthLeaves.map(e=>esc((person(e.personId)?.short||'—')+': по '+fmtShortYear(e.end||e.start)+' включительно; после отпуска — с '+fmtShortYear(dayAfterLeave(e.end||e.start)))).join(' · ')+'<br>Контур — первый день после отпуска.</div>':'';
+  return '<div class="leave-visual-month'+(continuation?' leave-carry-month':'')+'"><div class="leave-visual-month-head"><b>'+esc(monthName.charAt(0).toUpperCase()+monthName.slice(1)+' '+year+' года')+'</b><span>'+personIds.length+' '+(personIds.length===1?'сотрудник':personIds.length>=2&&personIds.length<=4?'сотрудника':'сотрудников')+'</span></div><div class="leave-visual-body">'+body+note+'</div></div>';
  }).join('');
 }
+function dayAfterLeave(date){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function renderLeaveOverlap(){
  const target=document.getElementById('leaveOverlap'); if(!target)return;
  const year=Number(document.getElementById('leaveYearSelect')?.value||2027);
@@ -1422,9 +1431,9 @@ setInterval(refreshCurrentDay,30000);
 window.addEventListener('focus',refreshCurrentDay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.45"></script>
-<script src="event-card.js?v=1.11.45"></script>
-<script src="collaboration.js?v=1.11.45"></script>
+<script src="event-draft.js?v=1.11.46"></script>
+<script src="event-card.js?v=1.11.46"></script>
+<script src="collaboration.js?v=1.11.46"></script>
 </body>
 </html>
 
