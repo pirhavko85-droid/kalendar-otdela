@@ -23,7 +23,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,7 +41,21 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: public-site
+          name: github-pages-${{ github.run_attempt }}
+      # Artifact metadata can lag behind a successful upload. A rerun must also
+      # avoid colliding with the previous attempt's identically named artifact.
+      - name: Allow uploaded artifact metadata to settle
+        run: sleep 5
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+      - name: Retry the same uploaded artifact after a transient Pages failure
+        if: steps.deployment.outcome == 'failure'
+        id: deployment_retry
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
 

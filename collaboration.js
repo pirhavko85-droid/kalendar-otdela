@@ -6,6 +6,13 @@
  const names={people:'Сотрудники',events:'События',tasks:'Задачи',birthdays:'Дни рождения'};
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clean=(kind,x)=>x?Object.fromEntries(fields[kind].map(k=>[k,k==='controlled'?!!x[k]:String(x[k]??'')])):null;
+ function applyEditorDraft(kind,id,baseline,candidate,isNew){
+  const current=(db[kind]||[]).find(x=>x.id===id);
+  if(isNew){if(current)throw new Error('Запись уже создана. Откройте её заново.');db[kind]??=[];db[kind].push(candidate);return}
+  if(!current||JSON.stringify(clean(kind,current))!==JSON.stringify(baseline))throw new Error('Общая запись изменилась, пока карточка была открыта. Закройте карточку и откройте свежую запись.');
+  for(const key of fields[kind])current[key]=candidate[key];
+  if(kind==='events'&&LeaveAccounting.isLeave(current))Object.assign(current,LeaveAccounting.normalize(current,person(current.personId)));
+ }
  // Compare the user's intended fields, not unrelated edits made meanwhile.
  function alreadyApplied(op,remote){const current=clean(op.collection,remote);if(!current||!op.after)return false;return fields[op.collection].filter(k=>!op.before||op.before[k]!==op.after[k]).every(k=>current[k]===op.after[k])}
  let conflictRemote=null;
@@ -108,7 +115,7 @@
  $('newSharedRecord').onclick=()=>openRecord(true);
  $('editSelected').onclick=()=>openRecord(false);
  function openRecord(isNew){
-  const kind=$('editKind').value,id=isNew?uid('SHARED'):$('editRecord').value,item=isNew?{id,status:kind==='tasks'?'Новая':'План',created:todayISO(),affiliation:'Наш отдел'}:(db[kind]||[]).find(x=>x.id===id);if(!item)return;
+  const kind=$('editKind').value,id=isNew?uid('SHARED'):$('editRecord').value,item=isNew?{id,status:kind==='tasks'?'Новая':'План',created:todayISO(),affiliation:'Наш отдел'}:(db[kind]||[]).find(x=>x.id===id);if(!item)return;const baseline=clean(kind,item);
   $('sharedEditorTitle').textContent=names[kind]+' · '+(item.type||item.title||item.short||item.name||id);
   const form=$('sharedEditForm');form.replaceChildren();
   fields[kind].forEach(k=>{const label=document.createElement('label');label.textContent=LeaveAccounting.FIELDS[k]||labels[k]||k;if(kind==='events'&&Object.prototype.hasOwnProperty.call(LeaveAccounting.FIELDS,k)){label.dataset.leaveField='true';label.hidden=!LeaveAccounting.isLeave(item)}let input;
@@ -117,7 +124,7 @@
    input.name=k;if(['totalAbsenceDays','officialHolidayCount','baseEnd','leaveType'].includes(k))input.readOnly=true;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
   if(kind==='events')form.elements.type.addEventListener('change',()=>{form.querySelectorAll('[data-leave-field]').forEach(label=>label.hidden=!LeaveAccounting.isLeave({type:form.elements.type.value}))});
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить в общей таблице';form.append(button);
-  form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}const candidate={...item};for(const k of fields[kind])candidate[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;if(kind==='events'&&LeaveAccounting.isLeave(candidate)){try{for(const k of ['leaveYear','leaveDays','travelDays','holidayBonusDays'])if(candidate[k]==='')delete candidate[k];Object.assign(candidate,LeaveAccounting.normalize(candidate,person(candidate.personId)))}catch(err){alert(err.message);return}}if(isNew){db[kind]??=[];db[kind].push(item)}Object.assign(item,candidate);save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
+  form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}const candidate={...item};for(const k of fields[kind])candidate[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;if(kind==='events'&&LeaveAccounting.isLeave(candidate)){try{for(const k of ['leaveYear','leaveDays','travelDays','holidayBonusDays'])if(candidate[k]==='')delete candidate[k];Object.assign(candidate,LeaveAccounting.normalize(candidate,person(candidate.personId)))}catch(err){alert(err.message);return}}try{applyEditorDraft(kind,id,baseline,candidate,isNew)}catch(err){alert(err.message);return}save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
  };
  window.changeDepartmentMeeting=function(id,input,baseline,feedback){
   if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}

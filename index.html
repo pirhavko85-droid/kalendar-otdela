@@ -337,9 +337,10 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 
 .leave-carry-month{border-color:#a8bfd7}.leave-carry-month .leave-visual-month-head{background:#eaf2fb}.leave-carry-note{font-size:10px;line-height:1.4;color:#455d74;margin-top:6px}
 .leave-account{background:white;border:1px solid #dce2e8;border-radius:12px;padding:10px 12px;margin:8px 0}.leave-account-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.leave-account-metrics{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:6px}.leave-account-metrics span{padding:2px 5px;border-radius:4px}.leave-account p{font-size:13px;margin:6px 0}.leave-account-warning{color:#a52828}.leave-account summary{font-size:13px;cursor:pointer;margin-top:7px}.leave-plan{background-image:repeating-linear-gradient(135deg,transparent 0 3px,#ffffff88 3px 5px);outline:1px dashed #596d85;outline-offset:-1px}.leave-account details p{border-top:1px solid #edf0f3;padding-top:5px}#leaveInputFields{border:1px solid #dce2e8;border-radius:8px}#leaveInputFields label{display:inline-block;margin:5px}#leaveInputFields input{max-width:150px}#leaveInputFields p{font-size:12px}</style>
+<style>.form-grid label[hidden]{display:none!important}</style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.48</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.49</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -394,7 +395,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <script src="leave-accounting.js"></script>
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.48';
+const APP_VERSION='1.11.49';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1428,9 +1429,9 @@ setInterval(refreshCurrentDay,30000);
 window.addEventListener('focus',refreshCurrentDay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.48"></script>
-<script src="event-card.js?v=1.11.48"></script>
-<script src="collaboration.js?v=1.11.48"></script>
+<script src="event-draft.js?v=1.11.49"></script>
+<script src="event-card.js?v=1.11.49"></script>
+<script src="collaboration.js?v=1.11.49"></script>
 </body>
 </html>
 
