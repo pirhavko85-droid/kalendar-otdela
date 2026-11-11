@@ -336,11 +336,19 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 .leave-remaining-body{padding:10px}.leave-remaining-note{font-size:12px;color:var(--muted);line-height:1.4;margin:0 0 10px}.leave-remaining-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.leave-remaining-row{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 10px;margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}.leave-remaining-name{font-size:13px;flex:1;white-space:nowrap}.leave-remaining-total{font-size:14px;font-weight:800;white-space:nowrap;order:3}.leave-remaining-parts{display:flex;flex-wrap:nowrap;gap:5px;order:1;white-space:nowrap}.leave-balance-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #e9cc72;background:#fff0b3;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:600}.leave-balance-chip.vbd{background:#f7bbbb;border-color:#db8585;color:#7f2020}.leave-balance-chip.done{background:#e2f4e8;border-color:#a8d3b4;color:#24643a}.leave-balance-chip.other{background:#e5efff;border-color:#b7cdeb;color:#264c7a}.leave-remaining-taken{font-size:10px;color:var(--muted);white-space:nowrap;order:2}@media(max-width:600px){.leave-remaining-body{padding:7px}.leave-remaining-row{padding:7px;gap:5px;margin:4px 0}.leave-remaining-name{font-size:11px}.leave-remaining-total{font-size:12px}.leave-remaining-parts{gap:3px}.leave-remaining-row .leave-balance-chip{font-size:10px;padding:3px 4px}.leave-remaining-taken{font-size:9px}}
 
 .leave-carry-month{border-color:#a8bfd7}.leave-carry-month .leave-visual-month-head{background:#eaf2fb}.leave-carry-note{font-size:10px;line-height:1.4;color:#455d74;margin-top:6px}
-.leave-account{background:white;border:1px solid #dce2e8;border-radius:12px;padding:10px 12px;margin:8px 0}.leave-account-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.leave-account-metrics{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:6px}.leave-account-metrics span{padding:2px 5px;border-radius:4px}.leave-account p{font-size:13px;margin:6px 0}.leave-account-warning{color:#a52828}.leave-account summary{font-size:13px;cursor:pointer;margin-top:7px}.leave-plan{background-image:repeating-linear-gradient(135deg,transparent 0 3px,#ffffff88 3px 5px);outline:1px dashed #596d85;outline-offset:-1px}.leave-account details p{border-top:1px solid #edf0f3;padding-top:5px}#leaveInputFields{border:1px solid #dce2e8;border-radius:8px}#leaveInputFields label{display:inline-block;margin:5px}#leaveInputFields input{max-width:150px}#leaveInputFields p{font-size:12px}</style>
+.leave-account{background:white;border:1px solid #dce2e8;border-radius:12px;padding:10px 12px;margin:8px 0}.leave-account-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.leave-account-metrics{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:6px}.leave-account-metrics span{padding:2px 5px;border-radius:4px}.leave-account p{font-size:13px;margin:6px 0}.leave-account-warning{color:#a52828}.leave-account summary{font-size:13px;cursor:pointer;margin-top:7px}.leave-plan{outline:none;background-image:none}.leave-account details p{border-top:1px solid #edf0f3;padding-top:5px}#leaveInputFields{border:1px solid #dce2e8;border-radius:8px}#leaveInputFields label{display:inline-block;margin:5px}#leaveInputFields input{max-width:150px}#leaveInputFields p{font-size:12px}</style>
 <style>.form-grid label[hidden]{display:none!important}</style>
+<style>
+.leave-visual-cell.leave-extension,.leave-overlap-cell.leave-extension{background:#438ff0!important;border:1px solid #1b65c2!important;outline:none!important}
+.leave-extra-count{color:#155ab3!important;font-weight:800}
+.leave-account-compact{padding:0;margin:4px 0;border-radius:8px}.leave-account-compact>summary{display:grid;grid-template-columns:minmax(78px,1fr) 64px 62px 72px;align-items:center;gap:5px;padding:8px 10px;margin:0;list-style:none;font-size:12px;min-height:35px;box-sizing:border-box}.leave-account-compact>summary::-webkit-details-marker{display:none}.leave-account-compact>summary b{white-space:nowrap}.leave-account-compact .disclosure-action{font-size:10px;text-align:right}.leave-balance-main{background:#fff0ba;border-radius:5px;padding:3px 5px;white-space:nowrap}.leave-balance-vbd:not(:empty){background:#f6b5b5;color:#7c2020;border-radius:5px;padding:3px 5px;white-space:nowrap}.leave-account-detail{padding:0 10px 8px}.leave-account-compact .leave-account-detail p{font-size:12px;line-height:1.35}.leave-account-detail>details>summary{font-size:12px}
+#leaveChart .leave-inline-row{display:grid;grid-template-columns:78px 48px 77px minmax(30px,1fr) 30px;gap:4px;align-items:center;white-space:nowrap;flex-wrap:nowrap;margin:2px 0;padding:5px 6px;font-size:11px;line-height:1.2}#leaveChart .leave-inline-row b{font-size:11px;white-space:nowrap}#leaveChart .leave-inline-row span{white-space:nowrap;min-width:0}.leave-inline-days{text-align:right}.leave-inline-year{text-align:right;color:#69727c!important;font-size:10px}
+@media(max-width:900px){#leaveChart .year-row{grid-template-columns:minmax(0,1fr);gap:2px}#leaveChart .year-label{padding-top:3px;font-size:11px}#leaveChart .year-mobile-list{min-width:0}#leaveChart .leave-inline-row{border-radius:6px}}
+@media(max-width:380px){#leaveChart .leave-inline-row{grid-template-columns:74px 44px 72px minmax(25px,1fr) 28px;font-size:10.5px;gap:3px}#leaveChart .leave-inline-row b{font-size:10.5px}.leave-account-compact>summary{grid-template-columns:minmax(70px,1fr) 57px 55px 65px;font-size:11px;padding:7px 8px;gap:4px}}
+</style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.49</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.50</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -364,7 +372,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <section id="events" class="section"><div class="events-head"><h2>Мероприятия</h2><div class="toolbar"><button class="primary" onclick="openEventCard()">+ Мероприятие</button></div></div><div class="events-search"><input id="eventSearch" placeholder="Поиск по мероприятиям"></div><select id="eventEmployeeFilter" hidden><option value="">Все сотрудники</option></select><select id="eventTypeFilter" hidden><option value="">Все типы</option></select><select id="eventStatusFilter" hidden><option value="">Все статусы</option></select><div id="eventsTable"></div></section>
 <section id="exits" class="section"><h2>Переработка</h2><p class="muted">Выходы в выходные/праздничные дни, во время больничного и во время отпуска.</p><div id="exitsSummary" class="grid exits-summary"></div><p class="exits-units">Чел.-день — один день переработки одного сотрудника. «Вых.» — количество отдельных выходов сотрудников, а не людей. Учтены фактические выходы за текущий год.</p><div id="exitsPeople" class="exit-people-overall"></div><details class="exit-history-toggle"><summary><span>История переработок</span><span class="muted">Показать</span></summary><div id="exitsMonthly" class="exits-monthly"></div></details><div id="exitsTable" style="display:none"></div></section>
 <section id="leave" class="section"><div class="leave-head"><h2>Отпуска</h2><select id="leaveYearSelect" aria-label="Год отпусков"><option value="2026">2026</option><option value="2027" selected>2027</option></select></div>
-<div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span><span><i style="background:#63a8f5"></i>+1 день продления</span></div>
+<div class="legend"><span><i style="background:#f5a3a3"></i>Отпуск ВБД</span><span><i style="background:#a9ddb9"></i>Летний отпуск</span><span><i style="background:#ffe49a"></i>Основной отпуск</span><span><i style="background:#a9c9f5"></i>Семейные обстоятельства</span><span><i style="background:#63a8f5"></i>Дорога / доп. день ФГГС</span></div>
 <div id="leaveChart"></div>
 <details class="leave-visual-toggle"><summary><span>Графическая визуализация отпусков</span><span class="muted">Показать</span></summary><div id="leaveVisualOverlap"></div></details><details class="leave-visual-toggle"><summary><span>Осталось отпуска</span><span class="disclosure-action">Показать</span></summary><div id="leaveRemaining" class="leave-remaining-body"></div></details><details class="leave-visual-toggle"><summary><span>Наращивание всех отпусков</span><span class="disclosure-action">Показать</span></summary><div id="leaveGrowth" class="leave-growth-body"></div></details><details class="leave-visual-toggle"><summary><span>Наращивание летних отпусков</span><span class="disclosure-action">Показать</span></summary><div id="leaveSummerGrowth" class="leave-growth-body"></div></details>
 <div id="leaveTable" style="display:none"></div></section>
@@ -395,7 +403,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <script src="leave-accounting.js"></script>
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.49';
+const APP_VERSION='1.11.50';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -779,7 +787,11 @@ function overlapRange(e,y,m){
 function leaveExtensionDates(e){return [...new Set(e?.extensionDates||[])].filter(d=>d>=e.start&&d<=(e.end||e.start))}
 function leaveDaysLabel(e){if(e.leaveYear!=null)return e.leaveDays+' сут. отпуска'+(e.travelDays?' + '+e.travelDays+' дороги':'')+(e.holidayBonusDays?' + '+e.holidayBonusDays+' доп.':'')+' · за '+e.leaveYear+' г.';const days=eventDisplayDays(e),extra=leaveExtensionDates(e).length;return extra?(Number(days)-extra)+' + '+extra+' дн.':days+' дн.'}
 function leaveExtensionBadge(e){return leaveExtensionDates(e).length?'<span class="leave-extension-key" title="Дополнительный день отпуска" aria-label="Дополнительный день отпуска"></span>':''}
-function leaveCellClass(e,date){return (leaveExtensionDates(e).includes(date)?'leave-extension':leaveClass(e.type))+(e.status==='План'?' leave-plan':'')}
+function leaveTravelDates(e){const count=Number(e?.travelDays||0);if(!Number.isInteger(count)||count<1||count>5||e.type==='Отпуск ВБД'||!e.start||!(e.end||e.start))return [];return Array.from({length:count},(_,i)=>new Date(Date.parse(e.end||e.start)+(i+1-count)*86400000).toISOString().slice(0,10)).filter(d=>d>=e.start)}
+function leaveCellClass(e,date){return leaveExtensionDates(e).includes(date)?'leave-extension':leaveTravelDates(e).includes(date)?'leave-extension leave-travel':leaveClass(e.type)}
+function leaveShortType(type){return {'Основной отпуск':'осн. отп.','Летний отпуск':'лет. отп.','Отпуск ВБД':'ВБД','Дополнительный отпуск':'доп. отп.','Отпуск по семейным обстоятельствам':'сем. отп.'}[type]||type}
+function leaveCompactDays(e){const extra=leaveExtensionDates(e).length+Number(e.travelDays||0),base=e.leaveDays!=null?Number(e.leaveDays):Number(eventDisplayDays(e))-extra;return esc(base)+(extra?'<span class="leave-extra-count">+'+extra+'</span>':'')}
+
 function leaveClass(type){
  if(type==='Отпуск ВБД')return'leave-vbd';
  if(type==='Летний отпуск')return'leave-summer';
@@ -805,6 +817,7 @@ function eventDisplayDays(e){
 function monthMobileList(events,y,m,kind){
  const items=monthItems(events,y,m);
  if(!items.length)return kind==='leave'?'<div class="year-mobile-list"><div class="mobile-month-card"><span>—</span></div></div>':'';
+ if(kind==='leave')return '<div class="year-mobile-list leave-inline-list">'+items.map(({e})=>{const who=person(e.personId)?.short||'',full=who+' · '+e.type+' · '+fmtShortYear(e.start)+'–'+fmtShortYear(e.end||e.start)+' · '+leaveDaysLabel(e)+' · '+(e.status||'');return '<div class="mobile-month-card leave-inline-row '+leaveClass(e.type)+'" title="'+esc(full)+'"><b>'+esc(who)+'</b><span class="leave-inline-type">'+esc(leaveShortType(e.type))+'</span><span class="leave-inline-dates">'+esc(fmtShort(e.start)+'–'+fmtShort(e.end||e.start))+'</span><span class="leave-inline-days">'+leaveCompactDays(e)+'</span><span class="leave-inline-year">'+esc(e.leaveYear||String(e.start).slice(0,4))+'</span></div>'}).join('')+'</div>';
  return '<div class="year-mobile-list">'+items.map(({e})=>{
   const who=person(e.personId)?.short||'';
   let label=e.type;
@@ -828,7 +841,7 @@ function renderYearLanes(events,y,m,kind){
   if(kind==='sick')kindLabel=isChildCareSick(e)?'по уходу за ребёнком':'болеет';
   const endLabel=effectiveEventStatus(e)==='Продолжается'?'…':fmtShort(e.end||e.start);
   const txt=who+' — '+kindLabel+' ('+fmtShort(e.start)+'–'+endLabel+')'+(kind==='leave'?' · '+leaveDaysLabel(e)+(e.status==='План'?' · План':''):'');
-  const extra=kind==='leave'?leaveExtensionDates(e).filter(d=>d.slice(0,7)===y+'-'+String(m+1).padStart(2,'0')).map(d=>'<span class="year-extension-day" style="left:'+((Number(d.slice(-2))-1)/dim*100)+'%;width:'+(100/dim)+'%" title="'+esc(who+' · '+fmtShort(d)+' · +1 день отпуска')+'"></span>').join(''):'';
+  const extra=kind==='leave'?[...leaveExtensionDates(e),...leaveTravelDates(e)].filter(d=>d.slice(0,7)===y+'-'+String(m+1).padStart(2,'0')).map(d=>'<span class="year-extension-day" style="left:'+((Number(d.slice(-2))-1)/dim*100)+'%;width:'+(100/dim)+'%" title="'+esc(who+' · '+fmtShort(d)+(leaveTravelDates(e).includes(d)?' · сутки дороги':' · дополнительный день ФГГС'))+'"></span>').join(''):'';
   return '<div class="year-lane"><div class="year-block '+cls+'" style="left:'+left+'%;width:'+Math.max(width,4)+'%" title="'+esc(txt)+'">'+esc(txt)+'</div>'+extra+'</div>';
  }).join('');
 }
@@ -925,10 +938,9 @@ function renderLeaveOverlap(){
 }
 function leaveRemainingForPerson(p,year,events){return LeaveAccounting.account(p,events,year)}
 function renderLeaveRemaining(){
- const year=Number(document.getElementById('leaveYearSelect').value),target=document.getElementById('leaveRemaining');
- const value=n=>n==null?'не определён':n+' сут.';
+ const year=Number(document.getElementById('leaveYearSelect').value),target=document.getElementById('leaveRemaining'),value=n=>n==null?'—':n;
  const rows=db.people.map(p=>({p,b:leaveRemainingForPerson(p,year,db.events)}));
- target.innerHTML='<p class="leave-remaining-note">'+(year>=2028?'Переносы выходных на '+year+' год ещё не подтверждены. ':'')+'Отпускной год '+year+'. Списываются только записи со статусом «Факт». Дорога и дополнительный день ФГГС в норму не входят. План уменьшает только прогноз.</p>'+rows.map(({p,b})=>'<div class="leave-account"><div class="leave-account-head"><b>'+esc(p.short||p.full)+'</b><span>Осталось: '+value(b.mainRemaining)+(b.vbdLimit?' · ВБД '+value(b.vbdRemaining):'')+'</span></div><div class="leave-account-metrics"><span>Основной: норма '+value(b.mainLimit)+' · использовано '+b.mainUsed+' · план '+b.mainPlan+' · прогноз '+value(b.mainForecast)+'</span>'+(b.vbdLimit?'<span class="leave-vbd">ВБД: норма '+b.vbdLimit+' · использовано '+b.vbdUsed+' · план '+b.vbdPlan+' · прогноз '+value(b.vbdForecast)+'</span>':'')+'<span>Дорога: факт '+b.travelUsed+' · план '+b.travelPlan+' · до 5 суток на случай, по основанию</span><span>Доп. дни ФГГС: факт '+b.bonusUsed+' · план '+b.bonusPlan+'</span></div>'+(!b.complete?'<p>История года неполная: показаны известные записи; точный остаток не определён.</p>':'')+b.warnings.map(w=>'<p class="leave-account-warning">'+esc(w)+'</p>').join('')+'<details><summary>Части отпуска ('+b.parts.length+')</summary>'+b.parts.map(e=>'<p><b>'+esc(fmt(e.start)+'–'+fmt(e.end||e.start))+'</b> · '+esc(e.status)+' · '+esc(e.type)+' · часть '+esc(e.partNumber||'—')+' · за '+e.leaveYear+' г.<br>Отпуск '+e.leaveDays+' + дорога '+e.travelDays+' + доп. '+e.holidayBonusDays+' = отсутствие '+e.totalAbsenceDays+' сут. · официальных праздников '+e.officialHolidayCount+' · основная часть до '+esc(fmt(e.baseEnd))+(e.destination?' · '+esc(e.destination):'')+(e.travelBasis?' · основание дороги: '+esc(e.travelBasis):'')+'</p>').join('')+'</details></div>').join('');
+ target.innerHTML='<p class="leave-remaining-note">'+year+' · Остаток по факту, суток. Норма, план и расчёт — в подробностях.</p>'+rows.map(({p,b})=>'<details class="leave-account leave-account-compact"><summary><b>'+esc(p.short||p.full)+'</b><span class="leave-balance-main" title="Остаток основного отпуска">Осн. '+value(b.mainRemaining)+'</span><span class="leave-balance-vbd" title="Остаток отпуска ВБД">'+(b.vbdLimit?'ВБД '+value(b.vbdRemaining):'')+'</span><span class="disclosure-action">Подробнее</span></summary><div class="leave-account-detail"><p>Основной: норма '+value(b.mainLimit)+' · факт '+b.mainUsed+' · план '+b.mainPlan+' · прогноз '+value(b.mainForecast)+'.</p>'+(b.vbdLimit?'<p>ВБД: норма '+b.vbdLimit+' · факт '+b.vbdUsed+' · план '+b.vbdPlan+' · прогноз '+value(b.vbdForecast)+'.</p>':'')+(b.travelUsed||b.travelPlan?'<p>Дорога: факт '+b.travelUsed+' · план '+b.travelPlan+' сут. Не списывается из нормы.</p>':'')+(b.bonusUsed||b.bonusPlan?'<p>Доп. дни ФГГС: факт '+b.bonusUsed+' · план '+b.bonusPlan+'.</p>':'')+(!b.complete?'<p>История года неполная. Точный остаток не определён.</p>':'')+b.warnings.map(w=>'<p class="leave-account-warning">'+esc(w)+'</p>').join('')+'<details><summary>Части отпуска ('+b.parts.length+')</summary>'+b.parts.map(e=>'<p><b>'+esc(fmt(e.start)+'–'+fmt(e.end||e.start))+'</b> · '+esc(e.status)+' · '+esc(leaveShortType(e.type))+' · часть '+esc(e.partNumber||'—')+' · за '+e.leaveYear+' г.<br>Отпуск '+e.leaveDays+' + дорога '+e.travelDays+' + доп. '+e.holidayBonusDays+' = отсутствие '+e.totalAbsenceDays+' сут. · праздников '+e.officialHolidayCount+(e.destination?' · '+esc(e.destination):'')+(e.travelBasis?' · '+esc(e.travelBasis):'')+'</p>').join('')+'</details></div></details>').join('');
 }
 function renderLeaveGrowth(){renderLeaveGrowthView('leaveGrowth',false);renderLeaveGrowthView('leaveSummerGrowth',true)}
 function renderLeaveGrowthView(targetId,summer){
@@ -1429,9 +1441,9 @@ setInterval(refreshCurrentDay,30000);
 window.addEventListener('focus',refreshCurrentDay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.49"></script>
-<script src="event-card.js?v=1.11.49"></script>
-<script src="collaboration.js?v=1.11.49"></script>
+<script src="event-draft.js?v=1.11.50"></script>
+<script src="event-card.js?v=1.11.50"></script>
+<script src="collaboration.js?v=1.11.50"></script>
 </body>
 </html>
 
