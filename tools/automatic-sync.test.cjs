@@ -10,7 +10,7 @@ function setup(saved={}){
  const remote={people:[{id:'P',short:'Роман П.'}],events:[{id:'E',personId:'P',type:'До правки',start:'2026-11-09',end:'2026-11-09',status:'План',basis:'15:00',comment:'',linkedEvent:'G'}],tasks:[],birthdays:[]};
  let fail=false,fetches=0,uuid=0,hold=null;
  storage.set('key','shared-key');storage.set('departmentEditorV1','P');
- const c={db:storage.get('db')?JSON.parse(storage.get('db')):copy(remote),KEY:'db',SYNC_KEY:'key',document:{hidden:false,createElement:()=>element(),getElementById:element,querySelector:()=>element(),addEventListener:(k,f)=>documentListeners[k]=f},navigator:{onLine:true},
+ const c={LeaveAccounting:require('../leave-accounting.js'),db:storage.get('db')?JSON.parse(storage.get('db')):copy(remote),KEY:'db',SYNC_KEY:'key',document:{hidden:false,createElement:()=>element(),getElementById:element,querySelector:()=>element(),addEventListener:(k,f)=>documentListeners[k]=f},navigator:{onLine:true},
   localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},crypto:{randomUUID:()=>`${String(++uuid).padStart(8,'0')}-1111-1111-1111-111111111111`},
   setTimeout:(fn,ms)=>{const t={fn,ms,cancelled:false};timeouts.push(t);return t},clearTimeout:t=>{if(t)t.cancelled=true},setInterval:f=>{intervals.push(f);return intervals.length},clearInterval(){},Date,console,EventDraft:{moscowToday:()=> '2026-11-09'},
   CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail}},alert(){},esc:String,fmt:String,todayISO:()=> '2026-11-09',uid:()=> 'new',person:id=>c.db.people.find(p=>p.id===id),renderAll(){},save(){storage.set('db',JSON.stringify(c.db))},

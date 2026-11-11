@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const zlib = require('node:zlib');
+const LeaveAccounting = require('../leave-accounting.js');
 const root = path.resolve(__dirname, '..');
 function fail(message) { throw new Error(message); }
 function argument(name) {
@@ -48,9 +49,11 @@ function main() {
   if (keyConfig.alg !== 'A256GCM' || key.length !== 32) fail('Invalid shared key file');
   const original = read(argument('--baseline') || path.join(root, 'data.enc.json'));
   const previous = decrypt(original, key);
-  function editMetadata(sheet,row){const headers=source[sheet]?.[0]||[],author=headers.indexOf('Кто изменил'),at=headers.indexOf('Когда изменено');return {...(author>=0&&row[author]?{enteredBy:row[author]}:{}),...(at>=0&&row[at]?{modifiedAt:row[at]}:{})};}
+  function editMetadata(sheet,row){const headers=source[sheet]?.[0]||[],author=headers.indexOf('Кто изменил'),at=headers.indexOf('Когда изменено');return {...(author>=0&&row[author]?{enteredBy:row[author]}:{}),...(at>=0&&row[at]?{modifiedAt:row[at],updatedAt:row[at]}:{})};}
   const previousPeople = new Map(previous.people.map(p => [p.id, p]));
+  if(previous.people.some(p=>p.leaveAccounts)&&!source['Нормы отпусков'])fail('Missing leave policy sheet; previous snapshot preserved');
   function leaveBalances(row){
+    if(source['Нормы отпусков'])return {};
     const balances={};
     source['Сотрудники'][0].forEach((header,i)=>{
       const m=String(header).match(/^(Остаток основного|Остаток ВБД|Отгуляно основного) (\d{4})$/);
@@ -61,9 +64,10 @@ function main() {
     });
     return Object.keys(balances).length?{leaveBalances:balances}:{};
   }
+  function leaveAccounts(id){const rows=source['Нормы отпусков'];if(!rows)return {};const accounts={};for(const r of rows.slice(1)){if(r[1]!==id)continue;accounts[r[0]]={main:r[2]===''||r[2]==null?null:number(r[2]),vbd:r[3]===''||r[3]==null?null:number(r[3]),complete:r[5]==='Да',travelMax:number(r[4]||5)};}return {leaveAccounts:accounts};}
   const people = records(source, 'Сотрудники', ['ID', 'ФИО', 'Краткое имя']).map(r => ({
     id:r[0], full:r[1] || r[2] || '', short:r[2] || r[1] || '', role:r[3] || '', category:r[4] || '',
-    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || ''), ...leaveBalances(r), ...editMetadata('Сотрудники',r)
+    birthdate:date(r[5] || previousPeople.get(r[0])?.birthdate || ''), ...leaveBalances(r), ...leaveAccounts(r[0]), ...editMetadata('Сотрудники',r)
   }));
   const oldEvents = new Map(previous.events.map(e => [e.id, e]));
   const extensionColumn = source['События']?.[0]?.indexOf('Даты продления отпуска') ?? -1;
@@ -73,11 +77,13 @@ function main() {
     if(dates.length&&!['Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам'].includes(r[3]))fail('Extension on non-leave event');
     return dates.length?{extensionDates:dates}:{};
   }
+  function leaveFields(r){if(!LeaveAccounting.TYPES.includes(r[3]))return {};const values={};for(const [key,header] of Object.entries(LeaveAccounting.FIELDS)){const i=source['События'][0].indexOf(header);if(i>=0&&r[i]!==''&&r[i]!=null)values[key]=key==='baseEnd'?date(r[i]):['destination','travelBasis','leaveType','partNumber'].includes(key)?r[i]:number(r[i]);}return values;}
   const events = records(source, 'События', ['ID события', 'Сотрудник ID', 'Сотрудник', 'Тип события']).map(r => ({
     id:r[0], personId:r[1] || '', type:r[3] || '', start:date(r[4]), end:date(r[5]),
     days:number(r[6]), status:r[7] || '', basis:r[8] || '', comment:r[9] || '',
-    linkedEvent:r[14] || oldEvents.get(r[0])?.linkedEvent || '', ...(String(r[12]||'').startsWith('Карточка дашборда')?{enteredBy:r[10]||''}:{}), ...extension(r), ...editMetadata('События',r)
+    linkedEvent:r[14] || oldEvents.get(r[0])?.linkedEvent || '', ...(String(r[12]||'').startsWith('Карточка дашборда')?{enteredBy:r[10]||''}:{}), ...(leaveFields(r).leaveYear==null?extension(r):{}), ...leaveFields(r), ...editMetadata('События',r)
   }));
+  for(let i=0;i<events.length;i++)if(events[i].leaveYear!=null)events[i]=LeaveAccounting.normalize(events[i],people.find(p=>p.id===events[i].personId));
   const birthdays = records(source, 'Дни рождения', ['Сотрудник ID', 'Сотрудник', 'Дата рождения']).map(r => ({
     id:r[0], name:r[1] || '', date:date(r[2]), affiliation:r[7] || 'Наш отдел', ...editMetadata('Дни рождения',r)
   }));

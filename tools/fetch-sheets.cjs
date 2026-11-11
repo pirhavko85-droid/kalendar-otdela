@@ -19,9 +19,10 @@ async function main() {
   if (before.id !== id || !before.modifiedTime) throw new Error('Source identity or revision metadata missing');
   const metadata = await get(`https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets(properties(title,gridProperties(rowCount,columnCount)))`);
   const wanted = ['Сотрудники','События','Дни рождения','Задачи'];
+  if(metadata.sheets?.some(x=>x.properties.title==='Нормы отпусков'))wanted.push('Нормы отпусков');
   const ranges = wanted.map(title => {
     const sheet = metadata.sheets?.find(x => x.properties.title === title)?.properties;
-    if (!sheet || sheet.gridProperties.columnCount < 14) throw new Error('Required source sheet missing or too narrow');
+    if (!sheet || sheet.gridProperties.columnCount < (title==='Нормы отпусков'?7:14)) throw new Error('Required source sheet missing or too narrow');
     if (sheet.gridProperties.rowCount > 20000) throw new Error('Source sheet exceeds configured read limit');
     if(sheet.gridProperties.columnCount>60)throw new Error('Source sheet too wide');
     let n=sheet.gridProperties.columnCount,lastColumn='';while(n){n--;lastColumn=String.fromCharCode(65+n%26)+lastColumn;n=Math.floor(n/26)}

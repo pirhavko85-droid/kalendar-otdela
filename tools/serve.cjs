@@ -4,11 +4,12 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/preview-mobile.html', ['tools/mobile-preview.html', 'text/html; charset=utf-8']],
   ['/preview-server-code.txt', ['tools/event-writer/Code.gs', 'text/plain; charset=utf-8']],
   ['/preview-bridge.txt', ['tools/event-writer/Bridge.html', 'text/plain; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
-  ...['event-draft.js','event-card.js','collaboration.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
+  ...['leave-accounting.js','event-draft.js','event-card.js','collaboration.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
   ['/data.enc.json', ['data.enc.json', 'application/json']],
   ['/leave-extension.js', ['leave-extension.js', 'text/javascript; charset=utf-8']],

@@ -2,6 +2,7 @@
  'use strict';
  const STORE='departmentChangesV1',AUTHOR='departmentEditorV1';
  const fields={people:['short','full','role','category','birthdate'],events:['personId','type','start','end','days','status','basis','comment','linkedEvent'],tasks:['personId','title','description','created','deadline','priority','status','completed','author','comment','controlled'],birthdays:['name','date','affiliation']};
+ fields.events.push(...Object.keys(LeaveAccounting.FIELDS));
  const names={people:'Сотрудники',events:'События',tasks:'Задачи',birthdays:'Дни рождения'};
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clean=(kind,x)=>x?Object.fromEntries(fields[kind].map(k=>[k,k==='controlled'?!!x[k]:String(x[k]??'')])):null;
@@ -72,7 +73,7 @@
     const waiting=[];
     for(const op of store.awaitingPublished){
      const list=db[op.collection]||[],index=list.findIndex(x=>x.id===op.id),remote=(published[op.collection]||[]).find(x=>x.id===op.id),local=(previous[op.collection]||[]).find(x=>x.id===op.id);
-     if(JSON.stringify(clean(op.collection,remote))!==JSON.stringify(op.after)){
+     if(JSON.stringify(clean(op.collection,remote))!==JSON.stringify(clean(op.collection,op.after))){
       if(remote?.modifiedAt&&local?.modifiedAt&&remote.modifiedAt>local.modifiedAt)continue;
       waiting.push(op);if(local){if(index>=0)list[index]=clone(local);else list.push(clone(local))}
      }
@@ -110,12 +111,13 @@
   const kind=$('editKind').value,id=isNew?uid('SHARED'):$('editRecord').value,item=isNew?{id,status:kind==='tasks'?'Новая':'План',created:todayISO(),affiliation:'Наш отдел'}:(db[kind]||[]).find(x=>x.id===id);if(!item)return;
   $('sharedEditorTitle').textContent=names[kind]+' · '+(item.type||item.title||item.short||item.name||id);
   const form=$('sharedEditForm');form.replaceChildren();
-  fields[kind].forEach(k=>{const label=document.createElement('label');label.textContent=labels[k]||k;let input;
+  fields[kind].forEach(k=>{const label=document.createElement('label');label.textContent=LeaveAccounting.FIELDS[k]||labels[k]||k;if(kind==='events'&&Object.prototype.hasOwnProperty.call(LeaveAccounting.FIELDS,k)){label.dataset.leaveField='true';label.hidden=!LeaveAccounting.isLeave(item)}let input;
    if(k==='personId'){input=document.createElement('select');input.innerHTML='<option value="">Не указан</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short)+'</option>').join('')}
-   else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');if(input.tagName==='INPUT')input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':k==='days'?'number':'text'}
-   input.name=k;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
+   else{input=document.createElement(['description','comment'].includes(k)?'textarea':'input');if(input.tagName==='INPUT')input.type=k==='controlled'?'checkbox':['start','end','birthdate','date','created','deadline','completed'].includes(k)?'date':['days','leaveYear','leaveDays','travelDays','holidayBonusDays','totalAbsenceDays','officialHolidayCount'].includes(k)?'number':k==='baseEnd'?'date':'text'}
+   input.name=k;if(['totalAbsenceDays','officialHolidayCount','baseEnd','leaveType'].includes(k))input.readOnly=true;if(k==='controlled')input.checked=!!item[k];else input.value=item[k]??'';label.append(input);form.append(label)});
+  if(kind==='events')form.elements.type.addEventListener('change',()=>{form.querySelectorAll('[data-leave-field]').forEach(label=>label.hidden=!LeaveAccounting.isLeave({type:form.elements.type.value}))});
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить в общей таблице';form.append(button);
-  form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}if(isNew){db[kind]??=[];db[kind].push(item)}for(const k of fields[kind])item[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
+  form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}const candidate={...item};for(const k of fields[kind])candidate[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;if(kind==='events'&&LeaveAccounting.isLeave(candidate)){try{for(const k of ['leaveYear','leaveDays','travelDays','holidayBonusDays'])if(candidate[k]==='')delete candidate[k];Object.assign(candidate,LeaveAccounting.normalize(candidate,person(candidate.personId)))}catch(err){alert(err.message);return}}if(isNew){db[kind]??=[];db[kind].push(item)}Object.assign(item,candidate);save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
  };
  window.changeDepartmentMeeting=function(id,input,baseline,feedback){
   if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}

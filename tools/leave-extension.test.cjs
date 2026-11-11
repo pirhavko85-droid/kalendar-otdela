@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {calculate}=require('../leave-extension.js');
 const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
 const cal=html.slice(html.indexOf('const PROD_NONWORK_2026='),html.indexOf("const KEY='"));
-const ctx={};vm.runInNewContext(cal+';nonwork=d=>productionDayInfo(d).nonwork;',ctx);
+const ctx={LeaveAccounting:require('../leave-accounting.js')};vm.runInNewContext(cal+';nonwork=d=>productionDayInfo(d).nonwork;',ctx);
 const people=[{id:'a'},{id:'b'}],types=['Отпуск'];
 const event=(start,end,personId='a')=>({personId,type:'Отпуск',start,end,status:'План'});
 function result(events,year=2026){return calculate(events,people,year,ctx.nonwork,types).find(r=>r.personId==='a')}
