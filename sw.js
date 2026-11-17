@@ -1,5 +1,5 @@
-const CACHE='kalendar-otdela-v102';
-const CORE=['./','./index.html','./manifest.json','./collaboration.js?v=1.11.52','./leave-extension.js','./leave-accounting.js','./event-draft.js?v=1.11.52','./event-card.js?v=1.11.52','./icons/calendar-3-64.png','./icons/calendar-3-180.png','./icons/calendar-3-192.png','./icons/calendar-3-512.png','./icons/calendar-3.svg'];
+const CACHE='kalendar-otdela-v103';
+const CORE=['./','./index.html','./manifest.json','./collaboration.js?v=1.11.53','./leave-extension.js','./leave-accounting.js','./event-draft.js?v=1.11.53','./event-card.js?v=1.11.53','./icons/calendar-3-64.png','./icons/calendar-3-180.png','./icons/calendar-3-192.png','./icons/calendar-3-512.png','./icons/calendar-3.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));
 });

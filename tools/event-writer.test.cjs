@@ -47,3 +47,10 @@ test('spreadsheet formulas in user titles are stored as literal text',()=>{
 test('09:00 remains literal despite inherited time formatting, for every department author',()=>{
  for(const author of ['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ']){const s=setup({timeFormat:true});const r=s.context.addDepartmentEvent({...event,time:'09:00',author},id);assert.equal(r.ok,true,author);assert.equal(s.data[1][8],'09:00')}
 });
+
+test('native POST confirms actual write, escapes titles, and retry never duplicates',()=>{
+ const s=setup();s.context.HtmlService={createHtmlOutput:html=>({html,setTitle(){return this},addMetaTag(){return this}})};
+ const payload=JSON.stringify({event:{...event,title:'<script>alert(1)</script>',time:'09:00'},requestId:id});const result=s.context.doPost({parameter:{payload}});assert.match(result.html,/Запись сохранена/);assert.match(result.html,/&lt;script&gt;/);assert.doesNotMatch(result.html,/<script>alert/);assert.equal(s.writes(),1);
+ const again=s.context.doPost({parameter:{payload}});assert.match(again.html,/Дубликат не создан/);assert.equal(s.writes(),1);
+ const bad=s.context.doPost({parameter:{payload:'not-json'}});assert.match(bad.html,/Запись не подтверждена/);assert.equal(s.writes(),1);
+});

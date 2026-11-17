@@ -1,10 +1,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const copy=x=>JSON.parse(JSON.stringify(x));
 function setup(saved={}){
- const created=[],elements=new Map(),windowListeners={},documentListeners={},timeouts=[],intervals=[],messages=[],storage=new Map(Object.entries(saved));
+ const posts=[],created=[],elements=new Map(),windowListeners={},documentListeners={},timeouts=[],intervals=[],messages=[],storage=new Map(Object.entries(saved));
  function element(id=''){
   if(id&&elements.has(id))return elements.get(id);
-  const e={id,dataset:{},focus(){},scrollIntoView(){},reset(){for(const key of ['cardTitle','cardDate','cardEndDate','cardTime','cardNote'])element(key).value=''},value:id==='editKind'?'events':id==='departmentEditor'?'P':'',disabled:false,hidden:false,style:{},children:[],classList:{add(){},remove(){},contains(){return false}},append(...items){this.children.push(...items)},insertBefore(){},before(){},after(){},replaceChildren(){},querySelector(){return element()},remove(){const body=elements.get('body');if(body)body.children=body.children.filter(x=>x!==this)},addEventListener(){},querySelectorAll(){return id==='cardForm'?['cardTitle','cardDate','cardEndDate','cardTime','cardNote','cardAuthor','cardSubmit'].map(element):[]},click(){if(!this.disabled)this.onclick?.()},setAttribute(){}};
+  const e={id,submit(){posts.push({action:this.action,method:this.method,target:this.target,payload:JSON.parse(this.children.find(x=>x.name==='payload').value)})},dataset:{},focus(){},scrollIntoView(){},reset(){for(const key of ['cardTitle','cardDate','cardEndDate','cardTime','cardNote'])element(key).value=''},value:id==='editKind'?'events':id==='departmentEditor'?'P':'',disabled:false,hidden:false,style:{},children:[],classList:{add(){},remove(){},contains(){return false}},append(...items){this.children.push(...items)},insertBefore(){},before(){},after(){},replaceChildren(){},querySelector(){return element()},remove(){const body=elements.get('body');if(body)body.children=body.children.filter(x=>x!==this)},addEventListener(){},querySelectorAll(){return id==='cardForm'?['cardTitle','cardDate','cardEndDate','cardTime','cardNote','cardAuthor','cardSubmit'].map(element):[]},click(){if(!this.disabled)this.onclick?.()},setAttribute(){}};
   created.push(e);if(id)elements.set(id,e);return e;
  }
  const remote={people:[{id:'P',short:'Роман П.'}],events:[{id:'E',personId:'P',type:'До правки',start:'2026-11-09',end:'2026-11-09',status:'План',basis:'15:00',comment:'',linkedEvent:'G'}],tasks:[],birthdays:[]};
@@ -23,7 +23,7 @@ function setup(saved={}){
  function findFrame(){// The bridge is appended to body by connect().
   return c.document.body.children.find(e=>e.src)?.src;
  }
- return{c,remote,storage,elements,created,messages,windowListeners,intervals,timeouts,receive,fetches:()=>fetches,fail:v=>fail=v,hold:v=>hold=v,store:()=>JSON.parse(storage.get('departmentChangesV1'))};
+ return{c,remote,storage,elements,created,posts,messages,windowListeners,intervals,timeouts,receive,fetches:()=>fetches,fail:v=>fail=v,hold:v=>hold=v,store:()=>JSON.parse(storage.get('departmentChangesV1'))};
 }
 async function flush(s){const queue=s.timeouts.splice(0);for(const timer of queue){if(timer.ms>1000){s.timeouts.push(timer);continue}if(!timer.cancelled)await timer.fn()}}
 function acknowledge(s){s.receive('department-ready');s.receive('department-capabilities-result',{result:{version:2}});const sent=s.messages.findLast(m=>m.type==='department-changes');assert.ok(sent);s.receive('department-changes-result',{requestId:sent.requestId,result:{ok:true}});return sent}
@@ -66,14 +66,13 @@ test('definitive conflict stops automatic resubmission while preserving local ed
  const request=s.messages.find(m=>m.type==='department-changes').requestId;s.receive('department-changes-result',{requestId:request,result:{ok:false,phase:'rejected',message:'Конфликт'}});
  const n=s.messages.length;await s.intervals[0]();assert.equal(s.messages.length,n);assert.equal(s.store().operations.length,1);assert.equal(s.store().autoPaused,true);
 });
-test('reload archives the old pending request and opens a blank enabled form',()=>{
+test('reload archives old request; native retry posts same ID without disabling form',()=>{
  const requestId='aaaaaaaa-1111-1111-1111-111111111111',event={title:'Старая заявка',date:'2026-11-18',time:'09:00',people:[],author:'P'};
  const s=setup({departmentPendingEventV1:JSON.stringify({event,requestId})});vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);
- assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1'))[0].requestId,requestId);
- s.elements.get('cardTitle').value='Старая заявка';s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardSubmit').disabled,false);assert.equal(s.elements.get('cardTitle').disabled,false);
+ assert.equal(s.posts.length,0);assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1'))[0].requestId,requestId);
+ s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardSubmit').disabled,false);
  s.windowListeners['department-sync-state']({detail:{active:true,message:'Автоматический обмен включён'}});assert.notEqual(s.elements.get('cardStatus').textContent,'Автоматический обмен включён');
- s.created.findLast(e=>e.textContent==='Проверить и повторить отправку').click();s.receive('department-ready');const sent=s.messages.findLast(m=>m.type==='department-add');assert.equal(sent.requestId,requestId);assert.equal(s.elements.get('cardTitle').disabled,false);
- s.receive('department-result',{requestId,result:{ok:true,ids:['saved-id']}});assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,0);assert.equal(s.store().receipts[0].ids[0],'saved-id');
+ s.created.findLast(e=>e.textContent==='Отправить через страницу подтверждения').click();assert.equal(s.posts.length,1);assert.equal(s.posts[0].method,'post');assert.equal(s.posts[0].target,'_self');assert.equal(s.posts[0].payload.requestId,requestId);assert.equal(s.posts[0].payload.event.title,event.title);assert.equal(s.elements.get('cardTitle').disabled,false);assert.equal(s.elements.get('cardSubmit').disabled,false);
 });
 
 test('an already applied cancellation resolves from the published snapshot without resending',async()=>{
@@ -101,19 +100,17 @@ test('paused conflict reconciliation survives reload and does not infer success 
  s.remote.events[0].status='Отменена';await s.c.syncEncrypted();assert.equal(s.store().operations.length,0);assert.equal(s.messages.length,0);
 });
 
-test('timeout preserves a draft and opening another card never restores or disables it',()=>{
+test('unconfirmed native submission survives reload and only full published roster clears it',()=>{
  const saved={event:{title:'Заявка',date:'2026-11-18',time:'09:00',people:[{id:'P'},{id:'Q'}],author:'P'},requestId:'aaaaaaaa-1111-4111-8111-111111111111'};
- const s=setup({departmentPendingEventV1:JSON.stringify(saved)});vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);s.c.window.openEventCard();s.created.findLast(e=>e.textContent==='Проверить и повторить отправку').click();
- const timer=s.timeouts.find(t=>t.ms===45000&&!t.cancelled);assert.ok(timer);timer.fn();assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,1);assert.equal(s.elements.get('cardSubmit').disabled,false);
+ const s=setup({departmentPendingEventV1:JSON.stringify(saved)});vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);s.c.window.openEventCard();s.created.findLast(e=>e.textContent==='Отправить через страницу подтверждения').click();
+ assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,1);assert.equal(s.elements.get('cardSubmit').disabled,false);
  s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardTitle').disabled,false);
  const row={type:'Заявка',start:'2026-11-18',end:'2026-11-18',basis:'09:00',personId:'P'};s.windowListeners['department-published-snapshot']({detail:{events:[row]}});assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,1);
  s.windowListeners['department-published-snapshot']({detail:{events:[row,{...row,personId:'Q'}]}});assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,0);
 });
-
-test('new card during an unanswered request unlocks all controls and preserves exactly one draft',()=>{
- const requestId='bbbbbbbb-1111-4111-8111-111111111111',event={title:'Старая',date:'2026-11-18',time:'09:00',people:[],author:'P'};
- const s=setup({departmentPendingEventV1:JSON.stringify({event,requestId})});vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);
- s.created.findLast(e=>e.textContent==='Проверить и повторить отправку').click();assert.equal(s.elements.get('cardSubmit').disabled,true);
- s.elements.get('cardTitle').disabled=true;s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardTitle').disabled,false);assert.equal(s.elements.get('cardSubmit').disabled,false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,1);
- s.created.findLast(e=>e.textContent==='Проверить и повторить отправку').click();s.windowListeners.pageshow();assert.equal(s.elements.get('cardSubmit').disabled,false);assert.equal(s.storage.has('departmentPendingEventV1'),false);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1')).length,1);
+test('native form preserves a draft before network and keeps new cards usable after pageshow',()=>{
+ const s=setup();vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);s.c.window.openEventCard();
+ for(const [key,value] of Object.entries({cardTitle:'Новая',cardDate:'2026-11-18',cardTime:'10:00',cardAuthor:'P'}))s.elements.get(key).value=value;
+ s.elements.get('cardForm').onsubmit({preventDefault(){}});assert.equal(s.posts.length,1);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1'))[0].requestId,s.posts[0].payload.requestId);
+ s.elements.get('cardTitle').disabled=true;s.windowListeners.pageshow();assert.equal(s.elements.get('cardTitle').disabled,false);s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardSubmit').disabled,false);
 });

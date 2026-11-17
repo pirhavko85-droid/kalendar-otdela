@@ -61,6 +61,20 @@ function addDepartmentEvent(input,requestId){
   }finally{lock.releaseLock()}
  }catch(e){return {ok:false,message:e.message||'Не удалось сохранить мероприятие.'}}
 }
+// Native top-level form submission: no iframe handshake or third-party storage.
+function doPost(e){
+ let result,event;
+ try{
+  const raw=String(e&&e.parameter&&e.parameter.payload||'');if(!raw||raw.length>12000)throw new Error('Некорректная карточка. Вернитесь в календарь и проверьте поля.');
+  const request=JSON.parse(raw);event=request.event;result=addDepartmentEvent(event,request.requestId);
+ }catch(error){result={ok:false,message:error.message||'Не удалось обработать карточку.'}}
+ const escape=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const title=result.ok?'Запись сохранена в общей таблице':'Запись не подтверждена';
+ const message=result.ok?(result.duplicate?'Такая запись уже сохранена. Дубликат не создан.':'Мероприятие добавлено для всех участников отдела.'):(result.message||'Повторите отправку из сохранённого черновика.');
+ const html='<!doctype html><html lang="ru"><head><base target="_top"><style>body{font:17px Arial;background:#f5f7fb;color:#172534;margin:0;padding:24px;line-height:1.5}main{max-width:640px;margin:20px auto;padding:24px;background:white;border:1px solid #dde3eb;border-radius:16px}h1{font-size:24px}a{display:inline-block;background:#2c6cec;color:white;padding:12px 18px;border-radius:10px;text-decoration:none}</style></head><body><main><h1>'+title+'</h1><p>'+escape(event&&event.title)+'</p><p>'+escape(message)+'</p>'+(result.ok?'<p>Сохранение подтверждено Google Sheets. Публикация дашборда обновляется автоматически; она может занять несколько минут.</p>':'<p>Карточка остаётся в неподтверждённых черновиках на устройстве.</p>')+'<a href="'+EVENT_ORIGIN+'/kalendar-otdela/">Вернуться в календарь отдела</a><p>Можно также закрыть эту вкладку и вернуться к дашборду.</p></main></body></html>';
+ return HtmlService.createHtmlOutput(html).setTitle(title).addMetaTag('viewport','width=device-width, initial-scale=1');
+}
+
 function doGet(e){
  const channel=String(e&&e.parameter&&e.parameter.channel||'');
  if(!/^[a-f0-9-]{36}$/i.test(channel))return HtmlService.createHtmlOutput('<p>Откройте карточку мероприятия в дашборде отдела.</p>');

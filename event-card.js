@@ -10,21 +10,21 @@
 
  <button class="primary full" type="submit" id="cardSubmit">Добавить в общий календарь</button></form><p id="cardStatus" role="status" aria-live="polite"></p>
  <details id="cardCopy"><summary>Передать карточку через чат</summary><button type="button" id="cardCopyButton">Подготовить текст для чата</button><label id="cardCopyBox" hidden>Текст для чата<textarea id="cardCopyText" rows="6" readonly></textarea></label></details></div>`;
- document.body.append(modal);const $=id=>document.getElementById(id);let peer=null,peerOrigin='',channel='',frame=null,pending=null,lastPayload='',requestId='',editingId=null,editingBaseline=[],editingAutoNote=false;
+ document.body.append(modal);const $=id=>document.getElementById(id);let pending=null,lastPayload='',requestId='',editingId=null,editingBaseline=[],editingAutoNote=false;
  const notice=document.createElement('p');notice.id='eventSaveNotice';notice.className='card';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.hidden=true;document.getElementById('eventsTable').before(notice);
  const status=(t,showOutside=false)=>{$('cardStatus').textContent=t;if(showOutside){notice.textContent=t;notice.hidden=false}if(modal.classList.contains('open'))$('cardStatus').scrollIntoView({block:'nearest'})};
  const retry=document.createElement('button');retry.id='eventRetrySync';retry.type='button';retry.textContent='Повторить проверку';retry.hidden=true;notice.after(retry);retry.onclick=()=>window.retryDepartmentSync?.();
  const accept=document.createElement('button');accept.id='eventAcceptShared';accept.type='button';accept.textContent='Принять общую версию';accept.hidden=true;retry.after(accept);accept.onclick=()=>window.acceptDepartmentVersion?.();
  window.addEventListener('department-sync-state',e=>{if(e.detail.active||!notice.hidden){notice.textContent=e.detail.message;notice.hidden=false};retry.hidden=!e.detail.retry;accept.hidden=!e.detail.conflict;retry.textContent=e.detail.conflict?'Проверить свежие данные':'Повторить проверку'});
  const publicationHint='По расписанию: проверки каждые 5 минут круглосуточно, включая выходные. Запуск может задерживаться. Повторно добавлять мероприятие не нужно.';
- function setBusy(active){$('cardForm').querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=false);$('cardSubmit').disabled=active}
+ function setBusy(active){$('cardForm').querySelectorAll('input,select,textarea,button').forEach(x=>x.disabled=false)}
  const endpoint=/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(WRITE_URL);
  function clearCopy(){$('cardCopyBox').hidden=true}
  $('cardForm').addEventListener('input',clearCopy);
  function draft(){return {title:$('cardTitle').value.trim(),date:$('cardDate').value,endDate:$('cardEndDate').value||$('cardDate').value,time:$('cardTime').value,people:[...$('cardPeople').querySelectorAll('input:checked')].map(x=>({id:x.value,name:x.dataset.name})),note:$('cardNote').value.trim(),author:$('cardAuthor').value}}
  function open(){
   if(pending&&!archivePending())return;
-  setBusy(false);$('cardForm').reset();$('cardTitle').value='';$('cardDate').value=EventDraft.moscowToday();$('cardEndDate').value='';$('cardTime').value='';$('cardNote').value='';$('cardWarning').textContent='';$('cardStatus').textContent='';lastPayload='';requestId='';clearCopy();
+  setBusy(false);$('cardForm').reset();$('cardTitle').value='';$('cardDate').value=EventDraft.moscowToday();$('cardEndDate').value='';$('cardTime').value='';$('cardNote').value='';$('cardWarning').textContent='После нажатия откроется страница Google Sheets с результатом сохранения.';$('cardStatus').textContent='';lastPayload='';requestId='';clearCopy();
   if(editingId){$('cardTitle').value='';$('cardDate').value=EventDraft.moscowToday();$('cardEndDate').value='';$('cardTime').value='';$('cardNote').value='';$('cardPeople').querySelectorAll('input').forEach(box=>box.checked=false)}
   editingAutoNote=false;editingId=null;editingBaseline=[];$('cardSubmit').textContent='Добавить в общий календарь';
   modal.setAttribute('aria-label','Новое мероприятие');$('cardCopy').hidden=false;modal.querySelector('h3').textContent='Новое мероприятие';$('cardForm').style.display='';$('cardParsePanel').hidden=false;$('cardDeletePanel').open=false;
@@ -85,45 +85,24 @@
   try{await Promise.race([navigator.clipboard.writeText(text),new Promise((_,reject)=>setTimeout(reject,2000))]);status('Карточка скопирована для рабочего чата. В Google Sheets пока ничего не записано.')}
   catch(_){$('cardCopyText').focus();$('cardCopyText').select();status('Скопируйте выделенный текст для рабочего чата. В Google Sheets пока ничего не записано.')}
  };
- function bridge(){
-  if(frame)return;channel=crypto.randomUUID();frame=document.createElement('iframe');frame.hidden=true;frame.title='Подключение общей таблицы';frame.src=WRITE_URL+'?channel='+encodeURIComponent(channel);document.body.append(frame);
- }
- window.addEventListener('message',event=>{
-  if(!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(event.origin)||event.data?.channel!==channel)return;
-  if(event.data.type==='department-ready'&&!peer){peer=event.source;peerOrigin=event.origin;if(pending)send();return}
-  if(event.source!==peer||!pending||event.data.requestId!==pending.requestId)return;
-  if(event.data.type==='department-result'){clearTimeout(pending.timer);const accepted=pending.event;pending=null;setBusy(false);recovery.hidden=true;const result=event.data.result;localStorage.removeItem('departmentPendingEventV1');
-   if(result?.ok){try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts.filter(d=>d.requestId!==event.data.requestId)));renderUnconfirmedDrafts()}catch(_){}}
-   if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.',true);return}
-   status((result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…')+' '+publicationHint,true);
-   if(result.ids?.length)window.watchDepartmentEvent?.(result.ids,accepted.author,result.publication);
-  }
- });
  const draftsPanel=document.createElement('details');draftsPanel.id='cardDrafts';$('cardForm').before(draftsPanel);
  function renderUnconfirmedDrafts(){
   draftsPanel.replaceChildren();let drafts=[];try{drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]')}catch(_){}draftsPanel.hidden=!drafts.length;
   const heading=document.createElement('summary');heading.textContent='Неподтверждённые черновики ('+drafts.length+')';draftsPanel.append(heading);
-  for(const d of drafts){const text=document.createElement('p');text.textContent=d.event.title+' · '+d.event.date+' '+d.event.time;const button=document.createElement('button');button.type='button';button.textContent='Проверить и повторить отправку';button.onclick=()=>{if(pending){status('Сначала остановите ожидание текущей заявки.');return}localStorage.setItem('departmentPendingEventV1',JSON.stringify({event:d.event,requestId:d.requestId}));beginPendingEvent(d.event,d.requestId)};draftsPanel.append(text,button)}
+  for(const d of drafts){const text=document.createElement('p');text.textContent=d.event.title+' · '+d.event.date+' '+d.event.time;const button=document.createElement('button');button.type='button';button.textContent='Отправить через страницу подтверждения';button.onclick=()=>sendDirect(d.event,d.requestId);draftsPanel.append(text,button)}
  }
- const recovery=document.createElement('div');recovery.id='cardRecovery';recovery.hidden=true;
- const retryPending=document.createElement('button');retryPending.type='button';retryPending.textContent='Повторить отправку этой заявки';
- const startNew=document.createElement('button');startNew.type='button';startNew.textContent='Сохранить черновик и создать новую';
- recovery.append(retryPending,startNew);$('cardForm').before(recovery);
- function disconnectPending(){if(pending)clearTimeout(pending.timer);pending=null;if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';recovery.hidden=true;setBusy(false)}
+ function disconnectPending(){pending=null;setBusy(false)}
  function archivePending(){
   if(!pending)return true;
   try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');if(!drafts.some(d=>d.requestId===pending.requestId))drafts.push({event:pending.event,requestId:pending.requestId,savedAt:new Date().toISOString()});localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts));localStorage.removeItem('departmentPendingEventV1')}catch(_){status('Не удалось сохранить черновик. Скопируйте карточку через чат.');return false}
   disconnectPending();renderUnconfirmedDrafts();return true;
  }
- function pausePending(){if(!pending)return;if(archivePending())status('Ответ не получен. Заявка перемещена в неподтверждённые черновики сверху. Поля доступны; можно открыть новую карточку. Повтор отправляется с прежним ID.',true)}
-
- retryPending.onclick=()=>{if(pending){const saved=pending;if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';beginPendingEvent(saved.event,saved.requestId)}};
- startNew.onclick=()=>{if(archivePending())open()};
-
- function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
- function beginPendingEvent(event,id){
-  recovery.hidden=false;pending={event,requestId:id,timer:setTimeout(()=>{pausePending()},45000)};
-  setBusy(true);status('Отправляю заявку. Поля доступны; для другого мероприятия откройте новую карточку.',true);bridge();send();
+ function sendDirect(event,id){
+  // Preserve the exact request before navigating: retries use this ID.
+  pending={event,requestId:id};if(!archivePending())return;
+  const form=document.createElement('form');form.method='post';form.action=WRITE_URL;form.target='_self';form.rel='noopener';form.hidden=true;
+  const input=document.createElement('input');input.type='hidden';input.name='payload';input.value=JSON.stringify({event,requestId:id});form.append(input);document.body.append(form);
+  try{form.submit();status('Открывается страница подтверждения Google Sheets. Дождитесь на ней результата. Карточка сохранена в черновиках до появления записи в общем календаре.',true)}catch(_){status('Не удалось открыть страницу отправки. Карточка сохранена в черновиках; повторите отправку оттуда.',true)}finally{form.remove();setBusy(false)}
  }
  // Reload never turns an unconfirmed request into a permanent form lock.
  try{const saved=JSON.parse(localStorage.getItem('departmentPendingEventV1'));if(saved?.event&&/^[a-f0-9-]{36}$/i.test(saved.requestId||'')){pending=saved;archivePending()}}catch(_){}
@@ -139,7 +118,6 @@
   e.preventDefault();if(!endpoint||pending)return;
   const d=draft();if(d.endDate<d.date){status('Дата окончания не может быть раньше начала.');return}if(editingId){if(editingAutoNote)d.note='Мероприятие: '+d.title+'. Начало в '+d.time+' по Москве.'+(d.note?' '+d.note:'');if(window.changeDepartmentMeeting?.(editingId,d,editingBaseline,t=>status(t,true))){$('cardForm').style.display='none';editingId=null}return}const payload=JSON.stringify(d);if(payload!==lastPayload){requestId=crypto.randomUUID();lastPayload=payload}
   try{localStorage.setItem('departmentEventAuthorV1',d.author)}catch(_){}
-  setBusy(true);status('Сохраняю в общей Google-таблице…',true);
-  localStorage.setItem('departmentPendingEventV1',JSON.stringify({event:d,requestId}));beginPendingEvent(d,requestId);
+  sendDirect(d,requestId);
  };
 })();
