@@ -63,15 +63,20 @@ function addDepartmentEvent(input,requestId){
 }
 // Native top-level form submission: no iframe handshake or third-party storage.
 function doPost(e){
- let result,event;
+ let result,event,action='add';
  try{
-  const raw=String(e&&e.parameter&&e.parameter.payload||'');if(!raw||raw.length>12000)throw new Error('Некорректная карточка. Вернитесь в календарь и проверьте поля.');
-  const request=JSON.parse(raw);event=request.event;result=addDepartmentEvent(event,request.requestId);
+  const raw=String(e&&e.parameter&&e.parameter.payload||'');if(!raw||raw.length>120000)throw new Error('Некорректная карточка. Вернитесь в календарь и проверьте поля.');
+  const request=JSON.parse(raw);action=request.action||'add';event=request.event||{title:request.label||'Мероприятие'};
+  if(action==='add')result=addDepartmentEvent(request.event,request.requestId);
+  else if(action==='edit'||action==='cancel'){
+   if(!Array.isArray(request.operations)||!request.operations.length||request.operations.length>100||request.operations.some(op=>op.collection!=='events'||!op.after||LeaveAccounting.isLeave(op.after)||LeaveAccounting.isLeave(op.before||{})||(action==='cancel'&&(!op.before||op.after.status!=='Отменена'))))throw new Error('Некорректная операция с мероприятием.');
+   result=applyDepartmentChanges(request.operations,request.requestId);
+  }else throw new Error('Неизвестное действие.');
  }catch(error){result={ok:false,message:error.message||'Не удалось обработать карточку.'}}
  const escape=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const title=result.ok?'Запись сохранена в общей таблице':'Запись не подтверждена';
- const message=result.ok?(result.duplicate?'Такая запись уже сохранена. Дубликат не создан.':'Мероприятие добавлено для всех участников отдела.'):(result.message||'Повторите отправку из сохранённого черновика.');
- const html='<!doctype html><html lang="ru"><head><base target="_top"><style>body{font:17px Arial;background:#f5f7fb;color:#172534;margin:0;padding:24px;line-height:1.5}main{max-width:640px;margin:20px auto;padding:24px;background:white;border:1px solid #dde3eb;border-radius:16px}h1{font-size:24px}a{display:inline-block;background:#2c6cec;color:white;padding:12px 18px;border-radius:10px;text-decoration:none}</style></head><body><main><h1>'+title+'</h1><p>'+escape(event&&event.title)+'</p><p>'+escape(message)+'</p>'+(result.ok?'<p>Сохранение подтверждено Google Sheets. Публикация дашборда обновляется автоматически; она может занять несколько минут.</p>':'<p>Карточка остаётся в неподтверждённых черновиках на устройстве.</p>')+'<a href="'+EVENT_ORIGIN+'/kalendar-otdela/">Вернуться в календарь отдела</a><p>Можно также закрыть эту вкладку и вернуться к дашборду.</p></main></body></html>';
+ const title=result.ok?(action==='cancel'?'Мероприятие удалено из календаря':action==='edit'?'Изменения сохранены в общей таблице':'Запись сохранена в общей таблице'):'Изменения не подтверждены';
+ const message=result.ok?(action==='cancel'?'Мероприятие отменено для всех участников. В таблице сохранена история для восстановления.':action==='edit'?'Название, даты и участники обновлены в общей таблице.':result.duplicate?'Такая запись уже сохранена. Дубликат не создан.':'Мероприятие добавлено для всех участников отдела.'):(result.message||'Повторите отправку из сохранённого черновика.');
+ const html='<!doctype html><html lang="ru"><head><base target="_top"><style>body{font:17px Arial;background:#f5f7fb;color:#172534;margin:0;padding:24px;line-height:1.5}main{max-width:640px;margin:20px auto;padding:24px;background:white;border:1px solid #dde3eb;border-radius:16px}h1{font-size:24px}a{display:inline-block;background:#2c6cec;color:white;padding:12px 18px;border-radius:10px;text-decoration:none}</style></head><body><main><h1>'+title+'</h1><p>'+escape(event&&event.title)+'</p><p>'+escape(message)+'</p>'+(result.ok?'<p>Результат подтверждён Google Sheets. Публикация дашборда обновляется автоматически; она может занять несколько минут.</p>':'<p>Карточка остаётся в неподтверждённых черновиках на устройстве.</p>')+'<a href="'+EVENT_ORIGIN+'/kalendar-otdela/">Вернуться в календарь отдела</a><p>Можно также закрыть эту вкладку и вернуться к дашборду.</p></main></body></html>';
  return HtmlService.createHtmlOutput(html).setTitle(title).addMetaTag('viewport','width=device-width, initial-scale=1');
 }
 
@@ -107,6 +112,14 @@ function getDepartmentChangeStatus(requestId){
  const lock=LockService.getScriptLock();if(!lock.tryLock(1000))return {ok:false,phase:'unknown',message:'Предыдущая запись ещё обрабатывается.'};
  try{return changeStatus_(requestId)||{ok:false,phase:'not_found',message:'Запрос не записан. Можно повторить отправку.'}}finally{lock.releaseLock()}
 }
+// Script Properties values are byte-limited; keep the full rollback backup in chunks.
+function storeChangeBackup_(properties,backup){
+ const data=JSON.stringify(backup),chunks=[];let text='',bytes=0;
+ for(const c of data){const cp=c.codePointAt(0),n=cp<128?1:cp<2048?2:cp<65536?3:4;if(bytes+n>6000){chunks.push(text);text='';bytes=0}text+=c;bytes+=n}if(text)chunks.push(text);
+ if(chunks.length===1){properties.setProperty('LAST_CHANGE_BACKUP',data);return}
+ chunks.forEach((chunk,i)=>properties.setProperty('LAST_CHANGE_BACKUP_'+i,chunk));properties.setProperty('LAST_CHANGE_BACKUP',JSON.stringify({chunkCount:chunks.length,requestId:backup.requestId}));
+}
+function readChangeBackup_(properties){const raw=JSON.parse(properties.getProperty('LAST_CHANGE_BACKUP')||'null');return raw&&raw.chunkCount?JSON.parse(Array.from({length:raw.chunkCount},(_,i)=>properties.getProperty('LAST_CHANGE_BACKUP_'+i)).join('')):raw}
 function applyDepartmentChanges(operations,requestId){
  if(!/^[a-f0-9-]{36}$/i.test(requestId||''))return {ok:false,message:'Некорректный номер запроса.'};
  if(!Array.isArray(operations)||!operations.length||operations.length>100)return {ok:false,message:'Отправляйте от 1 до 100 изменений.'};
@@ -134,7 +147,6 @@ function applyDepartmentChanges(operations,requestId){
    if(matches.length>1)throw new Error('В общей базе повторяющийся ID: '+op.id);
    const rowIndex=matches.length?matches[0]:-1,current=rowIndex>=0?changeRecord_(schema,entry.rows[rowIndex]):null;
    if((!current)!==(!op.before))throw new Error('Запись добавлена или удалена другим участником. Сначала сверьте общую базу.');
-   if(current&&Object.keys(schema.fields).some(k=>Object.prototype.hasOwnProperty.call(op.before,k)&&!changeEqual_(current[k],op.before[k])))throw new Error('Конфликт: запись '+op.id+' уже изменена другим участником. Ваши правки сохранены локально.');
    const values={};Object.keys(schema.fields).forEach(k=>{
     if(k==='controlled'){if(typeof op.after[k]!=='boolean')throw new Error('Некорректный контроль задачи.');values[k]=op.after[k];return}
     const v=op.after[k]===undefined&&op.collection==='events'&&Object.prototype.hasOwnProperty.call(LeaveAccounting.FIELDS,k)?(current?.[k]||''):op.after[k];if(typeof v!=='string'||v.length>4000)throw new Error('Некорректное поле '+k);
@@ -148,11 +160,16 @@ function applyDepartmentChanges(operations,requestId){
    if(op.collection==='tasks'&&!values.title)throw new Error('Укажите название задачи.');
    if(op.collection==='birthdays'&&(!values.name||!values.date))throw new Error('Укажите имя и дату рождения.');
    if(op.collection==='people'&&(!values.short||!values.full))throw new Error('Укажите имя сотрудника.');
+   if(current&&Object.keys(schema.fields).some(k=>Object.prototype.hasOwnProperty.call(op.before,k)&&!changeEqual_(current[k],op.before[k]))){
+    const intended=Object.keys(schema.fields).filter(k=>Object.prototype.hasOwnProperty.call(op.after,k)&&!changeEqual_(op.before[k],values[k]));
+    if(intended.length&&intended.every(k=>changeEqual_(current[k],values[k])))continue;
+    throw new Error('Конфликт: запись '+op.id+' уже изменена другим участником. Ваши правки сохранены локально.');
+   }
    prepared.push({op,schema,entry,values,row:rowIndex>=0?rowIndex+1:entry.next++,isNew:rowIndex<0,author:authors[op.author]});
   }
   // Save all affected original rows before any write. Formulas are preserved on rollback.
-  const backups=prepared.map(p=>{const range=p.entry.sheet.getRange(p.row,1,1,p.entry.sheet.getLastColumn());return {sheet:p.schema.sheet,row:p.row,values:range.getValues()[0],formulas:range.getFormulas()[0]}});
-  properties.setProperty('LAST_CHANGE_BACKUP',JSON.stringify({requestId,at:new Date().toISOString(),rows:backups}));
+  const backups=prepared.map(p=>{const range=p.entry.sheet.getRange(p.row,1,1,p.entry.sheet.getLastColumn());return {sheet:p.schema.sheet,row:p.row,values:range.getValues()[0],formulas:range.getFormulas()[0],formats:range.getNumberFormats()}});
+  storeChangeBackup_(properties,{requestId,at:new Date().toISOString(),rows:backups});
   properties.setProperty('CHANGE_'+requestId,JSON.stringify({ok:false,phase:'unknown',message:'Запись начата; требуется подтверждение результата.'}));
   for(let i=0;i<prepared.length;i++){
    const p=prepared[i],backup=backups[i];done.push({p,backup});
@@ -163,7 +180,7 @@ function applyDepartmentChanges(operations,requestId){
    Object.keys(p.schema.fields).forEach(k=>{
     if(!p.isNew&&changeEqual_(p.op.before[k],p.values[k]))return;
     let value=p.values[k];if(k==='controlled')value=value?'На контроле':'Не на контроле';else if(p.schema.dates.indexOf(k)>=0&&value)value=value.split('-').reverse().join('.');
-    p.entry.sheet.getRange(p.row,p.schema.fields[k]+1).setValue(typeof value==='string'?safe_(value):value);
+    const cell=p.entry.sheet.getRange(p.row,p.schema.fields[k]+1);if(p.op.collection==='events'&&!LeaveAccounting.isLeave(p.values))cell.setNumberFormat('@');cell.setValue(typeof value==='string'?safe_(value):value);
    });
    if(['events','tasks'].includes(p.op.collection)&&(p.isNew||p.op.before.personId!==p.values.personId))p.entry.sheet.getRange(p.row,3).setValue(safe_(authors[p.values.personId]||''));
    const headers=p.entry.sheet.getRange(1,1,1,p.entry.sheet.getLastColumn()).getDisplayValues()[0];
@@ -180,7 +197,7 @@ function applyDepartmentChanges(operations,requestId){
   properties.setProperty('CHANGE_QUOTA',JSON.stringify({day,count:(quota.day===day?quota.count:0)+operations.length}));properties.setProperty('CHANGE_'+requestId,JSON.stringify(result));result.publication=requestPublication_(requestId);return result;
  }catch(e){
   let rollback=true;
-  for(const {p,backup} of done.reverse()){try{const currentWidth=p.entry.sheet.getLastColumn(),cells=backup.values.map((v,i)=>backup.formulas[i]||(typeof v==='string'?safe_(v):v));while(cells.length<currentWidth)cells.push('');p.entry.sheet.getRange(p.row,1,1,currentWidth).setValues([cells]);if(p.typeRange)p.typeRange.setDataValidations(p.typeValidation)}catch(_){rollback=false}}
+  for(const {p,backup} of done.reverse()){try{const currentWidth=p.entry.sheet.getLastColumn(),cells=backup.values.map((v,i)=>backup.formulas[i]||(typeof v==='string'?safe_(v):v));while(cells.length<currentWidth)cells.push('');p.entry.sheet.getRange(p.row,1,1,currentWidth).setValues([cells]);if(backup.formats)p.entry.sheet.getRange(p.row,1,1,backup.formats[0].length).setNumberFormats(backup.formats);if(p.typeRange)p.typeRange.setDataValidations(p.typeValidation)}catch(_){rollback=false}}
   try{SpreadsheetApp.flush()}catch(_){rollback=false}
   if(!rollback){const result={ok:false,phase:'unknown',message:'Не удалось подтвердить восстановление записи. Не повторяйте отправку до сверки таблицы.'};PropertiesService.getScriptProperties().setProperty('CHANGE_'+requestId,JSON.stringify(result));return result}
   const rejected={ok:false,phase:'rejected',message:e.message||'Изменения не сохранены.'};if(done.length)PropertiesService.getScriptProperties().setProperty('CHANGE_'+requestId,JSON.stringify(rejected));return rejected;

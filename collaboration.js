@@ -17,7 +17,16 @@
  function alreadyApplied(op,remote){const current=clean(op.collection,remote);if(!current||!op.after)return false;return fields[op.collection].filter(k=>!op.before||op.before[k]!==op.after[k]).every(k=>current[k]===op.after[k])}
  let conflictRemote=null;
  let store;try{store=JSON.parse(localStorage.getItem(STORE))}catch(_){}
- store=store||{operations:[],requestId:null};let previous=clone(db),pulling=false,lastPullAt=0,busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
+ store=store||{operations:[],requestId:null};
+ if(window.departmentNativeMeetings){try{
+  const migration=MeetingActions.migrateLegacy(store,isMeetingEvent,()=>crypto.randomUUID());
+  if(migration.changed){
+   localStorage.setItem('departmentLegacyMeetingBackupV2',JSON.stringify({at:new Date().toISOString(),store}));
+   const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');for(const request of migration.requests)if(!drafts.some(d=>d.requestId===request.requestId))drafts.push(request);
+   localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts));localStorage.setItem(STORE,JSON.stringify(migration.store));store=migration.store;
+  }
+ }catch(error){console.warn('Старая очередь сохранена без изменений; новый редактор мероприятий работает отдельно.')}}
+let previous=clone(db),pulling=false,lastPullAt=0,busy=false,unknown=!!store.requestId,peer=null,origin='',channel='',frame=null,timer=null,capable=false;
  const card=document.createElement('div');card.className='card shared-data';card.innerHTML='<h3>Общие изменения отдела</h3><p>Любой участник может редактировать записи. Выбранное имя — подпись автора, а не проверка Google-аккаунта.</p><label class="shared-author">Кто вносит изменения<select id="departmentEditor"><option value="">Выберите имя</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('')+'</select></label><details class="manual-sync-tools"><summary>Ручные действия и резервная копия</summary><div class="toolbar"><button id="uploadChanges" class="primary">Загрузить изменения в Google Таблицу</button><button id="checkChanges">Проверить отправку</button><button id="syncDepartment">Синхронизировать</button><button id="downloadChanges">Сохранить изменения в файл</button></div></details><p id="changeStatus" role="status" aria-live="polite"></p><details><summary>Редактировать общие записи</summary><div class="shared-record-fields"><label>Раздел<select id="editKind">'+Object.entries(names).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Запись<select id="editRecord"></select></label><button id="editSelected">Открыть запись</button><button id="newSharedRecord">Новая запись</button></div></details>';
  const advanced=document.createElement('details');advanced.className='exchange-advanced';advanced.innerHTML='<summary>Дополнительные инструменты</summary>';advanced.append(card);document.querySelector('#data').append(advanced);
  let removalFeedback=null;
@@ -125,31 +134,6 @@
   if(kind==='events')form.elements.type.addEventListener('change',()=>{form.querySelectorAll('[data-leave-field]').forEach(label=>label.hidden=!LeaveAccounting.isLeave({type:form.elements.type.value}))});
   const button=document.createElement('button');button.type='submit';button.className='primary';button.textContent='Сохранить в общей таблице';form.append(button);
   form.onsubmit=e=>{e.preventDefault();if(busy||pulling||unknown){setStatus('Дождитесь завершения текущего обмена данными.');return}const candidate={...item};for(const k of fields[kind])candidate[k]=k==='controlled'?form.elements[k].checked:form.elements[k].value;if(kind==='events'&&LeaveAccounting.isLeave(candidate)){try{for(const k of ['leaveYear','leaveDays','travelDays','holidayBonusDays'])if(candidate[k]==='')delete candidate[k];Object.assign(candidate,LeaveAccounting.normalize(candidate,person(candidate.personId)))}catch(err){alert(err.message);return}}try{applyEditorDraft(kind,id,baseline,candidate,isNew)}catch(err){alert(err.message);return}save();modal.classList.remove('open');renderRecords()};modal.classList.add('open');
- };
- window.changeDepartmentMeeting=function(id,input,baseline,feedback){
-  if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}
-  if(store.operations.length){feedback('Дождитесь автоматической отправки предыдущих изменений.');return false}
-  if(!db.people.some(p=>p.id===input.author)){feedback('Выберите автора изменения.');return false}
-  const rows=meetingRowsForRemoval(id);
-  if(rows.length!==baseline.length||rows.some(r=>!baseline.some(b=>b.id===r.id&&JSON.stringify(clean('events',b))===JSON.stringify(clean('events',r))))){feedback('Мероприятие обновилось. Закройте карточку, получите свежие данные и откройте его снова.');return false}
-  const planned=planMeetingEdit(rows,input,()=>uid('MEETING'));
-  $('departmentEditor').value=input.author;localStorage.setItem(AUTHOR,input.author);removalFeedback=feedback;
-  planned.forEach(item=>{const at=db.events.findIndex(e=>e.id===item.id);if(at>=0)db.events[at]=item;else db.events.push(item)});
-  save();renderRecords();
-  if(!store.operations.length){feedback('Изменений нет.');return true}
-  store.autoPull=true;persist();$('uploadChanges').click();return true;
- };
- window.removeDepartmentMeeting=function(id,author,feedback){
-  if(busy||pulling||unknown){feedback('Дождитесь завершения текущего обмена данными и повторите действие.');return false}
-  if(store.operations.length){feedback('Дождитесь автоматической отправки предыдущих изменений.');return false}
-  if(!db.people.some(p=>p.id===author)){feedback('Выберите автора удаления.');return false}
-  const target=db.events.find(e=>e.id===id&&isMeetingEvent(e));
-  if(!target){feedback('Мероприятие не найдено. Получите свежие данные.');return false}
-  const rows=meetingRowsForRemoval(id);
-  if(!rows.length){feedback('Мероприятие уже удалено из календаря.');return false}
-  $('departmentEditor').value=author;localStorage.setItem(AUTHOR,author);removalFeedback=feedback;
-  rows.forEach(e=>e.status='Отменена');save();renderRecords();
-  store.autoPull=true;persist();$('uploadChanges').click();return true;
  };
  $('syncDepartment').onclick=()=>{if(store.operations.length){store.autoPull=true;persist();$('uploadChanges').click()}else syncEncrypted()};
  $('closeSharedEditor').onclick=()=>modal.classList.remove('open');

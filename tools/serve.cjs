@@ -10,7 +10,7 @@ const files = new Map([
   ['/preview-bridge.txt', ['tools/event-writer/Bridge.html', 'text/plain; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
-  ...['leave-accounting.js','event-draft.js','event-card.js','collaboration.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
+  ...['meeting-actions.js','leave-accounting.js','event-draft.js','event-card.js','collaboration.js'].map(file=>['/'+file,[file,'text/javascript; charset=utf-8']]),
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
   ['/data.enc.json', ['data.enc.json', 'application/json']],
   ['/leave-extension.js', ['leave-extension.js', 'text/javascript; charset=utf-8']],

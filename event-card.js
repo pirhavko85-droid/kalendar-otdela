@@ -1,5 +1,6 @@
 (function(){
  'use strict';
+ window.departmentNativeMeetings=true;
  // Public append-only endpoint approved by Roman; author is a declared signature.
  const WRITE_URL='https://script.google.com/macros/s/AKfycby_8kebiO2KSNJjqWrR3G4tHQ1gOKdSTf15K0lUxtanI8PpWDz-gq41dHUmfsjY9RJ3/exec';
  const modal=document.createElement('div');modal.id='eventCard';modal.className='modal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label','Новое мероприятие');
@@ -42,6 +43,19 @@
   modal.classList.add('open');$('cardTitle').focus();
  }
  window.openEventCard=open;
+ window.changeDepartmentMeeting=function(id,input,baseline,feedback){
+  if(!db.people.some(p=>p.id===input.author)){feedback('Выберите автора изменения.');return false}
+  const rows=meetingRowsForRemoval(id);
+  if(rows.length!==baseline.length||rows.some(r=>!baseline.some(b=>b.id===r.id&&JSON.stringify(MeetingActions.record(b))===JSON.stringify(MeetingActions.record(r))))){feedback('Мероприятие изменилось. Откройте свежую карточку.');return false}
+  const operations=MeetingActions.edit(rows,input,()=>uid('MEETING'));
+  if(!operations.length){feedback('Изменений нет.');return true}
+  return sendRequest({action:'edit',operations,label:input.title,requestId:crypto.randomUUID()});
+ };
+ window.removeDepartmentMeeting=function(id,author,feedback){
+  if(!db.people.some(p=>p.id===author)){feedback('Выберите автора удаления.');return false}
+  const rows=meetingRowsForRemoval(id);if(!rows.length){feedback('Мероприятие уже удалено.');return false}
+  return sendRequest({action:'cancel',operations:MeetingActions.cancel(rows,author),label:rows[0].type,requestId:crypto.randomUUID()});
+ };
  function renderRemovalResults(){
   const q=$('cardDeleteSearch').value.trim().toLowerCase();
   const groups=groupedMeetingEvents(db.events.filter(isMeetingEvent)).filter(e=>!q||(e.type+' '+fmt(e.start)+' '+eventTime(e)).toLowerCase().includes(q)).sort((a,b)=>b.start.localeCompare(a.start));
@@ -89,28 +103,29 @@
  function renderUnconfirmedDrafts(){
   draftsPanel.replaceChildren();let drafts=[];try{drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]')}catch(_){}draftsPanel.hidden=!drafts.length;
   const heading=document.createElement('summary');heading.textContent='Неподтверждённые черновики ('+drafts.length+')';draftsPanel.append(heading);
-  for(const d of drafts){const text=document.createElement('p');text.textContent=d.event.title+' · '+d.event.date+' '+d.event.time;const button=document.createElement('button');button.type='button';button.textContent='Отправить через страницу подтверждения';button.onclick=()=>sendDirect(d.event,d.requestId);draftsPanel.append(text,button)}
+  for(const d of drafts){const text=document.createElement('p');text.textContent=(d.action==='cancel'?'Удаление: ':d.action==='edit'?'Изменение: ':'')+(d.event?.title||d.label||'Мероприятие')+' · '+(d.event?.date||d.operations?.[0]?.after?.start||'')+' '+(d.event?.time||d.operations?.[0]?.after?.basis||'');const button=document.createElement('button');button.type='button';button.textContent='Отправить через страницу подтверждения';button.onclick=()=>sendRequest(d);draftsPanel.append(text,button)}
  }
  function disconnectPending(){pending=null;setBusy(false)}
  function archivePending(){
   if(!pending)return true;
-  try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');if(!drafts.some(d=>d.requestId===pending.requestId))drafts.push({event:pending.event,requestId:pending.requestId,savedAt:new Date().toISOString()});localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts));localStorage.removeItem('departmentPendingEventV1')}catch(_){status('Не удалось сохранить черновик. Скопируйте карточку через чат.');return false}
+  try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');if(!drafts.some(d=>d.requestId===pending.requestId))drafts.push({...pending,savedAt:new Date().toISOString()});localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts));localStorage.removeItem('departmentPendingEventV1')}catch(_){status('Не удалось сохранить черновик. Скопируйте карточку через чат.');return false}
   disconnectPending();renderUnconfirmedDrafts();return true;
  }
- function sendDirect(event,id){
+ function sendDirect(event,id){return sendRequest({action:'add',event,requestId:id,label:event.title})}
+ function sendRequest(request){
   // Preserve the exact request before navigating: retries use this ID.
-  pending={event,requestId:id};if(!archivePending())return;
+  pending=request;if(!archivePending())return false;
   const form=document.createElement('form');form.method='post';form.action=WRITE_URL;form.target='_self';form.rel='noopener';form.hidden=true;
-  const input=document.createElement('input');input.type='hidden';input.name='payload';input.value=JSON.stringify({event,requestId:id});form.append(input);document.body.append(form);
-  try{form.submit();status('Открывается страница подтверждения Google Sheets. Дождитесь на ней результата. Карточка сохранена в черновиках до появления записи в общем календаре.',true)}catch(_){status('Не удалось открыть страницу отправки. Карточка сохранена в черновиках; повторите отправку оттуда.',true)}finally{form.remove();setBusy(false)}
+  const input=document.createElement('input');input.type='hidden';input.name='payload';input.value=JSON.stringify(request);form.append(input);document.body.append(form);
+  try{form.submit();status('Открывается страница подтверждения Google Sheets. Дождитесь на ней результата. Карточка сохранена в черновиках до появления записи в общем календаре.',true)}catch(_){status('Не удалось открыть страницу отправки. Карточка сохранена в черновиках; повторите отправку оттуда.',true)}finally{form.remove();setBusy(false)}return true;
  }
  // Reload never turns an unconfirmed request into a permanent form lock.
- try{const saved=JSON.parse(localStorage.getItem('departmentPendingEventV1'));if(saved?.event&&/^[a-f0-9-]{36}$/i.test(saved.requestId||'')){pending=saved;archivePending()}}catch(_){}
+ try{const saved=JSON.parse(localStorage.getItem('departmentPendingEventV1'));if((saved?.event||saved?.operations)&&/^[a-f0-9-]{36}$/i.test(saved.requestId||'')){pending=saved;archivePending()}}catch(_){}
  setBusy(false);
  window.addEventListener('pageshow',()=>{if(pending)archivePending();setBusy(false)});
  window.addEventListener('department-published-snapshot',e=>{
   const rows=e.detail?.events;if(!Array.isArray(rows))return;
-  function published(d){const v=d.event,people=(v.people||[]).map(p=>p.id).sort();const found=rows.filter(r=>String(r.type||'').trim().toLowerCase()===String(v.title).trim().toLowerCase()&&r.start===v.date&&(r.end||r.start)===(v.endDate||v.date)&&String(r.basis||'').trim()===v.time);return people.length?people.every(id=>found.some(r=>r.personId===id)):found.some(r=>!r.personId)}
+  const published=d=>MeetingActions.isPublished(d,rows);
   if(pending&&published(pending)){localStorage.removeItem('departmentPendingEventV1');disconnectPending();status('Запись уже опубликована в общем календаре. Можно создать новое мероприятие.',true)}
   try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts.filter(d=>!published(d))));renderUnconfirmedDrafts()}catch(_){}
  });

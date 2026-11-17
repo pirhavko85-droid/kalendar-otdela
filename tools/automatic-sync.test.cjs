@@ -10,13 +10,13 @@ function setup(saved={}){
  const remote={people:[{id:'P',short:'Роман П.'}],events:[{id:'E',personId:'P',type:'До правки',start:'2026-11-09',end:'2026-11-09',status:'План',basis:'15:00',comment:'',linkedEvent:'G'}],tasks:[],birthdays:[]};
  let fail=false,fetches=0,uuid=0,hold=null;
  storage.set('key','shared-key');storage.set('departmentEditorV1','P');
- const c={LeaveAccounting:require('../leave-accounting.js'),db:storage.get('db')?JSON.parse(storage.get('db')):copy(remote),KEY:'db',SYNC_KEY:'key',document:{hidden:false,createTextNode:t=>({textContent:t}),createElement:()=>element(),getElementById:element,querySelector:()=>element(),addEventListener:(k,f)=>documentListeners[k]=f},navigator:{onLine:true},
+ const c={MeetingActions:require('../meeting-actions.js'),LeaveAccounting:require('../leave-accounting.js'),db:storage.get('db')?JSON.parse(storage.get('db')):copy(remote),KEY:'db',SYNC_KEY:'key',document:{hidden:false,createTextNode:t=>({textContent:t}),createElement:()=>element(),getElementById:element,querySelector:()=>element(),addEventListener:(k,f)=>documentListeners[k]=f},navigator:{onLine:true},
   localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},crypto:{randomUUID:()=>`${String(++uuid).padStart(8,'0')}-1111-1111-1111-111111111111`},
   setTimeout:(fn,ms)=>{const t={fn,ms,cancelled:false};timeouts.push(t);return t},clearTimeout:t=>{if(t)t.cancelled=true},setInterval:f=>{intervals.push(f);return intervals.length},clearInterval(){},Date,console,groupedMeetingEvents:()=>[],isMeetingEvent:()=>true,EventDraft:{moscowToday:()=> '2026-11-09'},
   CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail}},alert(){},esc:String,fmt:String,todayISO:()=> '2026-11-09',uid:()=> 'new',person:id=>c.db.people.find(p=>p.id===id),renderAll(){},save(){storage.set('db',JSON.stringify(c.db))},
   syncEncrypted:async options=>{fetches++;if(hold)await hold;if(fail)return false;options.apply(copy(remote),copy(remote));return true},
  };
- c.window={addEventListener:(k,f)=>windowListeners[k]=f,dispatchEvent:e=>windowListeners[e.type]?.(e)};
+ c.window={departmentNativeMeetings:!!saved.__nativeMeetings,addEventListener:(k,f)=>windowListeners[k]=f,dispatchEvent:e=>windowListeners[e.type]?.(e)};
  c.document.body=element('body');vm.createContext(c);vm.runInContext(fs.readFileSync('collaboration.js','utf8'),c);
  const peer={postMessage:data=>messages.push(copy(data))};
  function receive(type,extra={}){const frame=elements.get('last-frame');const src=frame?.src||findFrame();const channel=new URL(src).searchParams.get('channel');windowListeners.message({origin:'https://unit-script.googleusercontent.com',source:peer,data:{type,channel,...extra}})}
@@ -113,4 +113,11 @@ test('native form preserves a draft before network and keeps new cards usable af
  for(const [key,value] of Object.entries({cardTitle:'Новая',cardDate:'2026-11-18',cardTime:'10:00',cardAuthor:'P'}))s.elements.get(key).value=value;
  s.elements.get('cardForm').onsubmit({preventDefault(){}});assert.equal(s.posts.length,1);assert.equal(JSON.parse(s.storage.get('departmentUnconfirmedEventsV1'))[0].requestId,s.posts[0].payload.requestId);
  s.elements.get('cardTitle').disabled=true;s.windowListeners.pageshow();assert.equal(s.elements.get('cardTitle').disabled,false);s.c.window.openEventCard();assert.equal(s.elements.get('cardTitle').value,'');assert.equal(s.elements.get('cardSubmit').disabled,false);
+});
+
+test('legacy unknown meeting queue no longer blocks native delete or fresh reads',async()=>{
+ const row={id:'E',personId:'P',type:'Тест7',start:'2026-11-09',end:'2026-11-09',days:1,status:'План',basis:'15:00',comment:'Мероприятие: Тест7',linkedEvent:'G'},M=require('../meeting-actions.js');
+ const old={operations:M.cancel([row],'P'),requestId:'aaaaaaaa-1111-4111-8111-111111111111',autoPaused:true};const s=setup({__nativeMeetings:true,departmentChangesV1:JSON.stringify(old)});
+ assert.equal(s.store().operations.length,0);assert.equal(s.store().requestId,null);assert.ok(s.storage.get('departmentLegacyMeetingBackupV2'));
+ assert.equal(await s.c.syncEncrypted(),true);vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);s.c.meetingRowsForRemoval=()=>[row];assert.equal(s.c.window.removeDepartmentMeeting('E','P',()=>{}),true);assert.equal(s.posts[0].payload.action,'cancel');assert.equal(s.posts[0].payload.operations[0].after.status,'Отменена');assert.equal(s.c.db.events[0].status,'План');assert.equal(s.store().operations.length,0);
 });

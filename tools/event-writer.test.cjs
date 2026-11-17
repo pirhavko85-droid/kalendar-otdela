@@ -52,5 +52,5 @@ test('native POST confirms actual write, escapes titles, and retry never duplica
  const s=setup();s.context.HtmlService={createHtmlOutput:html=>({html,setTitle(){return this},addMetaTag(){return this}})};
  const payload=JSON.stringify({event:{...event,title:'<script>alert(1)</script>',time:'09:00'},requestId:id});const result=s.context.doPost({parameter:{payload}});assert.match(result.html,/Запись сохранена/);assert.match(result.html,/&lt;script&gt;/);assert.doesNotMatch(result.html,/<script>alert/);assert.equal(s.writes(),1);
  const again=s.context.doPost({parameter:{payload}});assert.match(again.html,/Дубликат не создан/);assert.equal(s.writes(),1);
- const bad=s.context.doPost({parameter:{payload:'not-json'}});assert.match(bad.html,/Запись не подтверждена/);assert.equal(s.writes(),1);
+ const bad=s.context.doPost({parameter:{payload:'not-json'}});assert.match(bad.html,/Изменения не подтверждены/);assert.equal(s.writes(),1);
 });
