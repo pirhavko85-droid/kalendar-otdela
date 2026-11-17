@@ -26,6 +26,7 @@
   if(editingId){$('cardTitle').value='';$('cardDate').value=EventDraft.moscowToday();$('cardEndDate').value='';$('cardTime').value='';$('cardNote').value='';$('cardPeople').querySelectorAll('input').forEach(box=>box.checked=false)}
   editingAutoNote=false;editingId=null;editingBaseline=[];$('cardSubmit').textContent='Добавить в общий календарь';
   modal.setAttribute('aria-label','Новое мероприятие');$('cardCopy').hidden=false;modal.querySelector('h3').textContent='Новое мероприятие';$('cardForm').style.display='';$('cardParsePanel').hidden=false;$('cardDeletePanel').open=false;
+  renderUnconfirmedDrafts();
   const selected=new Set([...$('cardPeople').querySelectorAll('input:checked')].map(x=>x.value));
   const author=$('cardAuthor'),saved=author.value;author.innerHTML='<option value="">Выберите автора</option>'+db.people.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.short||p.full)+'</option>').join('');author.value=saved||localStorage.getItem('departmentEditorV1')||'';
   const field=$('cardPeople');field.replaceChildren();const legend=document.createElement('legend');legend.textContent='Участники';field.append(legend);
@@ -89,18 +90,33 @@
   if(!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(event.origin)||event.data?.channel!==channel)return;
   if(event.data.type==='department-ready'&&!peer){peer=event.source;peerOrigin=event.origin;if(pending)send();return}
   if(event.source!==peer||!pending||event.data.requestId!==pending.requestId)return;
-  if(event.data.type==='department-result'){clearTimeout(pending.timer);const accepted=pending.event;pending=null;setBusy(false);const result=event.data.result;localStorage.removeItem('departmentPendingEventV1');
+  if(event.data.type==='department-result'){clearTimeout(pending.timer);const accepted=pending.event;pending=null;setBusy(false);recovery.hidden=true;const result=event.data.result;localStorage.removeItem('departmentPendingEventV1');
+   if(result?.ok){try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts.filter(d=>d.requestId!==event.data.requestId)));renderUnconfirmedDrafts()}catch(_){}}
    if(!result?.ok){status(result?.message||'Не удалось сохранить запись. Повторите попытку.',true);return}
    status((result.duplicate?'Это мероприятие уже есть в таблице. Повторная запись не добавлена.':'Сохранено в Google Sheets. Ожидаю появления в общем дашборде…')+' '+publicationHint,true);
    if(result.ids?.length)window.watchDepartmentEvent?.(result.ids,accepted.author,result.publication);
   }
  });
+ const draftsPanel=document.createElement('details');draftsPanel.id='cardDrafts';$('cardCopy').before(draftsPanel);
+ function renderUnconfirmedDrafts(){
+  draftsPanel.replaceChildren();let drafts=[];try{drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]')}catch(_){}draftsPanel.hidden=!drafts.length;
+  const heading=document.createElement('summary');heading.textContent='Неподтверждённые черновики ('+drafts.length+')';draftsPanel.append(heading);
+  for(const d of drafts){const text=document.createElement('p');text.textContent=d.event.title+' · '+d.event.date+' '+d.event.time;const button=document.createElement('button');button.type='button';button.textContent='Проверить и повторить отправку';button.onclick=()=>{if(pending){status('Сначала остановите ожидание текущей заявки.');return}localStorage.setItem('departmentPendingEventV1',JSON.stringify({event:d.event,requestId:d.requestId}));beginPendingEvent(d.event,d.requestId)};draftsPanel.append(text,button)}
+ }
+ const recovery=document.createElement('div');recovery.id='cardRecovery';recovery.hidden=true;
+ const retryPending=document.createElement('button');retryPending.type='button';retryPending.textContent='Повторить отправку этой заявки';
+ const startNew=document.createElement('button');startNew.type='button';startNew.textContent='Сохранить черновик и создать новую';
+ recovery.append(retryPending,startNew);$('cardStatus').after(recovery);
+ function pausePending(){if(!pending)return;clearTimeout(pending.timer);pending.timer=null;pending.retryAt=null;recovery.hidden=false;status('Подтверждение записи не получено. Заявка сохранена на устройстве. Можно повторить отправку или сохранить черновик и создать новую.',true)}
+ retryPending.onclick=()=>{if(pending){const saved=pending;if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';beginPendingEvent(saved.event,saved.requestId)}};
+ startNew.onclick=()=>{
+  if(!pending)return;
+  try{const drafts=JSON.parse(localStorage.getItem('departmentUnconfirmedEventsV1')||'[]');drafts.push({event:pending.event,requestId:pending.requestId,savedAt:new Date().toISOString()});localStorage.setItem('departmentUnconfirmedEventsV1',JSON.stringify(drafts));localStorage.removeItem('departmentPendingEventV1')}catch(_){status('Не удалось сохранить черновик. Новая карточка не открыта.');return}
+  clearTimeout(pending.timer);pending=null;if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';lastPayload='';requestId='';recovery.hidden=true;setBusy(false);$('cardForm').reset();$('cardPeople').querySelectorAll('input').forEach(x=>x.checked=false);open();status('Открыта новая карточка. Предыдущая заявка сохранена как неподтверждённый черновик на устройстве.',true);
+ };
  function send(){if(peer&&pending)peer.postMessage({type:'department-add',channel,requestId:pending.requestId,event:pending.event},peerOrigin)}
  function beginPendingEvent(event,id){
-  pending={event,requestId:id,timer:setTimeout(()=>{
-   if(frame)frame.remove();frame=null;peer=null;peerOrigin='';channel='';
-   if(pending){clearTimeout(pending.timer);pending.timer=null;pending.retryAt=Date.now()+15000;status('Ответ таблицы задержался. Продолжу сохранение автоматически; повторную запись не создам.',true)}
-  },45000)};
+  recovery.hidden=true;pending={event,requestId:id,timer:setTimeout(()=>{pausePending()},45000)};
   setBusy(true);bridge();send();
  }
  setInterval(()=>{if(pending?.retryAt&&Date.now()>=pending.retryAt&&navigator.onLine!==false&&!document.hidden){const saved=pending;beginPendingEvent(saved.event,saved.requestId)}},15000);
@@ -116,3 +132,4 @@
   localStorage.setItem('departmentPendingEventV1',JSON.stringify({event:d,requestId}));beginPendingEvent(d,requestId);
  };
 })();
+

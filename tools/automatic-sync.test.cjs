@@ -98,3 +98,11 @@ test('paused conflict reconciliation survives reload and does not infer success 
  assert.equal(s.store().operations.length,1);assert.equal(s.c.db.events[0].status,'Отменена');assert.equal(s.messages.length,0);
  s.remote.events[0].status='Отменена';await s.c.syncEncrypted();assert.equal(s.store().operations.length,0);assert.equal(s.messages.length,0);
 });
+
+test('append timeout pauses endless retry and retains recoverable request',()=>{
+ const saved={event:{title:'Заявка',date:'2026-11-18',time:'09:00',people:[],author:'P'},requestId:'aaaaaaaa-1111-4111-8111-111111111111'};
+ const s=setup({departmentPendingEventV1:JSON.stringify(saved)});vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);
+ s.intervals.forEach(f=>f());const timer=s.timeouts.find(t=>t.ms===45000&&!t.cancelled);assert.ok(timer);timer.fn();
+ assert.match(s.elements.get('cardStatus').textContent,/сохранена на устройстве/);assert.deepEqual(JSON.parse(s.storage.get('departmentPendingEventV1')),saved);
+ const frames=s.c.document.body.children.filter(x=>x.src).length;s.intervals.forEach(f=>f());assert.equal(s.c.document.body.children.filter(x=>x.src).length,frames);
+});

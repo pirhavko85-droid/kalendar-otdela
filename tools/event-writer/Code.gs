@@ -49,7 +49,7 @@ function addDepartmentEvent(input,requestId){
    const typeRange=sheet.getRange(last+1,4,rows.length,1),validation=typeRange.getDataValidations();
    try{
     typeRange.clearDataValidations();
-    target.setValues(rows);SpreadsheetApp.flush();
+    target.setNumberFormat('@');target.setValues(rows);SpreadsheetApp.flush();
     const check=target.getDisplayValues(),display=v=>String(v).replace(/^'(?=[=+\-@])/,'');
     if(check.some((r,i)=>r.some((v,j)=>v!==display(rows[i][j]))))throw new Error('Подтверждение полной записи не получено.');
    }catch(writeError){

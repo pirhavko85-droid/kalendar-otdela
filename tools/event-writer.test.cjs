@@ -1,10 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 function setup(options={}){
- const data=[['ID события','','','Тип события','','','','','','','','','','','Связанное событие']],props={};let writes=0;const relaxed=new Set();
+ const data=[['ID события','','','Тип события','','','','','','','','','','','Связанное событие']],props={};let writes=0;const relaxed=new Set(),plain=new Set();
  const display=v=>String(v??'').replace(/^'(?=[=+\-@])/,'');
  const range=(row,col,height,width)=>({
-  getDisplayValues:()=>Array.from({length:height},(_,i)=>Array.from({length:width},(_,j)=>display(data[row-1+i]?.[col-1+j]))),
+  getDisplayValues:()=>Array.from({length:height},(_,i)=>Array.from({length:width},(_,j)=>display(options.timeFormat&&col-1+j===8&&!plain.has(row+i)?String(data[row-1+i]?.[col-1+j]||'').replace(/^0/,''):data[row-1+i]?.[col-1+j]))),
   getDataValidations:()=>Array.from({length:height},(_,i)=>[!relaxed.has(row+i)]),
+  setNumberFormat:format=>{assert.equal(format,'@');for(let i=0;i<height;i++)plain.add(row+i)},
   clearDataValidations:()=>{for(let i=0;i<height;i++)relaxed.add(row+i)},
   setDataValidations:rules=>rules.forEach((r,i)=>{if(r[0])relaxed.delete(row+i);else relaxed.add(row+i)}),
   clearContent:()=>{for(let i=0;i<height;i++){data[row-1+i]??=[];for(let j=0;j<width;j++)data[row-1+i][col-1+j]=''}},
@@ -42,3 +43,7 @@ test('spreadsheet formulas in user titles are stored as literal text',()=>{
   const s=setup();s.data.push(['WEB-'+id+'-0','ХПН','Павел Х.']);const r=s.context.addDepartmentEvent(event,id);
   assert.equal(r.ok,false);assert.equal(s.writes(),0);
  });
+
+test('09:00 remains literal despite inherited time formatting, for every department author',()=>{
+ for(const author of ['КДВ','АВВ','ХПН','ПРВ','САЕ','ГЮК','СЕВ']){const s=setup({timeFormat:true});const r=s.context.addDepartmentEvent({...event,time:'09:00',author},id);assert.equal(r.ok,true,author);assert.equal(s.data[1][8],'09:00')}
+});
