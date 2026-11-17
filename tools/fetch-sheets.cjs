@@ -4,11 +4,23 @@ const path = require('node:path');
 const id = '1q83XSPLXRd9Fgk20gSs601SX9LZWA1yQvkZQQEQ49KU';
 const token = process.env.GOOGLE_ACCESS_TOKEN;
 async function get(url) {
-  const response = await fetch(url, {
-    headers:{Authorization:`Bearer ${token}`}, signal:AbortSignal.timeout(30000)
-  });
-  if (!response.ok) throw new Error(`Google read failed: HTTP ${response.status}`);
-  return response.json();
+  const label=url.includes('/drive/')?'revision':url.includes('values:batchGet')?'values':'structure';
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const response = await fetch(url, {
+        headers:{Authorization:`Bearer ${token}`}, signal:AbortSignal.timeout(30000)
+      });
+      if (!response.ok){
+        const error=new Error(`Google ${label} read failed: HTTP ${response.status}`);
+        error.retryable=response.status===429||response.status>=500;throw error;
+      }
+      return await response.json();
+    }catch(error){
+      if(attempt===2||error.retryable===false)throw new Error(`Google ${label} read failed: ${error.message}`);
+      console.error(`Temporary Google ${label} read failure; retry ${attempt+1}/2.`);
+      await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));
+    }
+  }
 }
 async function main() {
   if (!token) throw new Error('Missing read-only Google access token');

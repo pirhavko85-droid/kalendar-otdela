@@ -82,3 +82,19 @@ test('Google read rejects a table edited during export and reads full tab bounds
  }
 });
 
+test('Google source read retries transient failures but does not retry denied access',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'calendar-sync-test-'));
+ try{
+  const script=path.join(__dirname,'fetch-sheets.cjs');
+  for(const status of [503,403]){
+   const out=path.join(dir,String(status));
+   const code=`process.env.GOOGLE_ACCESS_TOKEN='fake';process.argv=[process.execPath,${JSON.stringify(script)},${JSON.stringify(out)}];global.setTimeout=f=>{f();return 0};let failures=0;global.fetch=async url=>{if(url.includes('/drive/')){if(!failures++){return{ok:false,status:${status}}}if(${status}===403)throw Error('Denied access retried');return{ok:true,json:async()=>({id:'1q83XSPLXRd9Fgk20gSs601SX9LZWA1yQvkZQQEQ49KU',modifiedTime:'2026-11-18T00:00:00Z'})}}if(url.includes('values:batchGet'))return{ok:true,json:async()=>({valueRanges:Array.from({length:4},()=>({values:[['test']]}))})};return{ok:true,json:async()=>({sheets:['Сотрудники','События','Дни рождения','Задачи'].map(title=>({properties:{title,gridProperties:{rowCount:2,columnCount:26}}}))})}};require(${JSON.stringify(script)});`;
+   const result=spawnSync(process.execPath,['-e',code],{encoding:'utf8'});
+   assert.equal(result.status,status===503?0:1,result.stderr);
+   assert.equal(fs.existsSync(path.join(out,'source.json')),status===503);
+   if(status===503)assert.match(result.stderr,/retry 1\/2/);
+   else{assert.match(result.stderr,/HTTP 403/);assert.doesNotMatch(result.stderr,/Denied access retried|retry 1\/2/)}
+  }
+ }finally{fs.rmSync(dir,{recursive:true,force:true})}
+});
+
