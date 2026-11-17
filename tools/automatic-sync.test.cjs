@@ -27,6 +27,15 @@ function setup(saved={}){
 }
 async function flush(s){const queue=s.timeouts.splice(0);for(const timer of queue){if(timer.ms>1000){s.timeouts.push(timer);continue}if(!timer.cancelled)await timer.fn()}}
 function acknowledge(s){s.receive('department-ready');s.receive('department-capabilities-result',{result:{version:2}});const sent=s.messages.findLast(m=>m.type==='department-changes');assert.ok(sent);s.receive('department-changes-result',{requestId:sent.requestId,result:{ok:true}});return sent}
+
+test('deletion has an in-card confirmation and cancel, with no blocking browser dialog',()=>{
+ const s=setup();s.c.groupedMeetingEvents=rows=>rows;s.c.eventTime=e=>e.basis;s.c.meetingRowsForRemoval=()=>s.c.db.events;s.c.confirm=()=>{throw Error('Blocking dialog is forbidden')};
+ vm.runInContext(fs.readFileSync('event-card.js','utf8'),s.c);s.c.window.openEventCard();s.elements.get('cardDeleteAuthor').value='P';
+ const button=s.created.findLast(e=>e.textContent==='Удалить');assert.ok(button);
+ button.click();assert.equal(button.textContent,'Подтвердить удаление');assert.equal(s.posts.length,0);
+ s.created.findLast(e=>e.textContent==='Отмена').click();assert.equal(button.textContent,'Удалить');assert.equal(s.posts.length,0);
+ button.click();button.click();assert.equal(s.posts.length,1);assert.equal(s.posts[0].payload.action,'cancel');assert.equal(s.posts[0].payload.operations[0].after.status,'Отменена');
+});
 test('local edits send automatically, old snapshots cannot undo confirmed edits, and polling continues',async()=>{
  const s=setup();s.c.db.events[0].type='После правки';s.c.save();await flush(s);
  const sent=acknowledge(s);assert.equal(sent.operations.length,1);await flush(s);

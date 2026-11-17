@@ -65,7 +65,11 @@
    const row=document.createElement('div');row.className='event-delete-result';const label=document.createElement('span'),title=document.createElement('b'),dates=document.createElement('small');title.textContent=e.type;dates.textContent=fmt(e.start)+(e.end&&e.end!==e.start?' — '+fmt(e.end):'')+' · '+(eventTime(e)||'без времени');label.append(title,dates);
    const button=document.createElement('button');button.type='button';button.className='event-remove';button.textContent='Удалить';button.onclick=()=>{
     const author=$('cardDeleteAuthor').value;if(!author){status('Выберите, кто удаляет мероприятие.',true);return}
-    if(!confirm('Удалить «'+e.type+'» · '+dates.textContent+' из общего календаря для всех участников?'))return;
+    if(button.dataset.confirm!=='yes'){
+     button.dataset.confirm='yes';button.textContent='Подтвердить удаление';
+     const undo=document.createElement('button');undo.type='button';undo.textContent='Отмена';undo.onclick=()=>{button.dataset.confirm='';button.textContent='Удалить';undo.remove()};actions.append(undo);
+     status('Удалить «'+e.type+'» · '+dates.textContent+' для всех участников? Подтвердите удаление рядом с записью.');return;
+    }
     if(window.removeDepartmentMeeting?.(e.id,author,t=>status(t,true))){renderRemovalResults();$('cardDeletePanel').open=false}
    };const edit=document.createElement('button');edit.type='button';edit.textContent='Изменить';edit.className='event-remove';edit.onclick=()=>openEdit(e.id);const actions=document.createElement('div');actions.className='meeting-actions';actions.append(edit,button);row.append(label,actions);host.append(row);
   }
