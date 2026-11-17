@@ -348,7 +348,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 </style>
 </head>
 <body>
-<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.51</span></header>
+<header><h1>Календарь отдела</h1><span class="badge">Снимок Google Sheets • v1.11.52</span></header>
 <div class="layout">
 <nav id="nav">
 <button data-page="data">Импорт / экспорт</button>
@@ -403,7 +403,7 @@ html,body{max-width:100%;overflow-x:hidden}.layout{grid-template-columns:220px m
 <script src="leave-accounting.js"></script>
 <script src="leave-extension.js"></script>
 <script>
-const APP_VERSION='1.11.51';
+const APP_VERSION='1.11.52';
 const EVENT_TYPES=['Наряд','Выход в выходной/праздничный день','Выход на больничном','Выход в отпуске','Командировка','Болен','Больна','Болезнь по уходу за ребёнком','Отгул','Основной отпуск','Летний отпуск','Отпуск ВБД','Дополнительный отпуск','Отпуск по семейным обстоятельствам','Зачёт по ФП','Другое'];
 const EVENT_STATUSES=['План','Факт','Продолжается','Замена'];
 const TASK_STATUSES=['Новая','В работе','Выполнена','Отменена'];
@@ -1416,6 +1416,7 @@ async function syncEncrypted(options={}){
     }
   }
   if(options.apply)options.apply(incoming,published);else{db=incoming;save()}
+  window.dispatchEvent(new CustomEvent('department-published-snapshot',{detail:{events:published.events}}));
   const kept=localOnly.people+localOnly.events+localOnly.tasks;
   status.textContent='Получен опубликованный снимок: '+new Date().toLocaleString('ru-RU')+(kept?' · Сохранено локальных записей: '+kept:'');
   return true;
@@ -1441,9 +1442,9 @@ setInterval(refreshCurrentDay,30000);
 window.addEventListener('focus',refreshCurrentDay);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentDay()});
 </script>
-<script src="event-draft.js?v=1.11.51"></script>
-<script src="event-card.js?v=1.11.51"></script>
-<script src="collaboration.js?v=1.11.51"></script>
+<script src="event-draft.js?v=1.11.52"></script>
+<script src="event-card.js?v=1.11.52"></script>
+<script src="collaboration.js?v=1.11.52"></script>
 </body>
 </html>
 

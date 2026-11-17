@@ -4,6 +4,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/preview-card-recovery.html', ['tools/card-recovery-preview.html', 'text/html; charset=utf-8']],
   ['/preview-mobile.html', ['tools/mobile-preview.html', 'text/html; charset=utf-8']],
   ['/preview-server-code.txt', ['tools/event-writer/Code.gs', 'text/plain; charset=utf-8']],
   ['/preview-bridge.txt', ['tools/event-writer/Bridge.html', 'text/plain; charset=utf-8']],
